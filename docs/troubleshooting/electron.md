@@ -45,3 +45,6 @@ Sie hängt **alle Prozesse in dieser Sandbox** an ein **Windows Job Object** (Ke
 
 ## Loging
 - https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal
+
+## ReadConsoleOutput “Access denied (0x5)” / broken STDOUT
+- https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/operating-systems/windows/terminal/powershell.md
