@@ -30,3 +30,18 @@ Sie hängt **alle Prozesse in dieser Sandbox** an ein **Windows Job Object** (Ke
 - Nutze eine **dedizierte Sandbox nur für diese Electron‑App** (kein globaler Ausnahme‑Drift).
 - Stelle sicher, dass beim Beenden der Box **alle Prozesse terminiert** werden, und prüfe danach, ob wirklich nichts mehr läuft.
 - Halte **Drop Admin Rights** aktiv und setze **Start/Run‑Restriktionen** (nur die benötigten EXEs) + ggf. **WFP‑Firewall‑Regeln** pro Sandbox.
+
+
+
+
+<br><br>
+
+---
+
+<br><br>
+
+
+# Terminal
+
+## Loging
+- https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal
