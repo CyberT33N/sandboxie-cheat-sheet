@@ -12,6 +12,6 @@
 - Generelle Optionen -> Restriktionen -> "Verhindere die Beinträchtigung der Benutzeroberfläche"
   - Do not deactivate
 
-
-# Troubleshooting
-- https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/electron.md
+- Sicherheit Options → Job Objekt
+   - Deaktiviere "„Füge sandbox-/geboxte Prozesse zu Job‑Objekten hinzu“"
+     - https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/electron.md
