@@ -15,3 +15,26 @@
 - Sicherheit Options → Job Objekt
    - Deaktiviere "„Füge sandbox-/geboxte Prozesse zu Job‑Objekten hinzu“"
      - https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/electron.md
+
+
+
+
+
+
+
+
+<br><br>
+
+---
+
+<br><br>
+
+
+# Troubleshooting
+
+## Terminal
+
+### Loging
+- https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal
+
+### ReadConsoleOutput “Access denied (0x5)” / broken STDOUT
