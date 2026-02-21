@@ -1,3 +1,7 @@
+
+# Debug
+
+
 # Run Terminal is Sandbox
 - Man nimmt diese beiden EXEs und zieht sie in einen dedizierten Bereich (wie im Beispiel unten mit Tools, Deathbox, Shell). Anschließend stellt man sicher, dass sie automatisch in der jeweiligen Sandbox gestartet werden, in der man z. B. Applikationen debuggen möchte.
 
@@ -8,30 +12,37 @@ Wenn man z. B. in einem Electron-Projekt arbeitet und die Applikationen darin im
 - C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
 - C:\Windows\System32\cmd.exe
 
-.vscode\settings.json
-```json
-{
-  "terminal.integrated.automationProfile.windows": {
-    "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
-  },
-  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
-  "terminal.integrated.profiles.windows": {
-    "DevBox PowerShell": {
-      "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass"
-      ],
-      "env": {
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}"
-      },
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-    }
-  }
-}
+
+
+
+# INI Settings
+```
+# --- DevBoxShell binaries ---
+NormalFilePath=powershell.exe,C:\Tools\DevBoxShell\
+NormalFilePath=cmd.exe,C:\Tools\DevBoxShell\
 ```
 
 
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+
+---
+
+<br><br>
+
+
+
+# Related
 
 ## Enable starship
 - docs\troubleshooting\IDE\vscode\terminal\starship\general.md
