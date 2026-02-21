@@ -21,15 +21,14 @@ Im **Security/Privacy Mode** blockt Sandboxie oft mindestens eins davon:
 Wenn das blockiert ist, startet der Prozess kurz und **beendet sich sofort** → du landest wieder im Prompt, als wäre “nichts passiert”.
 
 ### Stabiler Weg (empfohlen): dein bestehendes “1‑Click”-Setup verwenden
-Du hast bereits:
-- `launch.json`: **`Debug All (auto-start)`** mit `preLaunchTask: "Start electron-vite (inspect)"`
-- `tasks.json`: Task **`Start electron-vite (inspect)`** (startet `electron-vite` mit `--inspect-brk=5858` + `--sourcemap` + `REMOTE_DEBUGGING_PORT=9222`)
-- Attach/Chrome Configs für **5858 (Main)** und **9222 (Renderer)**
+- docs\applications\IDE\vscode\terminal\package.json vs new terminal.md
+- docs\applications\IDE\vscode\terminal\debug\general.md
 
-→ Starte Debugging **über Run & Debug** (z.B. `Debug All (auto-start)`), nicht über den Hover-`Debug Script` in `package.json`.
+Electron Beispiel:
+- docs\applications\programming-languages\node\frameworks\electron\electron-vite\debug.md
 
 
-docs\applications\IDE\vscode\terminal\debug\general.md
+
 
 
 
