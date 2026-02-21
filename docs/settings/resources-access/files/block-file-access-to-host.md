@@ -33,7 +33,7 @@ Wenn du **deine persönlichen Host‑Dateien** schützen willst, mach es im Free
 Minimaler Ansatz (Box‑Sektion), Beispiel:
 
 ```ini
-[privYou]
+[testApp]
 ; kein UseRuleSpecificity setzen (sonst 5-Minuten-Termination ohne Zertifikat)
 
 ; Host-Userprofil verstecken, aber in der Box nutzbar machen:

@@ -1,21 +1,28 @@
 
 # Programme starten nicht
 
-## Was ich in der Doku/Logs dazu gefunden habe (SBIE2314 vs. SBIE1231)
+## (SBIE2314 vs. SBIE1231)
 - docs\troubleshooting\error-codes\SBIE1231.md
 
 ## Warum deine Electron‑App im Privacy‑Modus wahrscheinlich nicht startet
 Privacy Mode arbeitet so, dass **User‑Space standardmäßig verborgen/blockiert** ist (default block) und nur definierte Bereiche lesbar bleiben ([Privacy Mode](https://sandboxie-plus.github.io/sandboxie-docs/PlusContent/privacy-mode/)).  
-Wenn deine App z. B. unter **`C:\privYou\privYou.exe`** liegt, ist das **User‑Space** (nicht `C:\Windows`/`C:\Program Files*`). Dann sieht die Box diese Datei ggf. **nicht mehr** → Prozess‑Initialisierung kann scheitern → `SBIE1231` → `SBIE2314`.
+Wenn deine App z. B. unter **`C:\testApp\testApp.exe`** liegt, ist das **User‑Space** (nicht `C:\Windows`/`C:\Program Files*`). Dann sieht die Box diese Datei ggf. **nicht mehr** → Prozess‑Initialisierung kann scheitern → `SBIE1231` → `SBIE2314`.
 
 ## Minimal‑Allow Fix (so wenig freigeben wie möglich)
+
 ### Schritt 1 — App‑Ordner explizit “Normal” erlauben (nicht “Open”)
 In deiner Privacy‑Box:
 
 1) **Sandbox Options → Resource Access → Files**
-2) **Add File/Folder**: den Ordner, in dem deine EXE liegt (z. B. `C:\privYou\`)
+2) **Add File/Folder**: den Ordner, in dem deine EXE liegt (z. B. `C:\testApp\`)
 3) **Access = Normal** (entspricht `NormalFilePath=...`)  
    Doku: [NormalFilePath](https://sandboxie-plus.github.io/sandboxie-docs/Content/NormalFilePath/)
+
+4) Es macht nur Sinn, genau die EXE zu erlauben, die tatsächlich ausgeführt wird. Das heißt: nicht pauschal alle Programme freigeben, sondern gezielt den Namen der jeweiligen EXE. Man kann das entweder über die Benutzeroberfläche machen oder über den INI-Befehl.
+
+```ini
+NormalFilePath=testApp.exe,C:\testApp\
+```
 
 **Warum “Normal” und nicht “Open”?**  
 - **Normal** = Standard‑Sandboxing (lesen ok, schreiben wird in die Box virtualisiert).  
@@ -35,7 +42,7 @@ Nicht “blind freigeben”, sondern **evidence‑basiert** minimal öffnen.
 ### Schritt 2 — Trace Log aktivieren und genau die Denies finden
 1) In SandMan: **View → Trace Logging** aktivieren ([Trace logging](https://sandboxie-plus.github.io/sandboxie-docs/PlusContent/TraceLog/))
 2) Privacy‑Box starten → App starten (sie darf ruhig direkt sterben)
-3) Im Trace Log nach **Denied** Einträgen suchen (CTRL+F, nach `D`, `privYou.exe`, oder nach Pfaden)
+3) Im Trace Log nach **Denied** Einträgen suchen (CTRL+F, nach `D`, `testApp.exe`, oder nach Pfaden)
 4) **Right‑click → Copy Panel** (oder Speichern) ([Trace logging](https://sandboxie-plus.github.io/sandboxie-docs/PlusContent/TraceLog/))
 
 ### Schritt 3 — Deny → minimale Regel ableiten
@@ -65,16 +72,16 @@ Du solltest nur **gezielt** deine App‑Location (und danach nur das, was der Tr
   - Common examples: `File/Folder`, `Registry`, `IPC/Named Pipe` (depends on the sub-tab)
 - **Program (Programm)**: Which sandboxed process(es) the rule applies to.
   - `All Programs` = every boxed process
-  - `privYou.exe` (example) = only that executable
+  - `testApp.exe` (example) = only that executable
 - **Access (Zugriff)**: What Sandboxie should do when a boxed process accesses the resource.
   - **Normal**: Default sandbox behavior (read is allowed; writes are virtualized into the sandbox).
   - **Read Only**: Host path is readable but **not writable** (`ReadFilePath` behavior).
   - **Box Only (Write Only)**: Host contents are hidden; the app can create new files in the sandbox as if the folder were empty (`WriteFilePath` behavior).
   - **Closed**: Access is fully denied (read/write blocked) (`ClosedFilePath` behavior).
   - **Open**: Direct access to the host path with **no sandboxing** for that location (a deliberate “hole”; `OpenFilePath` behavior).
-- **Path (Pfad)**: The path pattern the rule applies to (often with wildcards like `C:\privYou\*`).
+- **Path (Pfad)**: The path pattern the rule applies to (often with wildcards like `C:\testApp\*`).
 
 ### Practical guidance for Red/Privacy boxes (least privilege)
-- Prefer **Program-specific** rules (`privYou.exe`) over `All Programs` when possible.
+- Prefer **Program-specific** rules (`testApp.exe`) over `All Programs` when possible.
 - Prefer **Normal / Read Only / Box Only** over **Open**.
 - Use **Open** only when you explicitly accept a host-access “hole” for compatibility.
