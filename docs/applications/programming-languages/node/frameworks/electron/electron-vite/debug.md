@@ -1,7 +1,7 @@
 # Debug
 
 1. Create .vscode\settings.json
-- docs\troubleshooting\IDE\vscode\terminal\debug.md
+- docs\applications\IDE\vscode\terminal\debug\general.md
 
 2. .vscode\launch.json
 ```json

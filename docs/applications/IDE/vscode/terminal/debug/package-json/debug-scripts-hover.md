@@ -34,33 +34,6 @@ Electron Beispiel:
 
 
 
-<br><br>
-<br><br>
 
 
 
-
-### Wenn du den `Debug Script`-Button trotzdem unbedingt in Sandboxie nutzen willst
-Du musst die Debug-Terminal-Anforderungen gezielt erlauben:
-
-1. **Bootloader-Pfad ermitteln**
-   - Im Terminal, das durch `Debug Script` geöffnet wird, ausgeben:
-     - PowerShell: `echo $env:NODE_OPTIONS`
-   - Den Ordner aus dem `--require <…>\bootloader.js` ableiten und für `node.exe` erlauben.
-
-2. **Named Pipe erlauben** (für die Debug-Verbindung)
-   - Für `node.exe` den Pipe-Zugriff erlauben:
-     - `\Device\NamedPipe\node-cdp.*`
-
-Beispiel-Regeln (program-scoped, bewusst eng gehalten):
-
-```ini
-NormalFilePath=node.exe,<FOLDER_CONTAINING_bootloader.js>\
-
-OpenPipePath=node.exe,\Device\NamedPipe\node-cdp.*
-```
-
-### Wichtiger Security-Fix (separat)
-- In deiner `package.json` ist in `build:publish` ein **hart codiertes Token** enthalten.
-  - **Sofort revoken/rotieren** und **aus der Datei entfernen**.
-  - Token nur noch per **Environment Variable / Secret Store (CI)** bereitstellen.
