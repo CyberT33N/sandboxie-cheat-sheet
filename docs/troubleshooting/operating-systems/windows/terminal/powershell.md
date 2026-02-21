@@ -23,6 +23,7 @@
 Enable the Sandboxie setting:
 
 - **`DropConHostIntegrity=y`** (per sandbox/box)
+- Oder per UI Sicherheitsoptionen -> Erweiterte Sicherheit -> "Verwerfe den Prozessintegriotätslevel von Con host.exe"
 
 This makes Sandboxie lower the integrity level of the related `conhost.exe` instance(s) so boxed PowerShell can safely perform console buffer operations.
 

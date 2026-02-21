@@ -47,3 +47,4 @@
 - https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal
 
 ### ReadConsoleOutput “Access denied (0x5)” / broken STDOUT
+- docs\troubleshooting\operating-systems\windows\terminal\powershell.md
