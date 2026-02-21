@@ -9,7 +9,7 @@ Wenn man z. B. in einem Electron-Projekt arbeitet und die Applikationen darin im
 - C:\Windows\System32\cmd.exe
 
 .vscode\settings.json
-```
+```json
 {
   "terminal.integrated.automationProfile.windows": {
     "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
@@ -17,10 +17,21 @@ Wenn man z. B. in einem Electron-Projekt arbeitet und die Applikationen darin im
   "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
   "terminal.integrated.profiles.windows": {
     "DevBox PowerShell": {
-      "args": [],
+      "args": [
+        "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass"
+      ],
+      "env": {
+        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}"
+      },
       "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
     }
   }
 }
-
 ```
+
+
+
+## Enable starship
+- docs\troubleshooting\IDE\vscode\terminal\starship\general.md
