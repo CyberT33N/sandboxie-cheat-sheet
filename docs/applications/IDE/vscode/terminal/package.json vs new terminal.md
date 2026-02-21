@@ -32,30 +32,7 @@ In **derselben** `.vscode/settings.json` ergänzen:
 ```
 
 Full .vscode\settings.json:
-```json
-{
-  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
-  "terminal.integrated.profiles.windows": {
-    "DevBox PowerShell": {
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe",
-      "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
-      ],
-      "env": {
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
-        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
-      }
-    }
-  },
-  "terminal.integrated.automationProfile.windows": {
-    "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
-  }
-}
-```
+- docs\applications\IDE\vscode\terminal\debug\general.md
 
 
 Warum `cmd.exe`?
