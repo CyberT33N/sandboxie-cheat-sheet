@@ -1,0 +1,6 @@
+# List of URLs to ignore in the link checker
+https://web.archive.org/web/*
+https://www.ghacks.net/*
+https://www.howtogeek.com/*
+https://github.com/*
+http://www.jimopi.net/*

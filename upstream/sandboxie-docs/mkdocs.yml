@@ -1,0 +1,716 @@
+# Project information
+site_name: Sandboxie Documentation
+site_url: https://sandboxie-plus.github.io/sandboxie-docs/
+site_description: Sandboxie Plus lets you run programs in isolated sandboxes on Windows, enhancing security and privacy by containing changes from the rest of the system.
+
+exclude_docs: |
+  /ar/
+  /de/
+  /en/
+  /es/
+  /fr/
+  /hu/
+  /id/
+  /it/
+  /ja/
+  /ko/
+  /nl/
+  /pl/
+  /pt/
+  /pt-BR/
+  /ru/
+  /sv/
+  /tr/
+  /uk/
+  /vi/
+  /zh-CN/  # Do not remove it, it is required for the preparation phase in publish.yml 
+  /zh-TW/
+
+# Repository
+repo_name: sandboxie-plus/Sandboxie
+repo_url: https://github.com/sandboxie-plus/Sandboxie
+#edit_uri: edit/main/docs/
+edit_uri: https://github.com/sandboxie-plus/sandboxie-docs/edit/main/docs/
+
+# Copyright
+copyright: 'This site is maintained by <a href="https://github.com/sandboxie-plus">sandboxie-plus</a>. If you wish to contribute: <a href="https://github.com/sandboxie-plus/sandboxie-docs">Improve sandboxie-docs!</a>'
+
+# Configuration
+theme:
+  name: material
+  language: en
+  custom_dir: material/overrides
+  logo: Media/SandDocs.png
+  favicon: material/assets/images/favicon.ico
+  features:
+    - announce.dismiss
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    # - content.code.select             # insiders
+    # - content.footnote.tooltips
+    # - content.tabs.link
+    # - header.autohide
+    - content.tooltips
+    # - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    # - navigation.instant              # NOT compatible with the multi-language switcher
+    # - navigation.instant.prefetch     # insiders
+    # - navigation.instant.progress
+    # - navigation.path                 # insiders
+    # - navigation.prune
+    # - navigation.sections
+    # - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  font: false
+
+watch:
+  - material/overrides
+
+# Plugins
+plugins:
+  - search:
+      lang: en
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
+  - meta-descriptions:
+      export_csv: false
+      quiet: false
+      enable_checks: false
+      min_length: 50
+      max_length: 160
+      trim: false
+      fallback_if_short: true
+  - redirects:
+      redirect_maps:
+        'Content/PrivacyMode.md': 'PlusContent/privacy-mode.md'    # https://forum.xanasoft.com/threads/enabling-read-access-in-privacy-mode.627/
+        # 'old.md': 'new.md'
+        # 'old/file.md': 'new/file.md'
+        # 'some_file.md': 'http://external.url.com/foobar'
+  # - RootReadme:
+      # readme: README.md
+  - gh-admonitions
+  - i18n:
+      docs_structure: folder
+      fallback_to_default: true
+      reconfigure_material: true
+      reconfigure_search: true
+      languages:
+        # Chinese (Simplified)
+        - locale: zh
+          name: 简体中文
+          build: true
+          default: false
+          site_name: Sandboxie 文档
+          nav_translations:
+            Home: 主页
+            Sandboxie Basics: Sandboxie 基础知识
+            Sandboxie Control: Sandboxie 控制
+            Command Line Usage: 命令行用法
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: 高级主题
+            SBIE Messages: SBIE 消息
+        # Turkish
+        - locale: tr
+          name: Türkçe
+          build: false
+          default: false
+          site_name: Sandboxie Belgeleri
+          nav_translations:
+            Home: Ana Sayfa
+            Sandboxie Basics: Sandboxie Temelleri
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Komut Satırı Kullanımı
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: İleri Seviye Konular
+            SBIE Messages: SBIE Mesajları
+        # German
+        - locale: de
+          name: Deutsch
+          build: false
+          default: false
+          site_name: Sandboxie-Dokumente
+          nav_translations:
+            Home: Startseite
+            Sandboxie Basics: Sandboxie-Grundlagen
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Verwendung der Befehlszeile
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Fortgeschrittene Themen
+            SBIE Messages: SBIE-Nachrichten
+        # Arabic
+        - locale: ar
+          name: العَرَبِيَّة
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Chinese (Taiwanese)
+        - locale: zh-TW
+          name: 简体中文
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Dutch
+        - locale: nl
+          name: Nederlands
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # French
+        - locale: fr
+          name: Français
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Hungarian
+        - locale: hu
+          name: magyar
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Indonesian
+        - locale: id
+          name: Indonesia
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Italian
+        - locale: it
+          name: Italiano
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Japanese
+        - locale: ja
+          name: 日本語
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Korean
+        - locale: ko
+          name: 한국어
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Polish
+        - locale: pl
+          name: Polski
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Portuguese
+        - locale: pt
+          name: português europeu
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Portuguese (Brasilian)
+        - locale: pt-BR
+          name: português
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Russian
+        - locale: ru
+          name: Русский
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Spanish
+        - locale: es
+          name: español de España
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Swedish
+        - locale: sv
+          name: Svenska
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Ukrainian
+        - locale: uk
+          name: українська
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # Vietnamese
+        - locale: vi
+          name: Tiếng Việt
+          build: false
+          default: false
+          site_name: Sandboxie Documents
+          nav_translations:
+            Home: Home
+            Sandboxie Basics: Sandboxie Basics
+            Sandboxie Control: Sandboxie Control
+            Command Line Usage: Command Line Usage
+            Sandboxie Plus: Sandboxie Plus
+            Advanced Topics: Advanced Topics
+            SBIE Messages: SBIE Messages
+        # default language should be at the bottom
+        # English
+        - locale: en
+          name: English
+          build: true
+          default: true
+
+# Hooks
+
+# Additional configuration
+extra:
+  alternate:
+    # English
+    - name: English
+      link: /sandboxie-docs/
+      lang: en
+    # Chinese (Simplified)
+    - name: 简体中文
+      link: /sandboxie-docs/zh-CN/
+      lang: zh
+    # # Arabic
+    # - name: العَرَبِيَّة
+      # link: /sandboxie-docs/ar/
+      # lang: ar
+    # # Chinese (Taiwanese)
+    # - name: 繁體中文
+      # link: /sandboxie-docs/zh-TW/
+      # lang: zh-TW
+    # # Dutch
+    # - name: Nederlands
+      # link: /sandboxie-docs/nl/
+      # lang: nl
+    # # German
+    # - name: Deutsch
+      # link: /sandboxie-docs/de/
+      # lang: de
+    # # French
+    # - name: Français
+      # link: /sandboxie-docs/fr/
+      # lang: fr
+    # # Hungarian
+    # - name: magyar
+      # link: /sandboxie-docs/hu/
+      # lang: hu
+    # # Indonesian
+    # - name: Indonesia
+      # link: /sandboxie-docs/id/
+      # lang: id
+    # # Italian
+    # - name: Italiano
+      # link: /sandboxie-docs/it/
+      # lang: it
+    # # Japanese
+    # - name: 日本語
+      # link: /sandboxie-docs/ja/
+      # lang: ja
+    # # Korean
+    # - name: 한국어
+      # link: /sandboxie-docs/ko/
+      # lang: ko
+    # # Polish
+    # - name: Polski
+      # link: /sandboxie-docs/pl/
+      # lang: pl
+    # # Portuguese
+    # - name: português europeu
+      # link: /sandboxie-docs/pt/
+      # lang: pt
+    # # Portuguese (Brasilian)
+    # - name: português
+      # link: /sandboxie-docs/pt-BR/
+      # lang: pt-BR
+    # # Russian
+    # - name: Русский
+      # link: /sandboxie-docs/ru/
+      # lang: ru
+    # # Spanish
+    # - name: español de España
+      # link: /sandboxie-docs/es/
+      # lang: es
+    # # Swedish
+    # - name: Svenska
+      # link: /sandboxie-docs/sv/
+      # lang: sv
+    # # Turkish
+    # - name: Türkçe
+      # link: /sandboxie-docs/tr/
+      # lang: tr
+    # # Ukrainian
+    # - name: українська
+      # link: /sandboxie-docs/uk/
+      # lang: uk
+    # # Vietnamese
+    # - name: Tiếng Việt
+      # link: /sandboxie-docs/vi/
+      # lang: vi
+
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sandboxie-plus/sandboxie-docs
+      name: Sandboxie Documentation on Github
+
+extra_css:
+  - material/assets/stylesheets/extra.css
+
+extra_javascript:
+  - material/assets/javascripts/extra.js
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - pymdownx.caret
+  - pymdownx.critic
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      # auto_title: true
+      default_lang: 'ini'
+      # guess_lang: true
+      line_spans: __span
+      pygments_lang_class: true
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - tables
+  - toc:
+      permalink: ''
+
+# Page tree
+nav:
+# - Home: README.md
+- Sandboxie Basics:
+  - Content/HelpTopics.md
+  - Content/GettingStarted.md
+  - Sandboxie Control:
+    - Content/SandboxieControl.md
+    - Content/FileMenu.md
+    - Content/ViewMenu.md
+    - Content/SandboxMenu.md
+    - Content/ConfigureMenu.md
+    - Content/HelpMenu.md
+    - Content/TrayIconMenu.md
+  - Content/UsageTips.md
+  - Command Line Usage:
+    - Content/StartCommandLine.md
+    - Content/SbieIniCommandLine.md
+  - Content/SandboxieIni.md
+- Content/KnownConflicts.md
+- Sandboxie Plus:
+  - Content/PlusMigrationGuide.md
+  - PlusContent/Plus-Features.md
+- Advanced Topics:
+  - Content/AdvancedTopics.md
+  - Content/SandboxHierarchy.md
+  - Content/PrivacyConcerns.md
+  - Content/ServicePrograms.md
+  - Content/ResourceAccessMonitor.md
+  - PlusContent/TraceLog.md
+  - Content/HowToUseWinDbg.md
+  # Get-ChildItem .\docs\Content\SBIE* | %{"      - Content/$($_.BaseName).md"} | Set-Clipboard
+  - SBIE Messages:
+    - Content/SBIEMessages.md
+    - Content/SBIEDLLAPI.md
+    - Content/SBIE1101.md
+    - Content/SBIE1102.md
+    - Content/SBIE1103.md
+    - Content/SBIE1104.md
+    - Content/SBIE1105.md
+    - Content/SBIE1106.md
+    - Content/SBIE1108.md
+    - Content/SBIE1109.md
+    - Content/SBIE1110.md
+    - Content/SBIE1111.md
+    - Content/SBIE1112.md
+    - Content/SBIE1113.md
+    - Content/SBIE1114.md
+    - Content/SBIE1116.md
+    - Content/SBIE1119.md
+    - Content/SBIE1120.md
+    - Content/SBIE1121.md
+    - Content/SBIE1122.md
+    - Content/SBIE1151.md
+    - Content/SBIE1152.md
+    - Content/SBIE1153.md
+    - Content/SBIE1201.md
+    - Content/SBIE1202.md
+    - Content/SBIE1203.md
+    - Content/SBIE1204.md
+    - Content/SBIE1211.md
+    - Content/SBIE1212.md
+    - Content/SBIE1213.md
+    - Content/SBIE1214.md
+    - Content/SBIE1215.md
+    - Content/SBIE1216.md
+    - Content/SBIE1222.md
+    - Content/SBIE1223.md
+    - Content/SBIE1224.md
+    - Content/SBIE1241.md
+    - Content/SBIE1242.md
+    - Content/SBIE1301.md
+    - Content/SBIE1303.md
+    - Content/SBIE1304.md
+    - Content/SBIE1306.md
+    - Content/SBIE1307.md
+    - Content/SBIE1308.md
+    - Content/SBIE1309.md
+    - Content/SBIE1310.md
+    - Content/SBIE1311.md
+    - Content/SBIE1312.md
+    - Content/SBIE1313.md
+    - Content/SBIE1314.md
+    - Content/SBIE1401.md
+    - Content/SBIE1402.md
+    - Content/SBIE1403.md
+    - Content/SBIE1404.md
+    - Content/SBIE1405.md
+    - Content/SBIE1406.md
+    - Content/SBIE1408.md
+    - Content/SBIE1409.md
+    - Content/SBIE1410.md
+    - Content/SBIE1411.md
+    - Content/SBIE1412.md
+    - Content/SBIE2102.md
+    - Content/SBIE2103.md
+    - Content/SBIE2104.md
+    - Content/SBIE2108.md
+    - Content/SBIE2111.md
+    - Content/SBIE2191.md
+    - Content/SBIE2192.md
+    - Content/SBIE2193.md
+    - Content/SBIE2202.md
+    - Content/SBIE2203.md
+    - Content/SBIE2204.md
+    - Content/SBIE2205.md
+    - Content/SBIE2206.md
+    - Content/SBIE2207.md
+    - Content/SBIE2208.md
+    - Content/SBIE2209.md
+    - Content/SBIE2210.md
+    - Content/SBIE2211.md
+    - Content/SBIE2212.md
+    - Content/SBIE2213.md
+    - Content/SBIE2214.md
+    - Content/SBIE2217.md
+    - Content/SBIE2218.md
+    - Content/SBIE2219.md
+    - Content/SBIE2220.md
+    - Content/SBIE2221.md
+    - Content/SBIE2222.md
+    - Content/SBIE2223.md
+    - Content/SBIE2225.md
+    - Content/SBIE2303.md
+    - Content/SBIE2304.md
+    - Content/SBIE2305.md
+    - Content/SBIE2306.md
+    - Content/SBIE2307.md
+    - Content/SBIE2308.md
+    - Content/SBIE2309.md
+    - Content/SBIE2310.md
+    - Content/SBIE2311.md
+    - Content/SBIE2312.md
+    - Content/SBIE2313.md
+    - Content/SBIE2314.md
+    - Content/SBIE2315.md
+    - Content/SBIE2316.md
+    - Content/SBIE2317.md
+    - Content/SBIE2318.md
+    - Content/SBIE2321.md
+    - Content/SBIE2322.md
+    - Content/SBIE2323.md
+    - Content/SBIE2326.md
+    - Content/SBIE2327.md
+    - Content/SBIE2328.md
+    - Content/SBIE2329.md
+    - Content/SBIE2331.md
+    - Content/SBIE2332.md
+    - Content/SBIE2334.md
+    - Content/SBIE3207.md
+    - Content/SBIE3208.md
+    - Content/SBIE3209.md
+    - Content/SBIE6004.md
+    - Content/SBIE6008.md
+    - Content/SBIE6009.md
+    - Content/SBIE9101.md
+    - Content/SBIE9153.md
+    - Content/SBIE9154.md
+    - Content/SBIE9156.md
+    - Content/SBIE9201.md
+    - Content/SBIE9202.md
+    - Content/SBIE9203.md
+    - Content/SBIE9204.md
+    - Content/SBIE9205.md
+    - Content/SBIE9206.md
+    - Content/SBIE9207.md
+    - Content/SBIE9208.md
+    - Content/SBIE9251.md
+    - Content/SBIE9252.md
+    - Content/SBIE9253.md
+    - Content/SBIE9302.md
+    - Content/SBIE9304.md
+    - Content/SBIE9305.md
+- Content/TechnicalAspects.md
