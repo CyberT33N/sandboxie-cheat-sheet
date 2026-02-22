@@ -85,13 +85,20 @@ NormalFilePath=test.exe,C:\git\test\test-project\.pnpm\electron@29.4.6\node_modu
 
 
 
+<br><br>
 
 
-
-
+## Localhost
+- docs\troubleshooting\applications\development\localhost.md
 
 
 <br><br>
+
+
+
+
+
+
 
 
 
