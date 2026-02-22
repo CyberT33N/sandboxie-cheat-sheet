@@ -1,185 +1,180 @@
+
 # VS Code
 
+---
 
+# Method #1 – VS Code on Host, Toolchain in Dedicated Box, Debug via Attach-Inspect (Recommended)
 
+* 📌 Recommended approach (with Sandboxie)
+  The best setup is to run Cursor or VS Code normally on the host while executing all relevant subprocesses inside their own dedicated box. This includes, for example:
 
+* the Electron binary inside the PNPM directory
 
+* terminals used for PowerShell and CMD
 
+* Node executables
 
-# Method #1 -  Vscode auf Host, Toolchain in starker Box, Debug via Attach‑Inspect (Empfohlen)
-
-- 📌 Empfohlene Variante (mit Sandboxie)
-Die beste Variante ist, dass Cursor oder VSCode auf dem Host ganz normal läuft und die jeweiligen Unterprozesse, die man startet, in einer eigenen Box laufen. Dazu gehören z. B.:
-
-- die Electron-Binary im PNPM-Ordner
-- die Terminals, die man für PowerShell und CMD nutzt
-- die Node-Executables
-
-Damit ist die komplette Toolchain isoliert, aber weiterhin bleibt alles möglich. Man kann auch weiterhin über den Attached Inspect debuggen. Das ist aus meiner Sicht die beste Variante, die man mit Sandboxie erreichen kann.
-
-Methode 2 (nicht vollständig isoliert)
-Es gibt natürlich noch Methode 2, aber die ist nicht komplett isoliert, weil die Sicherheitsisolation wegfällt. Dadurch bringt es eigentlich nichts: Man hat dann im Wesentlichen nur virtualisierte Rechte und ein paar weitere Vorteile, aber keinen echten Mehrwert.
-
-Fazit
-Von der Gewichtung her ist es besser, wenn VSCode auf dem Host-System normal läuft und alles, was zur Toolchain gehört bzw. was man daraus aufruft, konsequent in einer eigenen Box isoliert läuft.
-
-- docs\applications\IDE\vscode\terminal\debug\general.md
-- docs\applications\IDE\vscode\terminal\package.json vs new terminal.md
-
-## Limitierung — IDE-Debug-Script in `package.json` funktioniert nicht
-
-Eine starke **Limitierung**, die **DU** hast, ist das klassische **Debug-Script**, das **DU** in deiner **IDE** kennst: Wenn **DU** zum Beispiel in einer `package.json` bist und dann über ein **Run-Script** hovert und anschließend auf **Debug-Script** klickst.
-
-Vollständige **Informationen** können hierzu gefunden werden.
-
-Das ist das einzige, was anscheinend nicht funktioniert.
-
-- docs\applications\IDE\vscode\terminal\debug\package-json\debug-scripts-not-working.md
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
-<br><br>
-
-
-
-
-
-
-
-# Method #2 - Not Fully isolated
-
-
-## Not working
-- Generelle Optionen -> Restriktion -> "Verhin dere die Beeinträchtigung der benutzeroberfläche"
-  - Nicht aktivieren
-
-- Sicherheitsoptionen -> Sicherheitsisolation -> "Deaktiviere Sicherheitsisolation"
- - Nicht aktivieren
-
-Ich habe sehr vieles ausprobiert, aber es scheint generell mit der Sicherheitsisolation nicht zu funktionieren.
-
-
-
-
-### Warum Method #1 (Host‑VS Code) bei mir höher scored als Method #2 (VS Code in Box ohne Security‑Isolation)
-
-**Kernpunkt:** Wenn du für Cursor/VS Code **„Security Isolation“ deaktivieren musst**, dann ist die Box **keine belastbare Sicherheitsgrenze mehr**. Damit verschiebt sich der Nutzen von „Security“ zu „Virtualisierung/Operability“ — und genau dort hat Option B **mehr Nebenwirkungen** als messbaren Sicherheitsgewinn.
+This isolates the entire toolchain while keeping full functionality. Debugging via Attached Inspect continues to work. From a structural and security perspective, this is the strongest setup achievable with Sandboxie.
 
 ---
 
-## 1) Was du in Option B *wirklich* gewinnst (und was nicht)
+## Method #2 (Not Fully Isolated)
 
-- **Gewinn (real, aber begrenzt):**
-  - **State-Containment / Reset**: Writes landen in der Box → du kannst Box löschen/rollbacken.
-  - **Ein paar UI‑Optionen** (z.B. Window-Covering, Screen-Capture blocken) können weiterhin wirken.
-
-- **Nicht-Gewinn (das ist entscheidend):**
-  - **Kein echter Schutz gegen Datenexfiltration** aus dem Workspace, Tokens, API Keys, Browser Sessions etc., solange Cursor Zugriff auf Repo/Secrets hat.
-  - **Kein klarer Trust Boundary** gegen RCE in Extensions/Workspace-Code, wenn Isolation/Filtering aus ist.
-
-**=>** Security‑Score steigt nicht proportional, obwohl es „boxed aussieht“.
+There is, of course, a second method — but it is not fully isolated because security isolation must be disabled. Once that protection is removed, the actual security value largely disappears. What remains is essentially rights virtualization and a few operational side effects, but no meaningful security gain.
 
 ---
 
-## 2) Warum Option B architekturell oft *schlechter* ist als Host‑VS Code
+## Conclusion
 
-### 2.1 False sense of security (Enterprise-Red-Flag)
-Wenn ein System „boxed“ aussieht, aber die wesentlichen Schutzmechanismen aus sind, ist das operativ gefährlicher als „klar Host“:
-- Teams überlassen dem Tool implizit mehr Vertrauen („ist ja in der Box“),
-- dadurch werden riskantere Entscheidungen getroffen (Secrets im Workspace, mehr Extensions, weniger Misstrauen).
+From a weighted architectural perspective, it is better to run VS Code normally on the host system and consistently isolate everything related to the toolchain — or launched from it — inside a dedicated box.
 
-Das ist in Enterprise‑Security eine der häufigsten Failure‑Modes.
-
-### 2.2 Zusätzliche Angriffsfläche & Komplexität ohne Boundary
-Mit Cursor in einer Box (ohne Isolation) bekommst du:
-- zusätzliche Interop-Pfade (Clipboard, Shell-Integration, File pickers, protocol handlers),
-- mehr “Randbedingungen” (Tasks/Debug/Terminal/IPC), die du konfigurieren musst,
-- mehr Drift-Potential (eine Setting-Änderung und Verhalten kippt).
-
-Wenn der Security‑Gewinn nicht “hart” ist, ist diese zusätzliche Komplexität **architekturell negativ**.
-
-### 2.3 Debug/Dev-Operability wird fragiler
-Dein konkreter Fall hat gezeigt:
-- Debugging-Mechaniken hängen an **IPC/Namespace‑Details** (Named Pipes / js-debug).
-- Sobald du Cursor in irgendeiner Box betreibst, hast du **mehr** Stellen, an denen diese Mechaniken kippen — ohne dass du dafür eine echte Boundary bekommst.
-
-Option A ist hier **stabiler**: Editor bleibt Host, die gefährliche Ausführung bleibt hart isoliert, Debug läuft über TCP Attach.
+* docs\applications\IDE\vscode\terminal\debug\general.md
+* docs\applications\IDE\vscode\terminal\package.json vs new terminal.md
 
 ---
 
-## 3) Warum Option A in deinem Modell “sauberer” ist
+## Limitation — IDE Debug Script in `package.json` Does Not Work
 
-Option A ist eine **klare Architektur**:
-- **Host**: Editor/UI (Cursor/VS Code) = *trusted control plane* (du behandelst ihn bewusst als Host‑Risiko)
-- **Box**: Node/Electron/Test‑Runner = *untrusted execution plane* (hart isoliert)
-- **Brücke**: **Attach‑Inspect über TCP** (5858/9222) = auditable, reproduzierbar
+A significant limitation is the classic IDE debug script behavior:
+When you are inside a `package.json`, hover over a Run Script, and click “Debug Script.”
 
-Diese Trennung ist in Enterprise-Konzepten sehr üblich (Control Plane vs. Execution Plane).
+Complete documentation can be found in the referenced files.
 
----
+This appears to be the only feature that does not work under this setup.
 
-## 4) Wann Option B trotzdem sinnvoll sein kann
-
-Option B kann sinnvoll sein, **wenn dein primäres Ziel “Reset/Virtualisierung” ist**, z.B.:
-- du willst, dass Cursor beim Arbeiten weniger Host‑Writes hinterlässt,
-- du willst nach Sessions “clean slate” machen,
-- du akzeptierst bewusst, dass es **keine** echte Security‑Boundary ist.
-
-Dann ist es aber ein **Operability‑/Hygiene‑Feature**, nicht “mehr Security”.
+* docs\applications\IDE\vscode\terminal\debug\package-json\debug-scripts-not-working.md
 
 ---
 
-## 5) Direkte Antworten auf deine Fragen
-
-- **Warum ist mein Score für Host‑VS Code höher?**  
-  Weil Option A eine **klare, stabile Trust‑Boundary** dort setzt, wo sie zählt (Execution: Node/Electron) und keine “Pseudo‑Security” beim Editor erzeugt.
-
-- **Ist es nicht sinnvoller, VS Code in einer Box laufen zu lassen?**  
-  **Nur** wenn du explizit **State‑Reset/Write‑Virtualisierung** willst und dir klar ist, dass das keine echte Isolation ist. Als “Security‑Upgrade” gegenüber Host‑VS Code sehe ich es nicht.
-
-- **Warum habe ich prozentual Host bevorzugt?**  
-  Weil du bei Option B mit deaktivierter Isolation **mehr Komplexität/Interop** einkaufst, ohne die Sicherheitsgrenze signifikant zu verbessern — und du gleichzeitig Debug/Dev fragiler machst.
-
-Wenn du willst, kann ich dir als nächstes eine **harte, messbare** Variante “Option B als Hygiene/Reset” skizzieren (welche Box‑Optionen noch Sinn ergeben, welche nicht, und wie du die Risiko-Illusion vermeidest).
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<br><br>
+<br><br> <br><br>
 
 ---
 
-<br><br>
+# Method #2 – Not Fully Isolated
 
+## Not Working
+
+* General Options → Restrictions → “Prevent interference with the user interface”
+
+  * Do not enable
+
+* Security Options → Security Isolation → “Disable security isolation”
+
+  * Do not enable
+
+Extensive testing shows that the setup generally does not function properly with security isolation enabled.
+
+---
+
+## Why Method #1 (Host VS Code) Scores Higher Than Method #2 (VS Code in Box Without Security Isolation)
+
+**Core point:**
+If you must disable “Security Isolation” for Cursor/VS Code, then the box is no longer a reliable security boundary. The benefit shifts from actual security to virtualization/operability — and in that domain, Option B introduces more side effects than measurable security improvements.
+
+---
+
+## 1) What You Actually Gain in Option B (And What You Don’t)
+
+### Real (but limited) gains:
+
+* **State containment / reset:** Writes remain inside the box → you can delete or roll back the box.
+* Some UI-related restrictions (e.g., window covering, screen capture blocking) may still apply.
+
+### What you do *not* gain (this is decisive):
+
+* No real protection against data exfiltration from workspace content, tokens, API keys, browser sessions, etc., as long as Cursor has access to repositories and secrets.
+* No clear trust boundary against RCE in extensions or workspace code if isolation/filtering is disabled.
+
+**Result:**
+The security score does not increase proportionally — even though it “looks boxed.”
+
+---
+
+## 2) Why Option B Is Often Architecturally Worse Than Host VS Code
+
+### 2.1 False Sense of Security (Enterprise Red Flag)
+
+A system that appears boxed but has its essential protection mechanisms disabled is operationally more dangerous than a clearly defined host setup.
+
+Teams may implicitly trust it more (“it’s inside a box”), leading to riskier decisions:
+
+* secrets stored directly in the workspace
+* more extensions installed
+* reduced scrutiny
+
+This failure mode is common in enterprise security environments.
+
+---
+
+### 2.2 Increased Attack Surface and Complexity Without a Real Boundary
+
+Running Cursor inside a box (without isolation) introduces:
+
+* additional interoperability paths (clipboard, shell integration, file pickers, protocol handlers)
+* more configuration-sensitive components (tasks, debug, terminal, IPC)
+* greater drift potential (one changed setting alters behavior)
+
+If the security gain is not substantial, this added complexity is architecturally negative.
+
+---
+
+### 2.3 Debug and Development Operability Become More Fragile
+
+In practice:
+
+* Debugging mechanisms depend on IPC and namespace details (named pipes / js-debug).
+* Running Cursor inside any form of box increases the number of points where these mechanisms can fail — without providing a strong boundary.
+
+Option A is structurally more stable:
+The editor remains on the host, risky execution remains strictly isolated, debugging works via TCP attach.
+
+---
+
+## 3) Why Option A Is Cleaner in This Model
+
+Option A follows a clear architecture:
+
+* **Host:** Editor/UI (Cursor/VS Code) = trusted control plane
+* **Box:** Node/Electron/Test runner = untrusted execution plane (hard isolated)
+* **Bridge:** Attach-Inspect via TCP (5858/9222) = auditable and reproducible
+
+This separation (Control Plane vs. Execution Plane) is common in enterprise architectures.
+
+---
+
+## 4) When Option B Still Makes Sense
+
+Option B can make sense if the primary goal is reset/virtualization, for example:
+
+* minimizing host writes from Cursor
+* maintaining a clean slate between sessions
+* explicitly accepting that it is not a real security boundary
+
+In that case, it is an operability/hygiene feature — not a security upgrade.
+
+---
+
+## 5) Direct Answers
+
+* **Why does Host VS Code score higher?**
+  Because Option A establishes a clear, stable trust boundary where it matters (execution: Node/Electron) and avoids pseudo-security around the editor.
+
+* **Isn’t it better to run VS Code inside a box?**
+  Only if the goal is state reset or write virtualization — and with the understanding that this does not provide real isolation.
+
+* **Why prefer Host proportionally?**
+  Because disabling isolation in Option B adds complexity and interop surface without significantly improving the security boundary — while making debugging and development more fragile.
+
+If needed, a measurable “Option B as hygiene/reset” configuration can be outlined next — including which box options still make sense and how to avoid the illusion of security.
+
+---
 
 # Terminal
 
-## Loging
-- https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal
+## Logging
 
-## ReadConsoleOutput “Access denied (0x5)” / broken STDOUT
-- https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/operating-systems/windows/terminal/powershell.md
+* [https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal](https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal)
+
+## ReadConsoleOutput “Access denied (0x5)” / Broken STDOUT
+
+* [https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/operating-systems/windows/terminal/powershell.md](https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/operating-systems/windows/terminal/powershell.md)
