@@ -1,5 +1,21 @@
 
 
+# INI Settings
+
+```ini
+NormalFilePath=esbuild.exe,C:\git\test\test-project\
+```
+
+<br><br>
+
+---
+
+<br><br>
+
+
+
+
+
 
 
 
