@@ -1,7 +1,7 @@
 # INI Settings
 ```ini
 # =========================
-# tsx - privadent-forms-backend (esbuild)
+# tsx - test-forms-backend (esbuild)
 # =========================
 NormalFilePath=esbuild.exe,C:\git\test\test-project\
 ```
