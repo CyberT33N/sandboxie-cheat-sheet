@@ -62,4 +62,35 @@ HideNonSystemProcesses=y
 BlockScreenCapture=y
 EditAdminOnly=y
 MonitorAdminOnly=y
+NormalFilePath=chrome.exe,C:\shared\
+```
+
+
+
+<br><br>
+
+--- 
+
+<br><br>
+
+
+# Troubleshooting
+
+## Upload Files
+- ## Problemstellung — Öffnen der Modal-Box beim Datei-Upload
+
+Ich habe noch nicht herausgefunden, was **DU** machen **MUSST**, damit sich die **Modal-Box** öffnet, wenn **DU** irgendwo eine **Datei** hochladen WILLST.
+
+## Aktueller Stand — Drag & Drop funktioniert primär
+
+Was primär funktioniert, ist **Drag & Drop**.
+
+## Anforderung — Erlaubten Bereich für Drag & Drop sicherstellen
+⚠️ **DU MUSST** sicherstellen, dass **DU** einen **erlaubten Bereich** für **Drag & Drop** hast.
+
+## Beispielablauf — Shared-Bereich erstellen und Datei per Drag & Drop einfügen
+📌 Zum Beispiel: Einfach auf `C` einen **Shared-Bereich** erstellen. Hier werden die **Dateien** reingeschoben. Danach wird die **Datei** aus dem **Explorer** in die hierbei liegende **Box** (Browser) in den **Drag-&-Drop-Bereich** reingeschoben.
+
+```
+NormalFilePath=chrome.exe,C:\shared\
 ```
