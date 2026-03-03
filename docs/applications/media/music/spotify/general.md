@@ -42,3 +42,28 @@ UsePrivacyMode=y
 ForceProcess=Spotify.exe
 NormalFilePath=C:\Users\denni\AppData\Roaming\Spotify\
 ```
+
+
+
+
+<br><br>
+
+---
+
+<br><br>
+
+
+
+
+# Troubleshooting
+
+## SBIE1305 (blocked loading a sandboxed image)
+- Kann ausgelöst werden, wenn auf dem Hostsystem ein Update stattfindet, zum Beispiel.
+
+```text
+Spotify.exe: SBIE1305 Blocked loading a sandboxed image - \user\current\AppData\Roaming\Spotify\chrome_elf.dll
+```
+
+**Fix:** Delete the **entire** contents of the Spotify box and then start Spotify again. After the box is cleared, Spotify will recreate what it needs and the app starts normally.
+
+If you need to keep any files from this sandbox, back them up before deleting the box contents and copy them back afterwards.
