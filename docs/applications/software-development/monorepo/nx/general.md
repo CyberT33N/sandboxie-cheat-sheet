@@ -64,3 +64,35 @@ Oder direkt in der .vscode\settings.json
 
 Related:
 - docs\applications\IDE\vscode\general.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+<br><br>
+
+
+<br><br>
+
+### Electron
+
+Im Vergleich zu einem Nicht-Monorepo-Projekt, das mit pnpm verwaltet wird, liegt die Electron-Binary direkt im selben Projekt im .pnpm-Ordner.
+
+Wenn wir uns in einem Nx-Monorepo befinden, liegt sie hingegen auf der Workspace-Ebene im node_modules-Ordner innerhalb von pnpm.
+- docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md
+
+```ini
+NormalFilePath=test.exe,C:\git\test-mono\node_modules\.pnpm\electron@29.4.6\node_modules\electron\dist\
+
+NormalFilePath=electron.exe,C:\git\test-mono\node_modules\.pnpm\electron@29.4.6\node_modules\electron\dist\
+NormalFilePath=electron.exe,C:\git\test-mono\
+NormalFilePath=electron.exe,C:\git\test-mono\apps\privyou\
+```
