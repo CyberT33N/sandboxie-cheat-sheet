@@ -23,3 +23,36 @@ pnpm run serve:test
 ```ini
 OpenFilePath=node.exe,C:\shared\nx-native-cache\
 ```
+
+Oder direkt in der .vscode\settings.json
+
+```json
+{
+  "terminal.integrated.automationProfile.windows": {
+    "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
+  },
+  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
+  "terminal.integrated.profiles.windows": {
+    "DevBox PowerShell": {
+      "args": [
+        "-NoExit",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-Command",
+        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
+      ],
+      "env": {
+        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
+        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml",
+        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
+        "NX_DAEMON": "false"
+      },
+      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
+    }
+  }
+}
+   
+```
+
+Related:
+- docs\applications\IDE\vscode\general.md
