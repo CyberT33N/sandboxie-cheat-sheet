@@ -29,10 +29,21 @@ NormalFilePath=cmd.exe,C:\Tools\DevBoxShell\
 Create .vscode\settings.json
 ```json
 {
+  "terminal.integrated.automationProfile.windows": {
+    "args": [
+      "-NoExit",
+      "-ExecutionPolicy",
+      "Bypass"
+    ],
+    "env": {
+      "NX_DAEMON": "false",
+      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache"
+    },
+    "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
+  },
   "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
   "terminal.integrated.profiles.windows": {
     "DevBox PowerShell": {
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe",
       "args": [
         "-NoExit",
         "-ExecutionPolicy",
@@ -41,15 +52,16 @@ Create .vscode\settings.json
         "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
       ],
       "env": {
+        "NX_DAEMON": "false",
+        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
         "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
         "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
-      }
+      },
+      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
     }
-  },
-  "terminal.integrated.automationProfile.windows": {
-    "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
   }
 }
+      
 ```
 
 

@@ -29,7 +29,16 @@ Oder direkt in der .vscode\settings.json
 ```json
 {
   "terminal.integrated.automationProfile.windows": {
-    "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
+    "args": [
+      "-NoExit",
+      "-ExecutionPolicy",
+      "Bypass"
+    ],
+    "env": {
+      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
+      "NX_DAEMON": "false"
+    },
+    "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
   },
   "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
   "terminal.integrated.profiles.windows": {
@@ -51,7 +60,6 @@ Oder direkt in der .vscode\settings.json
     }
   }
 }
-   
 ```
 
 Related:
