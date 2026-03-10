@@ -1,6 +1,25 @@
 # NX
 
+## Troubleshooting
+
+### Cache
+
+#### Node Binary not allowed
+
+Option 1 (Not recommended)
+
+Using `OpenFilePath` against `%LOCALAPPDATA%\Temp\nx-native-file-cache-*` is too broad from a security perspective. It gives sandboxed `node.exe` direct host access to a volatile temp area, bypasses file virtualization for that path, and turns a general host temp location into a native code loading boundary. In practice, this means the exception is no longer limited to the intended workspace flow. Any sandboxed `node.exe` process in the same box can use that open host-backed path.
+
+Option 2
+
+Use a dedicated native cache directory and keep the exception as small as possible. The cache directory must be moved into an isolated host location that is explicitly allowed, the Nx daemon must be disabled, the run script must be started from the workspace root, and only the shared cache directory should be opened for `node.exe`.
+
+```powershell
+$env:NX_NATIVE_FILE_CACHE_DIRECTORY='C:\shared\nx-native-cache'
+$env:NX_DAEMON='false'
+pnpm run serve:test
+```
 
 ```ini
-NormalFilePath=node.exe,C:\Users\denni\AppData\Local\Temp\nx-native-file-cache\
+OpenFilePath=node.exe,C:\shared\nx-native-cache\
 ```
