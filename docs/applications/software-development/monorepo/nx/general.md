@@ -1,5 +1,24 @@
 # NX
 
+
+
+#### Debugging
+- docs\applications\software-development\monorepo\nx\debugging.md
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
+
+
+
+
 ## Troubleshooting
 
 ### Cache
@@ -96,3 +115,7 @@ NormalFilePath=electron.exe,C:\git\test-mono\node_modules\.pnpm\electron@29.4.6\
 NormalFilePath=electron.exe,C:\git\test-mono\
 NormalFilePath=electron.exe,C:\git\test-mono\apps\privyou\
 ```
+
+
+
+
