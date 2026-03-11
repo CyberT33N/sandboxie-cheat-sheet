@@ -6,14 +6,30 @@
 NormalFilePath=esbuild.exe,C:\git\test\test-project\
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <br><br>
 
 ---
 
 <br><br>
-
-
-
 
 
 
@@ -64,6 +80,7 @@ docs\applications\IDE\vscode\terminal\debug.md
 
 
 
+
 <br><br>
 
 ---
@@ -95,6 +112,12 @@ settings.ini:
 ```
 NormalFilePath=test.exe,C:\git\test\test-project\.pnpm\electron@29.4.6\node_modules\electron\dist\
 ```
+
+
+
+
+
+
 
 
 

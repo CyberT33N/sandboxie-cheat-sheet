@@ -1,7 +1,14 @@
 
 # VS Code
 
----
+
+
+
+
+
+
+
+
 
 # Method #1 – VS Code on Host, Toolchain in Dedicated Box, Debug via Attach-Inspect (Recommended)
 
@@ -21,6 +28,11 @@ This isolates the entire toolchain while keeping full functionality. Debugging v
 ## Method #2 (Not Fully Isolated)
 
 There is, of course, a second method — but it is not fully isolated because security isolation must be disabled. Once that protection is removed, the actual security value largely disappears. What remains is essentially rights virtualization and a few operational side effects, but no meaningful security gain.
+- https://github.com/sandboxie-plus/Sandboxie/issues/5235
+
+
+
+
 
 ---
 
@@ -30,6 +42,14 @@ From a weighted architectural perspective, it is better to run VS Code normally 
 
 * docs\applications\IDE\vscode\terminal\debug\general.md
 * docs\applications\IDE\vscode\terminal\package.json vs new terminal.md
+
+
+
+
+
+
+
+
 
 ---
 
@@ -44,9 +64,22 @@ This appears to be the only feature that does not work under this setup.
 
 * docs\applications\IDE\vscode\terminal\debug\package-json\debug-scripts-not-working.md
 
+
+
+
 ---
 
-<br><br> <br><br>
+
+
+
+
+
+
+
+
+
+<br><br>
+<br><br>
 
 ---
 
@@ -166,6 +199,23 @@ In that case, it is an operability/hygiene feature — not a security upgrade.
   Because disabling isolation in Option B adds complexity and interop surface without significantly improving the security boundary — while making debugging and development more fragile.
 
 If needed, a measurable “Option B as hygiene/reset” configuration can be outlined next — including which box options still make sense and how to avoid the illusion of security.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ---
 
