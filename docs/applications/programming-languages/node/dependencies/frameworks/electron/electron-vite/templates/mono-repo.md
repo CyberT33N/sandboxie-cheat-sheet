@@ -99,9 +99,9 @@ NormalFilePath=starship.exe,C:\Program Files\Git\
 NormalFilePath=git.exe,C:\Program Files\Git\
 
 # --- Node (nvm4w) ---
-NormalFilePath=node.exe,C:\nvm4w\nodejs\
-NormalFilePath=powershell.exe,C:\nvm4w\nodejs\
-NormalFilePath=cmd.exe,C:\nvm4w\nodejs\
+NormalFilePath=node.exe,C:\nvm4w\
+NormalFilePath=powershell.exe,C:\nvm4w\
+NormalFilePath=cmd.exe,C:\nvm4w\
 
 # --- pnpm ---
 NormalFilePath=node.exe,C:\Users\denni\AppData\Local\pnpm\
