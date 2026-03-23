@@ -5,33 +5,12 @@
 
 
 
-
-
-
-
-
 # Method #1 – VS Code on Host, Toolchain in Dedicated Box, Debug via Attach-Inspect (Recommended)
-
-* 📌 Recommended approach (with Sandboxie)
-  The best setup is to run Cursor or VS Code normally on the host while executing all relevant subprocesses inside their own dedicated box. This includes, for example:
-
-* the Electron binary inside the PNPM directory
-
-* terminals used for PowerShell and CMD
-
-* Node executables
-
-This isolates the entire toolchain while keeping full functionality. Debugging via Attached Inspect continues to work. From a structural and security perspective, this is the strongest setup achievable with Sandboxie.
-
+- docs\applications\IDE\vscode\methods\host-not-isolated\general.md
 ---
 
 ## Method #2 (Not Fully Isolated)
-
-There is, of course, a second method — but it is not fully isolated because security isolation must be disabled. Once that protection is removed, the actual security value largely disappears. What remains is essentially rights virtualization and a few operational side effects, but no meaningful security gain.
-- https://github.com/sandboxie-plus/Sandboxie/issues/5235
-
-
-
+docs\applications\IDE\vscode\methods\host-isolated\not-fully-isolated.md
 
 
 ---
