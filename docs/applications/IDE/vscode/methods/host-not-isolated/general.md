@@ -33,4 +33,11 @@ Man muss also Sorge dafür tragen, dass die eigenständige Node-Exe verwendet wi
 
 Wenn man an der package.json arbeitet, ist das dort ja vorhanden und wird mit installiert, wenn man es entsprechend setzt. Darüber kann man dann die jeweiligen Szenarien starten.
 
+**WARNUNG**
 Trotzdem gab es weiterhin Probleme, zum Beispiel bei electron-vite.
+
+Was auf jeden Fall ein Riesenproblem ist: Wenn das Host-System nicht isoliert ist und man dann in VS Code arbeitet und die zweite, hier beschriebene Variante wählt, bei der die Dependencies in der Sandbox installiert sind, dann sind die Node-Modules auf dem Host-System entsprechend nicht vorhanden.
+
+Dadurch kann in VS Code auch die Auflösung nicht stattfinden.
+
+Das heißt, hier müsste man so oder so dafür Sorge tragen, dass man die Node-Modules wiederum rüberkopiert. Das kann allerdings zu Versionsdrift führen, die man gegebenenfalls gar nicht mitkriegt.
