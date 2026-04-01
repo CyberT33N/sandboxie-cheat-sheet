@@ -1,21 +1,96 @@
+# Python dependencies
 
+## Architectural rule
 
-## Install
+Dependencies must be installed into the dedicated toolchain root for the Python version that will execute them.
 
-### Install dependency for specific version
+The recommended model is:
 
-```shell
-C:\Users\denni\.pyenv\pyenv-win\versions\3.12.9\python.exe -m pip install docling
+- runtime under `C:\shared\sandbox-toolchains\python-general\python\<version>\`
+- packages under `C:\shared\sandbox-toolchains\python-general\userbase\`
+- caches under `C:\shared\sandbox-toolchains\python-general\cache\`
+
+Host installation is a legacy pattern and is not the recommended default.
+
+## Session bootstrap before dependency installation
+
+```powershell
+$toolRoot = "C:\shared\sandbox-toolchains\python-general"
+$pythonExe = "$toolRoot\python\3.12.9\python.exe"
+$env:PYTHONUSERBASE = "$toolRoot\userbase"
+$env:PIP_CACHE_DIR = "$toolRoot\cache\pip"
+$env:HF_HOME = "$toolRoot\cache\huggingface"
+$env:TORCH_HOME = "$toolRoot\cache\torch"
+$env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
 ```
-- Hier muss man jetzt natürlich differenzieren:
 
-- Wenn die Python-Exe noch nicht in der Sandbox läuft, würde man sie entsprechend auf dem Host-System installieren.
-- Wenn man Python dann in der Sandbox startet, würde es virtualisiert werden und die Sachen würden rübergezogen werden. Dadurch funktioniert es dann.
-- Wenn Python aber in der Sandbox schon installiert ist und man dann diesen Befehl oben ausführt, wird er entsprechend natürlich in der Sandbox ausgeführt.
+## Install a package for the active Python version
 
-**Richtig ist natürlich, dass Python in der Sandbox bereits als Prozess erzwungen wird und man erst dann anfängt, die Dependencies zu installieren.**
+```powershell
+& $pythonExe -m pip install --user <package-name>
+```
 
+## Upgrade a package for the active Python version
 
-Das heißt in Bezug auf Versioning: Wenn man jetzt natürlich eine globale Version installiert hätte, sagen wir 3.9, und man würde es dann einfach ohne den direkten absoluten Binary-Pfad aufrufen, würde man es über den aufgelösten Pfad dementsprechend in der aktuell gesetzten globalen Version installieren, vor allem wenn man Package Manager wie ypynv benutzt.
-- docs\applications\programming-languages\python\python-manager\pyenv\general.md
+```powershell
+& $pythonExe -m pip install --user --upgrade <package-name>
+```
+
+## Force a clean reinstall for the active Python version
+
+```powershell
+& $pythonExe -m pip install --user --upgrade --force-reinstall <package-name>
+```
+
+## `docling` example
+
+```powershell
+$toolRoot = "C:\shared\sandbox-toolchains\python-general"
+$pythonExe = "$toolRoot\python\3.12.9\python.exe"
+$env:PYTHONUSERBASE = "$toolRoot\userbase"
+$env:PIP_CACHE_DIR = "$toolRoot\cache\pip"
+$env:HF_HOME = "$toolRoot\cache\huggingface"
+$env:TORCH_HOME = "$toolRoot\cache\torch"
+$env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
+
+& $pythonExe -m pip install --user --upgrade --force-reinstall docling
+```
+
+## Dependency selection by sandbox profile
+
+### Compatibility profile
+
+Use the compatibility profile when the dependency tree includes native modules or Windows-facing runtime behavior.
+
+Examples:
+
+- `docling`
+- Pillow-backed image stacks
+- torch-backed packages
+- OCR packages
+
+### Strict profile
+
+Use the strict profile only when the dependency set is simple enough to work with the stricter DLL-loading policy.
+
+Examples:
+
+- pure-Python calculation packages
+- lightweight internal utilities
+
+## Anti-pattern to avoid
+
+The following model is intentionally not the recommended baseline:
+
+- install the package on the host
+- rely on host virtualization behavior later
+- treat host-side `pyenv` as the primary package manager boundary
+
+This pattern remains documented for archive purposes only.
+
+## Related documents
+
+- docs\applications\programming-languages\python\general.md
+- docs\applications\programming-languages\python\cli.md
 - docs\applications\programming-languages\python\versioning.md
+- docs\applications\programming-languages\python\python-manager\pyenv\general.md

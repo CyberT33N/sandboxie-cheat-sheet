@@ -1,39 +1,108 @@
 
-# Execute python cli tools
+# Python CLI workflow
 
-Wichtig: In der Box sollte man bei `pyenv-win` nicht über die Shims gehen, wenn das CLI zuverlässig starten soll.
+This document describes the recommended CLI workflow for the dedicated shared toolchain architecture.
 
-Der Grund ist, dass `docling.bat` aus `shims` intern wieder `pyenv` benutzt. Dafür müssen nicht nur `PATH`, sondern auch die `pyenv`-Auflösung und die gesetzte Python-Version innerhalb der Box sauber funktionieren. Genau daran scheitert es hier.
+It is intentionally not based on host-side `pyenv` shims.
 
-Der robustere Weg ist deshalb: Das CLI direkt aus der echten Python-Version aufrufen und die Shims komplett umgehen.
+## Scope
 
-Dafür muss in `settings.ini` mindestens dieser Pfad zusätzlich freigegeben werden:
+Use this workflow when:
 
-`ReadFilePath=C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13\Scripts\`
+- the sandbox uses the dedicated root `C:\shared\sandbox-toolchains\python-general\`
+- the package should be installed from inside the sandbox
+- the CLI should run from the sandbox-owned toolchain instead of from a host installation
 
-Starte PowerShell in der Box und füge am Anfang Folgendes ein:
-```
-$env:PATH = "C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13;C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13\Scripts;" + $env:PATH
-Get-Command docling
-docling --help
-```
+## Choose the correct sandbox profile first
 
-Wenn `docling` in `C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13\Scripts\` installiert ist, wird es damit direkt gefunden, ohne dass `pyenv` oder die Shims benötigt werden.
+### Compatibility profile
 
-Falls du es ganz explizit ohne PATH-Test starten willst, geht auch das:
+Use the compatibility profile when the package loads native `.pyd` or DLL-backed components.
 
-```
-C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13\Scripts\docling.exe --help
-```
+Typical indicators:
 
-Der entscheidende Einstieg am Anfang ist also nicht der Shim-Pfad, sondern der echte Versionspfad:
+- OCR packages
+- image-processing libraries
+- torch-based runtimes
+- document conversion stacks such as `docling`
+
+### Strict profile
+
+Use the strict profile only when the dependency stack is simple enough to run with `ProtectHostImages=y`.
+
+Typical indicators:
+
+- pure-Python utilities
+- calculation scripts
+- lightweight internal automation tools
+
+## Session bootstrap
+
+Start PowerShell inside the sandbox and set the toolchain variables:
 
 ```powershell
-$env:PATH = "C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13;C:\Users\denni\.pyenv\pyenv-win\versions\3.9.13\Scripts;" + $env:PATH
+$toolRoot = "C:\shared\sandbox-toolchains\python-general"
+$pythonExe = "$toolRoot\python\3.12.9\python.exe"
+$env:PYTHONUSERBASE = "$toolRoot\userbase"
+$env:PIP_CACHE_DIR = "$toolRoot\cache\pip"
+$env:HF_HOME = "$toolRoot\cache\huggingface"
+$env:TORCH_HOME = "$toolRoot\cache\torch"
+$env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
 ```
 
-Bitte den folgenden Beitrag lesen, wenn man Versionen wechselt.
+## Verify the runtime and generated launchers
 
-Man muss sicherstellen, dass die Dependencies, die man ausführt, natürlich auch immer installiert sind, und zwar in der jeweiligen Version, in der man sich befindet, entweder auf dem Hostsystem oder in der Box.
+```powershell
+& $pythonExe --version
+Get-ChildItem "$toolRoot\userbase\Python312\Scripts"
+```
 
-docs\applications\programming-languages\python\versioning.md
+## Generic CLI execution pattern
+
+Preferred launcher pattern:
+
+```powershell
+& "$toolRoot\userbase\Python312\Scripts\<tool>.exe" <arguments>
+```
+
+If the package exposes a supported CLI name through the generated launcher path, you can also call it after the script directory was added to `PATH`:
+
+```powershell
+<tool> <arguments>
+```
+
+## `docling` example
+
+```powershell
+$toolRoot = "C:\shared\sandbox-toolchains\python-general"
+$pythonExe = "$toolRoot\python\3.12.9\python.exe"
+$env:PYTHONUSERBASE = "$toolRoot\userbase"
+$env:PIP_CACHE_DIR = "$toolRoot\cache\pip"
+$env:HF_HOME = "$toolRoot\cache\huggingface"
+$env:TORCH_HOME = "$toolRoot\cache\torch"
+$env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
+
+& "$toolRoot\userbase\Python312\Scripts\docling.exe" "$toolRoot\work\input" --from pdf --to md --image-export-mode referenced --output "$toolRoot\work\output"
+```
+
+## Generic script execution pattern
+
+When the workload is a script instead of a generated CLI launcher, execute it with the dedicated interpreter from the toolchain root:
+
+```powershell
+& $pythonExe "C:\path\to\script.py"
+```
+
+## Operational rules
+
+- Do not use host-side `pyenv` shims as the primary CLI entry point.
+- Do not treat host installation plus virtualization as the recommended model.
+- Always bootstrap the session variables before installing or executing tools.
+- Reinstall the package inside the selected Python version when the runtime version changes.
+
+## Related documents
+
+- docs\applications\programming-languages\python\general.md
+- docs\applications\programming-languages\python\dependencies.md
+- docs\applications\programming-languages\python\versioning.md
+- docs\applications\programming-languages\python\python-manager\pyenv\general.md
