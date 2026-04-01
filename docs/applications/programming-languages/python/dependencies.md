@@ -13,6 +13,9 @@ C:\Users\denni\.pyenv\pyenv-win\versions\3.12.9\python.exe -m pip install doclin
 - Wenn man Python dann in der Sandbox startet, würde es virtualisiert werden und die Sachen würden rübergezogen werden. Dadurch funktioniert es dann.
 - Wenn Python aber in der Sandbox schon installiert ist und man dann diesen Befehl oben ausführt, wird er entsprechend natürlich in der Sandbox ausgeführt.
 
+**Richtig ist natürlich, dass Python in der Sandbox bereits als Prozess erzwungen wird und man erst dann anfängt, die Dependencies zu installieren.**
+
+
 Das heißt in Bezug auf Versioning: Wenn man jetzt natürlich eine globale Version installiert hätte, sagen wir 3.9, und man würde es dann einfach ohne den direkten absoluten Binary-Pfad aufrufen, würde man es über den aufgelösten Pfad dementsprechend in der aktuell gesetzten globalen Version installieren, vor allem wenn man Package Manager wie ypynv benutzt.
 - docs\applications\programming-languages\python\python-manager\pyenv\general.md
 - docs\applications\programming-languages\python\versioning.md
