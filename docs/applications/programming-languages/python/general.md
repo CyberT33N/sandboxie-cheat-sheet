@@ -17,3 +17,17 @@ $env:PATH = "C:\ProgramData\chocolatey\bin;" + $env:PATH
 cd C:\Projects\utils\ai\voice\VoiceTyper
 powershell -ExecutionPolicy Bypass -File "start.ps1"
 ```
+
+
+
+
+
+
+
+# Troubleshooting
+
+## Internet not working
+```
+# Must be disabled or internet not working
+# Template=BlockLocalConnect
+```
