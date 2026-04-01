@@ -82,6 +82,15 @@ Der einfachste Weg ist dementsprechend, einen Shared-Bereich zu erstellen.
 
 Alternativ kann man natürlich auch die jeweiligen Bereiche über die normalen Properties freigeben, wie OpenFilePath oder ReadFilePath.
 
+---
+
+# Good 2 KNow
+- Wie generell auch bei anderen Szenarien gilt: Sobald wir über unser Host-Terminal etwas ausführen, wobei intern eine Binary gestartet wird, wie hier in diesem Fall Python, beendet sich das Terminal an sich, sobald es fertig ist.
+
+Das kann oft das gewünschte Szenario sein. Sehr oft möchte man aber die Logs sehen.
+
+Das heißt, in diesen Fällen muss man entweder vom Hostsystem aus dafür Sorge tragen, oder man startet das Terminal einfach in der Sandbox, was am einfachsten ist.
+
 
 ---
 
