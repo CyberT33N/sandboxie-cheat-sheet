@@ -22,6 +22,7 @@ Template=AdobeAcrobatReader
 Template=Chrome_KB5027231_fix
 Template=HideInstalledPrograms
 Template=Firefox_Force
+Template=FileCopy
 ConfigLevel=10
 UsePrivacyMode=y
 UseSecurityMode=y
@@ -59,49 +60,6 @@ NormalFilePath=firefox.exe,C:\shared\
 
 
 ## Updates
-
-```text
-firefox.exe: SBIE1305 Blocked loading a sandboxed image - \drive\C\Program Files\Mozilla Firefox\mozglue.dll
-```
-
-**Meaning:** Firefox attempted to load a *boxed* (sandboxed) copy of `mozglue.dll` from inside the sandbox. When `ProtectHostImages=y` is enabled, Sandboxie blocks host-installed programs from loading DLLs from the sandbox.
-
-
-This issue is commonly triggered by running **Firefox updates inside the sandbox**. Updates (or repair operations) can create/modify boxed copies under:
-
-- `C:\Sandbox\denni\Browser_t33n_Firefox\drive\C\Program Files\Mozilla Firefox\`
-
-After that, Firefox may try to load those boxed binaries and hit `SBIE1305`.
-
-### Verified — Option 1: Delete boxed Mozilla Firefox folder (quick fix)
-
-1) Delete the boxed Mozilla Firefox folder inside the sandbox:
-
-- `C:\Sandbox\denni\Browser_t33n_Firefox\drive\C\Program Files\Mozilla Firefox\`
-
-2) Start Firefox in the sandbox again.
-
-This reliably fixes the `SBIE1305` startup block.
-
-**Why this is not the right long-term approach:** once you start touching updates while Firefox is running under Sandboxie, you can run into update-related warnings like:
-
-```text
-firefox.exe: SBIE2191 Firefox should not be updated when it is run with Sandboxie.
-firefox.exe: SBIE2192 Do not update the program under the control of Sandboxie.
-```
-
-### Recommended — Option 2 (architecture-correct)
-
-Delete the **entire** box content and then start Firefox again.
-
-⚠️ If you rely on persistent data in this sandbox, you MUST back it up first and then copy it back to the correct sandbox paths after recreating the box.
-
-
-
-
-
-
-
 
 
 
