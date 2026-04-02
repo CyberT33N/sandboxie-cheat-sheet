@@ -4,6 +4,8 @@
 
 Dependencies must be installed into the dedicated toolchain root for the Python version that will execute them.
 
+The installation must use the `--user` flag so that the package is written into the dedicated toolchain `userbase` and not into the base interpreter directories.
+
 The recommended model is:
 
 - runtime under `C:\shared\sandbox-toolchains\python-general\python\<version>\`
@@ -30,6 +32,15 @@ $env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
 & $pythonExe -m pip install --user <package-name>
 ```
 
+This `--user` flag is mandatory for the documented toolchain layout.
+
+Without `--user`, `pip` may install packages and launchers under:
+
+- `python\<version>\Lib\site-packages`
+- `python\<version>\Scripts`
+
+which causes path drift relative to the documented `userbase\Python312\Scripts` launcher path.
+
 ## Upgrade a package for the active Python version
 
 ```powershell
@@ -40,6 +51,14 @@ $env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
 
 ```powershell
 & $pythonExe -m pip install --user --upgrade --force-reinstall <package-name>
+```
+
+The same rule applies to version changes and downgrades: use `--user` consistently.
+
+Example downgrade pattern:
+
+```powershell
+& $pythonExe -m pip install --user --upgrade --force-reinstall "<package-name>==<version>"
 ```
 
 ## `docling` example

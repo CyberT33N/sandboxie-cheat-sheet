@@ -52,6 +52,10 @@ Validated example for the tested case:
 & $pythonExe -m pip install --user --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cu130
 ```
 
+The `--user` flag is mandatory here as well.
+
+Without `--user`, `pip` may place the package and generated launchers into the base runtime under `python\3.12.9\...` instead of the documented `userbase\Python312\...` area.
+
 If a different CUDA channel is intentionally selected later, the index URL must be adjusted accordingly.
 
 ## Step 6 — verify the result in the exact toolchain interpreter

@@ -375,9 +375,13 @@ $env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
 
 ### Step 4 — install dependencies into the sandbox-owned user base
 
+The dependency installation must use the `--user` flag so that packages and generated launchers are written into the dedicated `userbase` area instead of the base interpreter directories.
+
 ```powershell
 & $pythonExe -m pip install --user <package-name>
 ```
+
+If `--user` is omitted, `pip` may place packages under the base runtime and place generated launchers under `python\<version>\Scripts`, which breaks the documented toolchain layout.
 
 ### Step 5 — execute the CLI from the dedicated toolchain
 
