@@ -5,12 +5,12 @@
 
 This document is the primary architectural reference for Python inside Sandboxie in this repository.
 
-It defines:
+ It defines:
 
-- the supported architecture options
-- the recommended toolchain-root model
-- the currently validated compatibility configuration
-- the split between runtime, dependency, versioning, GPU, troubleshooting, and legacy documents
+ - the supported architecture options
+ - the recommended toolchain-root model
+ - the currently validated Sandboxie box configuration for the Python toolchain
+ - the split between runtime, dependency, versioning, GPU, troubleshooting, and legacy documents
 
 ## Documentation map
 
@@ -75,7 +75,7 @@ Why it is an anti-pattern:
 - the runtime becomes dependent on host-managed Python state
 - the model is harder to reproduce and harder to reason about
 
-### Option 3 — dedicated shared toolchain root with copied runtime binaries
+### Option 3 (recommended) — dedicated shared toolchain root with copied runtime binaries
 
 This is the recommended architecture for this repository.
 
@@ -85,35 +85,6 @@ The model is:
 - install packages from inside the sandbox into a sandbox-owned user base
 - keep runtime, packages, caches, temp files, and work directories under one explicit toolchain area
 - avoid host-side package installation as the primary operating model
-
----
-
-## Recommended sandbox split
-
-The Python area must distinguish between two sandbox profiles.
-
-### Profile A — compatibility sandbox
-
-Use this profile for packages that load native DLL or `.pyd` modules, for example:
-
-- document conversion stacks
-- OCR toolchains
-- image libraries
-- torch-based packages
-
-This profile uses `ProtectHostImages=n` because the dedicated toolchain root is intentionally treated as the runtime boundary for that box.
-
-### Profile B — strict sandbox
-
-Use this profile for simpler workloads that do not require problematic native Windows-facing dependency behavior.
-
-Typical examples:
-
-- simple calculation scripts
-- pure-Python utilities
-- lightweight internal automation tasks
-
-This profile keeps `ProtectHostImages=y` and should only be used when the package stack is known to work under the stricter DLL-loading model.
 
 ---
 
@@ -165,189 +136,17 @@ New-Item -ItemType Directory -Force -Path "$toolRoot\work\output"
 
 ---
 
-## `settings.ini` — validated compatibility profile
+## `settings.ini` — validated Python box configuration
 
-The following configuration block reflects the currently validated compatibility profile that worked with the dedicated `python-general` toolchain root.
+The following configuration block reflects the currently validated Sandboxie box configuration that worked with the dedicated `python-general` toolchain root.
 
-```ini
-# ==================================================
-# Group: Core box activation and baseline behavior
-# Purpose: Enable the sandbox and keep the base box
-# behavior active.
-# ==================================================
-
-# Enable the sandbox definition.
-Enabled=y
-
-# Block direct network file usage from inside the box.
-BlockNetworkFiles=y
-
-# Apply the boxed window border.
-BorderColor=#0423ee,ttl,6,192,in,6
-
-
-# ==================================================
-# Group: Template-driven baseline hardening
-# Purpose: Keep the validated template set that this
-# box relies on.
-# ==================================================
-
-# Keep lingering program handling enabled.
-Template=LingerPrograms
-
-# Keep qWave handling enabled.
-Template=qWave
-
-# Keep hook-skipping compatibility enabled.
-Template=SkipHook
-
-# Keep Google Japanese IME compatibility enabled.
-Template=GoogleJapaneseIME
-
-# Keep Google Toolbar IE compatibility enabled.
-Template=GoogleToolbarIE
-
-# Block WMI access.
-Template=BlockAccessWMI
-
-# Keep telemetry blocking enabled.
-Template=BlockTelemetry
-
-# Keep Adobe Acrobat compatibility rules enabled.
-Template=AdobeAcrobat
-
-# Keep Adobe Distiller compatibility rules enabled.
-Template=AdobeDistiller
-
-# Keep Adobe Acrobat Reader compatibility rules enabled.
-Template=AdobeAcrobatReader
-
-# Keep the Chromium KB5027231 fix enabled.
-Template=Chrome_KB5027231_fix
-
-# Hide installed programs from boxed processes.
-Template=HideInstalledPrograms
-
-# Keep Nitro PDF 5 compatibility rules enabled.
-Template=NitroPDF5
-
-# Keep Pdf995 compatibility rules enabled.
-Template=Pdf995
-
-# Keep Nitro PDF 6 compatibility rules enabled.
-Template=NitroPDF6
-
-
-# ==================================================
-# Group: Isolation mode and administrative controls
-# Purpose: Keep the validated isolation and admin
-# control baseline for this box.
-# ==================================================
-
-# Keep the configuration level at the validated value.
-ConfigLevel=10
-
-# Enable file-delete version 2 handling.
-UseFileDeleteV2=y
-
-# Enable registry-delete version 2 handling.
-UseRegDeleteV2=y
-
-# Present fake administrative rights in the box.
-FakeAdminRights=y
-
-# Visually cover boxed windows.
-CoverBoxedWindows=y
-
-# Restart all boxed processes together when required.
-ForceRestartAll=y
-
-# Hide firmware information from boxed processes.
-HideFirmwareInfo=y
-
-# Randomize the boxed registry identity.
-RandomRegUID=y
-
-# Hide the disk serial number.
-HideDiskSerialNumber=y
-
-# Hide the network adapter MAC address.
-HideNetworkAdapterMAC=y
-
-# Restrict editing of the box to administrators.
-EditAdminOnly=y
-
-# Restrict monitoring of the box to administrators.
-MonitorAdminOnly=y
-
-# Keep privacy mode enabled for the validated compatibility profile.
-UsePrivacyMode=y
-
-
-# ==================================================
-# Group: Additional runtime hardening
-# Purpose: Add non-Python-specific protections that
-# were validated together with this box.
-# ==================================================
-
-# Allow boxed job objects when required by the runtime.
-AllowBoxedJobs=y
-
-# Hide non-system processes from the boxed process view.
-HideNonSystemProcesses=y
-
-# Lower ConHost integrity in the boxed console context.
-DropConHostIntegrity=y
-
-# Block print spooler access.
-ClosePrintSpooler=y
-
-# Block power-state interference.
-BlockInterferePower=y
-
-# Block interference-control behavior.
-BlockInterferenceControl=y
-
-# Block screen capture from the boxed process context.
-BlockScreenCapture=y
-
-
-# ==================================================
-# Group: Python compatibility switch
-# Purpose: Allow native Python package loading from
-# the dedicated toolchain root.
-# ==================================================
-
-# Disable host-image protection for the compatibility profile.
-ProtectHostImages=n
-
-
-# ==================================================
-# Group: Dedicated python-general toolchain root
-# Purpose: Treat the complete shared toolchain root as
-# the canonical runtime, dependency, cache, and work area.
-# ==================================================
-
-# Open the complete python-general toolchain root.
-OpenFilePath=C:\shared\sandbox-toolchains\python-general\
-```
-
-### Strict profile delta
-
-The strict profile should reuse the same baseline and change only the compatibility switch unless a concrete workload proves that more changes are required.
-
-```ini
-# Keep host-image protection enabled in the strict profile.
-ProtectHostImages=y
-```
-
----
+`- docs\applications\programming-languages\python\box-presets\strict-protected-host.md
 
 ## Workflow summary
 
 ### Step 1 — copy the runtime into the toolchain root
 
-Copy the real runtime binaries for the chosen version into:
+Copy the real runtime binaries (C:\Users\denni\.pyenv\pyenv-win\versions) for the chosen version into:
 
 ```text
 C:\shared\sandbox-toolchains\python-general\python\3.12.9\
@@ -399,6 +198,8 @@ GPU-capable workloads require their own documentation set because the deciding f
 
 The exact Python version, the exact `torch` build, and the toolchain-specific reinstall flow must all line up.
 
+When the Python box or toolchain state should be rebuilt from scratch, start with the GPU uninstall flow because it documents the complete uninstall/reset path that often helps to set the box up again cleanly.
+
 See:
 
 - docs/applications/programming-languages/python/gpu/general.md
@@ -410,8 +211,7 @@ See:
 
 ## Operational notes
 
-- If a package depends on native `.pyd` or DLL-backed modules, prefer the compatibility sandbox profile.
-- If a workload is simple and does not require the relaxed compatibility path, use the strict sandbox profile.
+- If a package depends on native `.pyd` or DLL-backed modules, validate it against the documented Python toolchain root and Sandboxie box configuration.
 - Host installation remains a legacy method and is intentionally not the recommended architecture.
 
 ---

@@ -13,29 +13,6 @@ Use this workflow when:
 - the package should be installed from inside the sandbox
 - the CLI should run from the sandbox-owned toolchain instead of from a host installation
 
-## Choose the correct sandbox profile first
-
-### Compatibility profile
-
-Use the compatibility profile when the package loads native `.pyd` or DLL-backed components.
-
-Typical indicators:
-
-- OCR packages
-- image-processing libraries
-- torch-based runtimes
-- document conversion stacks such as `docling`
-
-### Strict profile
-
-Use the strict profile only when the dependency stack is simple enough to run with `ProtectHostImages=y`.
-
-Typical indicators:
-
-- pure-Python utilities
-- calculation scripts
-- lightweight internal automation tools
-
 ## Session bootstrap
 
 Start PowerShell inside the sandbox and set the toolchain variables:

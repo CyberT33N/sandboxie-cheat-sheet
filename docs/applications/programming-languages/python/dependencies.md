@@ -75,28 +75,6 @@ $env:PATH = "$toolRoot\userbase\Python312\Scripts;" + $env:PATH
 & $pythonExe -m pip install --user --upgrade --force-reinstall docling
 ```
 
-## Dependency selection by sandbox profile
-
-### Compatibility profile
-
-Use the compatibility profile when the dependency tree includes native modules or Windows-facing runtime behavior.
-
-Examples:
-
-- `docling`
-- Pillow-backed image stacks
-- torch-backed packages
-- OCR packages
-
-### Strict profile
-
-Use the strict profile only when the dependency set is simple enough to work with the stricter DLL-loading policy.
-
-Examples:
-
-- pure-Python calculation packages
-- lightweight internal utilities
-
 ## Anti-pattern to avoid
 
 The following model is intentionally not the recommended baseline:

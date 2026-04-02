@@ -7,7 +7,7 @@ This document describes the validated install and reinstall workflow for a CUDA-
 ## Preconditions
 
 - the copied runtime exists under `C:\shared\sandbox-toolchains\python-general\python\3.12.9\`
-- the compatibility sandbox profile is active when native package loading requires it
+- the documented Python toolchain box configuration is in place
 - PowerShell is used for the commands below
 
 ## Step 1 — ensure the temp directory exists

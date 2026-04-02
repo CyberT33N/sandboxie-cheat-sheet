@@ -1,9 +1,7 @@
 # Docling
 
-
-## settings.ini
-docs\applications\programming-languages\python\box-presets\strict-unprotected-host.md
-
+## Presets
+- docs\applications\programming-languages\python\box-presets\strict-protected-host.md
 
 v5
 ```shell
@@ -35,3 +33,4 @@ Get-ChildItem "$toolRoot\work\input" -Filter *.pdf | ForEach-Object {
     & "$toolRoot\userbase\Python312\Scripts\docling.exe" $_.FullName --from pdf --to md --image-export-mode referenced --output "$toolRoot\work\output"
 }
 ```
+

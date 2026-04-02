@@ -119,7 +119,7 @@ At that point the remaining variable is the sandbox boundary, not the runtime bu
 
 ### Next action
 
-Retest with the compatibility sandbox profile documented in:
+Retest with the documented Python toolchain box configuration from:
 
 - docs/applications/programming-languages/python/general.md
 
