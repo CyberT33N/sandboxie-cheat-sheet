@@ -9,8 +9,8 @@ This document is the primary architectural reference for Python inside Sandboxie
 
  - the supported architecture options
  - the recommended toolchain-root model
- - the currently validated Sandboxie box configuration for the Python toolchain
- - the split between runtime, dependency, versioning, GPU, troubleshooting, and legacy documents
+  - the currently validated Sandboxie box configuration for the Python toolchain
+  - the split between runtime, dependency, versioning, wrapper automation, GPU, troubleshooting, and legacy documents
 
 ## Documentation map
 
@@ -19,6 +19,9 @@ This document is the primary architectural reference for Python inside Sandboxie
 - docs/applications/programming-languages/python/cli.md
 - docs/applications/programming-languages/python/dependencies.md
 - docs/applications/programming-languages/python/versioning.md
+
+### PowerShell wrapper automation
+- docs/applications/programming-languages/python/powershell-scripts.md
 
 ### GPU area
 - docs/applications/programming-languages/python/gpu/general.md
@@ -98,6 +101,11 @@ C:\shared\sandbox-toolchains\python-general\
     3.12.9\
       python.exe
   userbase\
+  tools\
+    bin\
+    ffmpeg\
+      bin\
+        ffmpeg.exe
   cache\
     pip\
     huggingface\
@@ -112,6 +120,8 @@ C:\shared\sandbox-toolchains\python-general\
 
 - `python\` stores the copied runtime binaries for the selected Python version.
 - `userbase\` stores packages and generated CLI launchers from `pip install --user`.
+- `tools\bin\` stores mirrored external launchers or generic binary entry points that should live inside the toolchain boundary.
+- `tools\<tool>\bin\` stores tool-specific external binary payloads when a dedicated subtree is clearer, for example FFmpeg.
 - `cache\pip\` stores pip download cache data.
 - `cache\huggingface\` stores model and hub cache data.
 - `cache\torch\` stores torch-related cache data.
@@ -126,6 +136,8 @@ $toolRoot = "C:\shared\sandbox-toolchains\python-general"
 
 New-Item -ItemType Directory -Force -Path "$toolRoot\python\3.12.9"
 New-Item -ItemType Directory -Force -Path "$toolRoot\userbase"
+New-Item -ItemType Directory -Force -Path "$toolRoot\tools\bin"
+New-Item -ItemType Directory -Force -Path "$toolRoot\tools\ffmpeg\bin"
 New-Item -ItemType Directory -Force -Path "$toolRoot\cache\pip"
 New-Item -ItemType Directory -Force -Path "$toolRoot\cache\huggingface"
 New-Item -ItemType Directory -Force -Path "$toolRoot\cache\torch"
@@ -190,6 +202,23 @@ Generic pattern:
 & "$toolRoot\userbase\Python312\Scripts\<tool>.exe" <arguments>
 ```
 
+### Step 6 — use a PowerShell wrapper script when manual bootstrap repetition should be avoided
+
+The core architecture does not change when a PowerShell wrapper script is introduced.
+
+The wrapper only automates the same toolchain-root rules already defined in the core documents, for example:
+
+- reading the selected Python version
+- setting the documented environment variables
+- adding required toolchain paths to `PATH`
+- validating mirrored external binaries such as FFmpeg
+- performing optional package checks or package installation
+- launching the final Python script or CLI entry point
+
+See:
+
+- docs/applications/programming-languages/python/powershell-scripts.md
+
 ---
 
 ## GPU note
@@ -220,6 +249,7 @@ See:
 
 - docs/applications/programming-languages/python/cli.md
 - docs/applications/programming-languages/python/dependencies.md
+- docs/applications/programming-languages/python/powershell-scripts.md
 - docs/applications/programming-languages/python/versioning.md
 - docs/applications/programming-languages/python/python-manager/pyenv/general.md
 
