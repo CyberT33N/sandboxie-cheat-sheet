@@ -112,6 +112,7 @@ NormalFilePath=cmd.exe,C:\nvm4w\
 NormalFilePath=node.exe,C:\Users\denni\AppData\Local\pnpm\
 NormalFilePath=powershell.exe,C:\Users\denni\AppData\Local\pnpm\
 NormalFilePath=cmd.exe,C:\Users\denni\AppData\Local\pnpm\
+NormalFilePath=pnpm.exe,C:\Users\denni\AppData\Local\pnpm\
 
 # --- DevBoxShell binaries ---
 NormalFilePath=powershell.exe,C:\Tools\DevBoxShell\
@@ -145,6 +146,7 @@ NormalFilePath=powershell.exe,C:\git\test\test-synchronizer\
 NormalFilePath=cmd.exe,C:\git\test\test-synchronizer\
 NormalFilePath=git.exe,C:\git\test\test-synchronizer\
 NormalFilePath=electron.exe,C:\git\test\test-synchronizer\
+NormalFilePath=pnpm.exe,C:\git\test\test-synchronizer\
 
 NormalFilePath=test.exe,C:\test\
 NormalFilePath=test.exe,C:\git\test\test-synchronizer\.pnpm\electron@29.4.6\node_modules\electron\dist\

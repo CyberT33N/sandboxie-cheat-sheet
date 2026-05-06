@@ -107,6 +107,7 @@ NormalFilePath=cmd.exe,C:\nvm4w\
 NormalFilePath=node.exe,C:\Users\denni\AppData\Local\pnpm\
 NormalFilePath=powershell.exe,C:\Users\denni\AppData\Local\pnpm\
 NormalFilePath=cmd.exe,C:\Users\denni\AppData\Local\pnpm\
+NormalFilePath=pnpm.exe,C:\Users\denni\AppData\Local\pnpm\
 
 # --- DevBoxShell binaries ---
 NormalFilePath=powershell.exe,C:\Tools\DevBoxShell\
@@ -174,6 +175,6 @@ NormalFilePath=esbuild.exe,C:\git\test\test-mono\
 NormalFilePath=powershell.exe,C:\git\test\test-mono\
 NormalFilePath=cmd.exe,C:\git\test\test-mono\
 NormalFilePath=node.exe,C:\git\test\test-mono\
-
+NormalFilePath=pnpm.exe,C:\git\test\test-mono\
 
 ```
