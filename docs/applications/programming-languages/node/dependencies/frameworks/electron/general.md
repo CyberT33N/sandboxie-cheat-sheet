@@ -30,10 +30,10 @@ This avoids relying on a fragile repo-local `electron/path.txt` state when the p
 
 ```ini
 # --- Shared toolchain ancestor traversal ---
-ReadFilePath=node.exe,C:\shared\
-ReadFilePath=electron.exe,C:\shared\
-ReadFilePath=powershell.exe,C:\shared\
-ReadFilePath=cmd.exe,C:\shared\
+ReadFilePath=node.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=electron.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=powershell.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\
 
 # --- Mirrored Electron runtime ---
 NormalFilePath=electron.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
@@ -43,7 +43,7 @@ ReadFilePath=powershell.exe,C:\shared\sandbox-toolchains\node-monorepo-general\t
 ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
 ```
 
-When the runtime path is refactored from a flat `C:\shared\electron-<version>\` layout into the deeper `node-monorepo-general\tools\electron\<version>\` tree, do not remove the shared ancestor `ReadFilePath` surface. Otherwise `electron.exe` may exist and still fail during startup because traversal to the deeper shared path is blocked in the run box.
+When the runtime path is refactored from a flat `C:\shared\electron-<version>\` layout into the deeper `node-monorepo-general\tools\electron\<version>\` tree, do not remove the toolchain-scoped ancestor `ReadFilePath` surface. The narrower `C:\shared\sandbox-toolchains\` scope is sufficient; opening the entire shared root is not required. Otherwise `electron.exe` may exist and still fail during startup because traversal to the deeper shared path is blocked in the run box.
 
 ## Legacy repo-local / host-mirror references
 

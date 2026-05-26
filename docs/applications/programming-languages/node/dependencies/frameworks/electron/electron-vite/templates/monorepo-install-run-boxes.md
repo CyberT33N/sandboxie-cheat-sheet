@@ -70,10 +70,12 @@ ForceFolder=C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29
 # --- Shared toolchain ancestor traversal ---
 # When the Electron runtime moved from a flat shared path into the deeper
 # node-monorepo-general tree, these read rules became necessary.
-ReadFilePath=node.exe,C:\shared\
-ReadFilePath=electron.exe,C:\shared\
-ReadFilePath=powershell.exe,C:\shared\
-ReadFilePath=cmd.exe,C:\shared\
+# The narrower toolchain-scoped surface is sufficient; do not broadly open
+# the entire shared root when only the toolchain subtree is needed.
+ReadFilePath=node.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=electron.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=powershell.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\
 
 # --- Cursor / VS Code debugger bootloader visibility ---
 ReadFilePath=node.exe,C:\Users\yourusername\AppData\Local\Programs\cursor\resources\app\
@@ -256,13 +258,13 @@ If `electron.exe` now exists but the process still exits with `[ELIFECYCLE]` and
 Before tracing, confirm that the run box still keeps the shared ancestor read surface:
 
 ```ini
-ReadFilePath=node.exe,C:\shared\
-ReadFilePath=electron.exe,C:\shared\
-ReadFilePath=powershell.exe,C:\shared\
-ReadFilePath=cmd.exe,C:\shared\
+ReadFilePath=node.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=electron.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=powershell.exe,C:\shared\sandbox-toolchains\
+ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\
 ```
 
-When the runtime path was refactored from a flat shared location into `C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\`, removing those `ReadFilePath` lines can let `electron.exe` exist and still exit immediately inside the run box.
+When the runtime path was refactored from a flat shared location into `C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\`, removing those toolchain-scoped `ReadFilePath` lines can let `electron.exe` exist and still exit immediately inside the run box.
 
 In that case, capture a fresh run-box deny trace for both:
 
