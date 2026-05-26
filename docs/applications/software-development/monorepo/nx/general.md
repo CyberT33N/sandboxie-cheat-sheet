@@ -34,13 +34,13 @@ Option 2
 Use a dedicated native cache directory and keep the exception as small as possible. The cache directory must be moved into an isolated host location that is explicitly allowed, the Nx daemon must be disabled, the run script must be started from the workspace root, and only the shared cache directory should be opened for `node.exe`.
 
 ```powershell
-$env:NX_NATIVE_FILE_CACHE_DIRECTORY='C:\shared\nx-native-cache'
+$env:NX_NATIVE_FILE_CACHE_DIRECTORY='C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native'
 $env:NX_DAEMON='false'
 pnpm run serve:test
 ```
 
 ```ini
-OpenFilePath=node.exe,C:\shared\nx-native-cache\
+OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native\
 ```
 
 Oder direkt in der .vscode\settings.json
@@ -54,7 +54,7 @@ Oder direkt in der .vscode\settings.json
       "Bypass"
     ],
     "env": {
-      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
+      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native",
       "NX_DAEMON": "false"
     },
     "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
@@ -72,7 +72,7 @@ Oder direkt in der .vscode\settings.json
       "env": {
         "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
         "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml",
-        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
+        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native",
         "NX_DAEMON": "false"
       },
       "path": "C:\\Tools\\DevBoxShell\\powershell.exe"

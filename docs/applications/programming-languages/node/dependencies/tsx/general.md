@@ -1,27 +1,26 @@
-# INI Settings
+# tsx
+
+## Architectural status
+
+The older troubleshooting conclusion in this document came from an earlier host-mirror / box-only phase and is **not** a safe architectural rule for the current install-box materialization model.
+
+What remains valid is the small `esbuild.exe` visibility overlay for projects that still exercise `esbuild` through `tsx`-adjacent toolchains.
+
+Recommended architecture:
+
+- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\programming-languages\node\dependencies\esbuild\general.md`
+
+## Minimal overlay
+
 ```ini
 # =========================
-# tsx - test-forms-backend (esbuild)
+# tsx-adjacent esbuild surface
 # =========================
 NormalFilePath=esbuild.exe,C:\git\test\test-project\
 ```
 
+## Legacy troubleshooting note
 
-
-
-
-<br><br>
-
----
-
-
-<br><br>
-
-# Troubleshooting
-
-## tsx watch
-- Wir haben alles Mögliche probiert, um TSX Watch zum Laufen zu bekommen, inklusive einer normalen Dummy-Datei mit ganz einfachem Code.
-
-Es gibt offenbar ein Problem mit dem Watch-Modus, das intern mit der Library in Kombination mit Sandboxie zusammenhängt. Wir hatten dafür eine komplette Sandbox-Box, in der alles deaktiviert war: eine Yellow Box, Sicherheitsisolation aus, etc. Trotzdem hat nichts funktioniert.
-
-Unterm Strich: Aus welchen Gründen auch immer funktioniert der Watch-Modus nicht in einer Sandbox.
+The statement "tsx watch does not work in a sandbox" should now be treated as a **legacy observation from a different architecture**, not as the current repository-wide recommendation.

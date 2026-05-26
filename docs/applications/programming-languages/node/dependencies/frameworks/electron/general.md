@@ -1,93 +1,61 @@
+# Electron
 
-# Sandbox Settings
+## Architectural status
 
-## May not working
-- Netzwerk Optionen -> Other Options -> "Block DNS, UDP Port 53"
-  - Das hängt von der Electron-Applikation ab, die du verwendest. Es kann sein, dass der Zugriff hier blockiert wird.
+For the current recommended Sandboxie architecture in this repository:
 
-- Erweiterte Optionen -> Prozhesse -> "Hindere sandgeboxte Prozesse daran, über WMI aus Systemdetails zuzugreifen"
-  - Das hängt von der jeweiligen Elektron-Applikation ab und davon, was sie genau macht. Wenn bestimmte Einstellungen relevant sind (z. B. weil etwas angezeigt werden muss), kann es sein, dass hier unter Umständen Dinge nicht funktionieren.
+- the **dependency tree** is materialized by a dedicated install box
+- the **Electron runtime binary tree** may be mirrored into the shared toolchain root when the repo-local postinstall result is not reliable enough
+- the **run box** launches the application by referencing that mirrored runtime explicitly
 
-## Not working
-- Generelle Optionen -> Restriktionen -> "Verhindere die Beinträchtigung der Benutzeroberfläche"
-  - Do not deactivate
+Recommended shared destination pattern:
 
-- Sicherheit Options → Job Objekt
-   - Deaktiviere "„Füge sandbox-/geboxte Prozesse zu Job‑Objekten hinzu“"
-    ```
-    # Weißer Screen
-
-    ### Genau diese Sandboxie‑GUI‑Einstellung
-
-    - Öffne **deine Sandbox** (z. B. `DefaultBox`) → **Sandbox Options** → **Sicherheit Options** → Job Objekt
-      - Deaktiviere "„Füge sandbox-/geboxte Prozesse zu Job‑Objekten hinzu“" 
-
-    ### Wofür ist die Option „Füge sandbox-/geboxte Prozesse zu Job‑Objekten hinzu“?
-
-    Sie hängt **alle Prozesse in dieser Sandbox** an ein **Windows Job Object** (Kernel‑Objekt zur Prozess‑Gruppierung). Damit kann Sandboxie Prozesse **als Einheit** kontrollieren, z. B.:
-
-    - **Lifecycle/Containment**: Kindprozesse sauber „mitnehmen“, gruppiert verwalten, beim Beenden der Box zuverlässiger terminieren.
-    - **Enforcement**: Job‑basierte Limits/Restriktionen (je nach Box/Modus) überhaupt anwenden können.
-    - **Operability**: Besseres „Cleanup“ (weniger Hänger durch übrig gebliebene Prozesse/Handles).
-
-    (Windows‑Hintergrund: Job Objects verwalten Prozessgruppen und Limits zentral, siehe Microsoft Learn „Job objects“.)
-
-    ### Was passiert, wenn du sie deaktivierst?
-
-    - Sandboxie **packt die Prozesse nicht** in sein Job‑Objekt.
-    - Chromium/Electron kann dann seine **eigenen Job‑Objekte** (Renderer/GPU/Utility‑Prozesse) ohne Konflikt nutzen – genau das behebt typischerweise „weißes Fenster“ (bekanntes Sandboxie‑Workaround‑Muster, z. B. in Issue `#1954` mit `AllowBoxedJobs=n`).
-
-    ### Risiken / „offene Bereiche“, wenn du sie *nicht* einschaltest
-
-    - **Weniger zuverlässiges Prozess‑Cleanup**: Es ist wahrscheinlicher, dass **Child-/Helper‑Prozesse** nach dem Schließen weiterlaufen (auch mit Netzwerkaktivität) oder die Box‑Löschung blockieren.
-    - **Weniger Job‑basierte Durchsetzung**: Alles, was Sandboxie über Job‑Limits/Job‑Policies steuert, ist für diese Box **reduziert/weg**.
-    - **Containment‑Edge‑Cases**: Die Steuerung „alles gehört garantiert zur gleichen Prozess‑Gruppe“ ist schwächer; das ist primär ein **Operability- und Policy‑Gap**, nicht automatisch ein „voller Sandbox‑Escape“, aber im Enterprise‑Risk‑Modell ein klarer Control‑Verlust.
-
-    **Empfohlene Mitigations (Least‑Privilege, pro Box):**
-    - Nutze eine **dedizierte Sandbox nur für diese Electron‑App** (kein globaler Ausnahme‑Drift).
-    - Stelle sicher, dass beim Beenden der Box **alle Prozesse terminiert** werden, und prüfe danach, ob wirklich nichts mehr läuft.
-    - Halte **Drop Admin Rights** aktiv und setze **Start/Run‑Restriktionen** (nur die benötigten EXEs) + ggf. **WFP‑Firewall‑Regeln** pro Sandbox.
-    ```
-
-
-
-
-
-
-
-
-<br><br>
-
-
-# INI Settings
-```
-# --- your app ---
-NormalFilePath=test.exe,C:\test\
+```text
+C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
 ```
 
+This keeps the Electron runtime payload in the same explicit shared toolchain domain as the other Node monorepo support assets, instead of leaving it at the loose root level of `C:\shared\`.
 
+## Recommended runtime pattern
 
+If the framework supports it, point the runtime to the mirrored Electron executable explicitly:
 
+```powershell
+$env:ELECTRON_EXEC_PATH = "C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\electron.exe"
+```
 
+This avoids relying on a fragile repo-local `electron/path.txt` state when the package postinstall does not materialize the full binary tree cleanly onto the host-visible workspace path.
 
+## Shared Electron visibility rules
 
+```ini
+# --- Shared toolchain ancestor traversal ---
+ReadFilePath=node.exe,C:\shared\
+ReadFilePath=electron.exe,C:\shared\
+ReadFilePath=powershell.exe,C:\shared\
+ReadFilePath=cmd.exe,C:\shared\
 
+# --- Mirrored Electron runtime ---
+NormalFilePath=electron.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
+ReadFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
+ReadFilePath=electron.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
+ReadFilePath=powershell.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
+ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
+```
 
+When the runtime path is refactored from a flat `C:\shared\electron-<version>\` layout into the deeper `node-monorepo-general\tools\electron\<version>\` tree, do not remove the shared ancestor `ReadFilePath` surface. Otherwise `electron.exe` may exist and still fail during startup because traversal to the deeper shared path is blocked in the run box.
 
+## Legacy repo-local / host-mirror references
 
+Older Electron documents that assume a host-shaped dependency tree remain in the repository, but they should now be read as **legacy / not recommended** references.
 
+The new primary Electron-Vite overlay is:
 
-<br><br>
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
 
----
+## Related documents
 
-<br><br>
-
-
-# Terminal
-
-## Loging
-- https://github.com/CyberT33N/sandboxie-cheat-sheet/tree/main/docs/troubleshooting/terminal
-
-## ReadConsoleOutput “Access denied (0x5)” / broken STDOUT
-- https://github.com/CyberT33N/sandboxie-cheat-sheet/blob/main/docs/troubleshooting/operating-systems/windows/terminal/powershell.md
+- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\troubleshooting.md`

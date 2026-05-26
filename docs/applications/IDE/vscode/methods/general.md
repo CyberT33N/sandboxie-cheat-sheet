@@ -1,26 +1,42 @@
 
 # VS Code
 
+## Method #1 – VS Code on Host, Toolchain in Dedicated Box, Debug via Attach-Inspect (Recommended)
 
+This remains the recommended high-level method.
 
+The current recommended sub-variant for governed Node / PNPM monorepos is:
 
+- dependencies installed in a dedicated install box
+- dependency tree materialized onto the host-visible workspace path
+- daily execution in a separate run box
 
-# Method #1 – VS Code on Host, Toolchain in Dedicated Box, Debug via Attach-Inspect (Recommended)
-- docs\applications\IDE\vscode\methods\host-not-isolated\general.md
+Read here first:
+
+- `docs\applications\IDE\vscode\methods\host-not-isolated\general.md`
+- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+
+The former host-installed / host-mirror dependency variant is still documented, but it is no longer the preferred baseline for this repository:
+
+- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-on-host.md`
+
 ---
 
 ## Method #2 (Not Fully Isolated)
-docs\applications\IDE\vscode\methods\host-isolated\not-fully-isolated.md
 
+`docs\applications\IDE\vscode\methods\host-isolated\not-fully-isolated.md`
 
 ---
 
 ## Conclusion
 
-From a weighted architectural perspective, it is better to run VS Code normally on the host system and consistently isolate everything related to the toolchain — or launched from it — inside a dedicated box.
+From a weighted architectural perspective, it is better to run VS Code normally on the host system and consistently isolate everything related to the toolchain — or launched from it — inside dedicated boxes, while keeping the resulting dependency tree visible to the host IDE.
 
-* docs\applications\IDE\vscode\terminal\debug\general.md
-* docs\applications\IDE\vscode\terminal\package.json vs new terminal.md
+Related:
+
+- `docs\applications\IDE\vscode\terminal\debug\general.md`
+- `docs\applications\IDE\vscode\terminal\package.json vs new terminal.md`
 
 
 

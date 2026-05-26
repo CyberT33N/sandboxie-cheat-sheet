@@ -1,14 +1,25 @@
 # Variant #2 - Dependencies Installed in Box
 
+## Architectural status
+
+This is now the **recommended** variant for governed PNPM monorepos in this repository, but only in its validated form:
+
+- dependencies are installed in a dedicated **install box**
+- the dependency tree is **materialized to the real host-visible workspace path**
+- daily execution happens in a separate **run box**
+
+This is no longer the old "dependencies only inside the box" idea.
+That earlier interpretation remains invalid.
+
 ## Definition
 
-In this variant, dependency installation runs inside the Sandboxie box, for example through `pnpm install` in a boxed terminal.
+In this variant, dependency installation runs inside a Sandboxie install box, for example through `pnpm install` in a boxed terminal.
 
-The goal is to prevent dependency install scripts from executing directly on the host system.
+The goal is to prevent dependency install scripts from executing directly on the host system while still keeping the host IDE operational.
 
-## Core problem
+## Core problem of the old box-only idea
 
-This variant conflicts with the host-not-isolated editor model if it is used without an additional synchronization architecture.
+This variant conflicts with the host-not-isolated editor model if it is used without an additional host-visible materialization architecture.
 
 The reason is simple:
 
@@ -26,6 +37,8 @@ When dependencies existed only inside the box, multiple failure patterns appeare
 - native modules and framework-specific runtime helpers could no longer be resolved cleanly across the host/box boundary
 - host VS Code could not reliably resolve packages and types because the dependency tree was not present at the real host path
 - monorepo, Vite, Electron-Vite, Angular, and similar toolchains introduced additional path-resolution and wrapper complexity
+- `nvm use` inside a privacy box rewired shim/symlink state in a way that was not stable for the boxed workflow
+- `pnpm.ps1` and other PowerShell shim surfaces added extra avoidable failure points
 
 This is why the issue was not just one missing allow rule. The architectural mismatch remained:
 
@@ -44,17 +57,29 @@ If the editor stays on the host, you still need a host-visible dependency tree f
 - editor diagnostics
 - host-side tooling that operates outside the box context
 
-## Required architecture
+## Validated architecture
 
-If this variant is chosen, a host-visible mirror or equivalent synchronization strategy becomes mandatory.
+The validated architecture is:
 
-That means:
+1. **Host VS Code / Cursor** remains the control plane
+2. **Install Box** runs `pnpm install`, `pnpm update`, `pnpm rebuild`, and similar dependency commands
+3. **Run Box** runs backend, frontend, Electron, tests, watchers, and other daily execution flows
+4. the install box **materializes** the dependency tree directly to the real host-visible workspace path
+5. any framework-specific external runtime payloads that are not reliably materialized in-repo (for example an Electron binary tree) are mirrored into a dedicated shared toolchain path and then referenced explicitly during execution
 
-- the dependency tree installed in the box must be copied, mirrored, or otherwise materialized to the host-visible project path
-- the host-visible copy must remain consistent with the boxed source of truth
-- the synchronization model must be tested as part of the workflow, not assumed
+## What "host-visible materialization" means
 
-Without this, the variant is operationally incomplete.
+It does **not** mean:
+
+- a symlink into `C:\Sandbox\...`
+- ad-hoc manual copying after each install
+- keeping the dependency tree only inside the sandbox and hoping the editor will still work
+
+It means:
+
+- the install box writes the intended dependency-owned surfaces directly to the host-visible project path
+- the host editor sees the same resulting `node_modules` / `.pnpm` tree that the boxed runtime expects
+- the write boundary is narrow and intentional
 
 ## Why manual copy is risky
 
@@ -73,15 +98,48 @@ Example:
 
 That is a version-drift failure and must be treated as a first-class architectural risk.
 
-## pnpm-specific complications
+## PNPM-specific complications
 
 This risk becomes worse with `pnpm`, especially in monorepos and workspaces:
 
 - the dependency layout is more complex than a flat `npm` tree
 - symlink, hardlink, and workspace resolution can make naive copying unsafe
 - the result can differ depending on how the tree was materialized and how the copy was performed
+- strict governance surfaces such as `verifyDepsBeforeRun`, `nodeLinker: isolated`, shared lockfiles, catalogs, and explicit build approvals make half-synchronized states fail-closed instead of merely becoming flaky
 
-In theory, a simple copy may be more straightforward with a plain `npm` layout. With `pnpm`, you must test the exact workflow you intend to rely on.
+With `pnpm`, you must test the exact workflow you intend to rely on.
+
+## Operational rules
+
+The validated workflow depends on a few strict rules:
+
+- do **not** use `nvm use` inside the boxes
+- use the fixed versioned `node.exe` / `pnpm.cmd` from the real NVM home
+- prefer `pnpm.cmd` or `cmd.exe`-driven task surfaces over `pnpm.ps1` inside boxed workflows
+- keep the install box and the run box separate
+- clear old box contents when testing new architecture states so stale boxed artifacts do not fake success
+
+## From-scratch process summary
+
+1. Prepare the shared toolchain root under `C:\shared\sandbox-toolchains\...`
+2. Create the dedicated install and run shell launchers
+3. Configure the install box and the run box
+4. Delete existing host `node_modules` / `.pnpm` surfaces before validating the materialization flow
+5. Run the install command in the install box using the fixed versioned toolchain
+6. Validate that the dependency tree now exists on the real host workspace path
+7. Start backend/frontend/Electron from the run box
+8. For framework-specific exceptions, use the smallest documented overlay necessary
+
+## Config boilerplates
+
+Full generic monorepo boilerplates live here:
+
+- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+
+Electron / Electron-Vite overlays live here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`
 
 ## Testing is mandatory
 
@@ -95,42 +153,10 @@ If you use this variant, you must test at least:
 - framework-specific development commands
 - native module loading
 - debug mode and watch mode
-- dependency updates and mirror refresh behavior
+- dependency updates and materialization refresh behavior
 
 Do not assume that a successful install alone proves that the architecture works.
 
-## Preferred design direction
-
-The safest form of this variant is:
-
-1. install dependencies inside the box
-2. materialize a host-visible mirror in a controlled way
-3. ensure the host editor always reads the mirrored dependency tree
-4. ensure the mirror is refreshed whenever dependencies change
-
-Any mirror strategy must minimize drift and make refresh behavior explicit.
-
-## Possible implementation direction
-
-One possible direction is a carefully scoped host-visible materialization path, for example through explicit synchronization or a tightly controlled host-write boundary.
-
-If `OpenFilePath` or another host-visible write mechanism is used to support this, it must be:
-
-- narrowly scoped
-- intentional
-- tested
-- documented as part of the architecture
-
-It must not be treated as an incidental workaround.
-
-## When to choose this variant
-
-Choose this variant only when:
-
-- reducing host-side dependency install-script execution is a higher priority than workflow simplicity
-- the team accepts the added complexity of synchronization
-- a tested mirror strategy exists or will be implemented
-
 ## Bottom line
 
-This variant improves host-side installation risk, but it is not self-sufficient. In the host-not-isolated method, dependencies installed only inside the box still have to become host-visible again if the host IDE is expected to work correctly.
+This variant is now the recommended method for governed PNPM monorepos in this repository, but only in its **install-box + host-visible materialization + run-box** form.

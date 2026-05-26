@@ -1,13 +1,43 @@
-# INI Settings (Single repo):
-- docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\single-repo.md
+# Electron-Vite
 
-# INI Settings (Mono repo):
-- docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\single-repo.md
-  - Es ist auf jeden Fall aufgefallen, im Direktvergleich zwischen Single-Repo und Monorepo, dass andere Dinge freigegeben werden mussten.
+## Architectural status
 
-Zum Beispiel musste für Cursor der Read-File-Path in AppData für die Electron-EXE gesetzt werden. Außerdem mussten andere Pfade für PNPM für die Electron-EXE gesetzt werden, da im Monorepo alles anders gehandhabt wird.
+This framework now has two documented architecture tracks in this repository:
 
-In dem Beispiel, das ich hier verwendet habe, wurde allerdings auch mit PNPM Workspaces gearbeitet. Das heißt, je nach Differenzierung, also je nachdem, wie man arbeitet, sind die Pfade auch immer unterschiedlich.
+1. **Legacy host-installed / host-mirror references**  
+   Keep only as historical / not recommended documentation:
+   - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\single-repo.md`
+   - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\mono-repo.md`
 
-Hier sollte man sich dementsprechend am sauberen Debugging orientieren, mit der Rückverfolgung über Sandboxy, damit man weiß, wo die jeweiligen EXE-Dateien liegen und alles freischalten kann, falls sich in einer anderen Umgebung etwas ändern sollte, wenn man anders vorgeht.
-  - docs\tracing\applications
+2. **Recommended install-box materialization + run-box execution**
+   - generic monorepo baseline:  
+     `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+   - Electron-Vite-specific overlay:  
+     `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
+
+## Why Electron-Vite needs an overlay
+
+Compared to a generic Node monorepo, Electron-Vite adds a few extra moving parts:
+
+- repo-local build output that must stay host-visible for host IDE debugging
+- Electron runtime lookup and startup behavior
+- Vite cache writes under `node_modules\.vite\`
+- run-script wrappers such as `cross-env` that may need a raw-call workaround in boxed Windows shells
+
+That is why the generic monorepo template is necessary but not sufficient on its own.
+
+## Current recommended posture
+
+- keep the host IDE on the host
+- install dependencies in the install box
+- materialize `.pnpm` / `node_modules` to the host-visible workspace path
+- run Electron-Vite from the run box
+- keep Electron build output (`out\`) host-visible
+- if the repo-local Electron postinstall does not materialize a stable runtime tree, mirror the Electron binary payload into the shared toolchain root and launch with `ELECTRON_EXEC_PATH`
+
+## Related documents
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\debug.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\troubleshooting.md`
+- `docs\applications\programming-languages\node\dependencies\esbuild\general.md`

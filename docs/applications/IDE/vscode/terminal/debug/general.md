@@ -3,7 +3,7 @@
 
 
 # Run Terminal is Sandbox
-- Man nimmt diese beiden EXEs und zieht sie in einen dedizierten Bereich (wie im Beispiel unten mit Tools, Deathbox, Shell). Anschließend stellt man sicher, dass sie automatisch in der jeweiligen Sandbox gestartet werden, in der man z. B. Applikationen debuggen möchte.
+- Man nimmt diese beiden EXEs und zieht sie in einen dedizierten Bereich (im aktuellen empfohlenen Modell z. B. `C:\Tools\TestRunBoxShell\`). Anschließend stellt man sicher, dass sie automatisch in der jeweiligen Sandbox gestartet werden, in der man z. B. Applikationen debuggen möchte.
 
 Wenn man z. B. in einem Electron-Projekt arbeitet und die Applikationen darin im „Deathmodus“ debuggen möchte, ist der richtige Weg, die entsprechenden Terminals, die man im Projekt in der Settings-JSON konfiguriert, zusätzlich in der jeweiligen Sandbox einzutragen, damit sie dort mitstarten und in derselben Sandbox laufen.
 
@@ -17,9 +17,9 @@ Wenn man z. B. in einem Electron-Projekt arbeitet und die Applikationen darin im
 
 # INI Settings
 ```
-# --- DevBoxShell binaries ---
-NormalFilePath=powershell.exe,C:\Tools\DevBoxShell\
-NormalFilePath=cmd.exe,C:\Tools\DevBoxShell\
+# --- RunBox shell binaries ---
+NormalFilePath=powershell.exe,C:\Tools\TestRunBoxShell\
+NormalFilePath=cmd.exe,C:\Tools\TestRunBoxShell\
 ```
 
 
@@ -37,13 +37,13 @@ Create .vscode\settings.json
     ],
     "env": {
       "NX_DAEMON": "false",
-      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache"
+        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native"
     },
-    "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
+      "path": "C:\\Tools\\TestRunBoxShell\\powershell.exe"
   },
-  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
+  "terminal.integrated.defaultProfile.windows": "RunBox PowerShell",
   "terminal.integrated.profiles.windows": {
-    "DevBox PowerShell": {
+    "RunBox PowerShell": {
       "args": [
         "-NoExit",
         "-ExecutionPolicy",
@@ -53,11 +53,11 @@ Create .vscode\settings.json
       ],
       "env": {
         "NX_DAEMON": "false",
-        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
+        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native",
         "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
         "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
       },
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
+      "path": "C:\\Tools\\TestRunBoxShell\\powershell.exe"
     }
   }
 }
@@ -144,7 +144,7 @@ Create .vscode\settings.json
 
 
 ### Jedes Mal (Debug-Session starten)
-1) Öffne dein **boxed Terminal** (das, wo Logs funktionieren – z. B. dein „DevBox PowerShell“).
+1) Öffne dein **boxed Terminal** (das, wo Logs funktionieren – z. B. dein „RunBox PowerShell“).
   - Wenn man die settings.json gemäß der Anleitung oben gesetzt hat, ist das die Default-Shell.
 
 Unabhängig davon kann man beim Öffnen eines neuen Terminals über das Pluszeichen (+) die verschiedenen Terminals auswählen. In dem Fall müsste man dann das Custom-Terminal nehmen, das in der Sandbox läuft.

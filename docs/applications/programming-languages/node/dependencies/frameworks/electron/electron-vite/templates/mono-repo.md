@@ -1,5 +1,15 @@
 # Mono Repo (nx + electron-vite + pnpm)
 
+## Architectural status
+
+This file documents the older **host-installed / host-mirror** shape.
+
+It remains in the repository as a legacy reference, but it is **not the recommended architecture** for the current repository posture anymore.
+
+Recommended replacement:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
+
 ```ini
 # =========================
 # Sandbox core / enablement

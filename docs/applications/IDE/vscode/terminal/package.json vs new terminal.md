@@ -27,7 +27,7 @@ In **derselben** `.vscode/settings.json` ergänzen:
 
 ```json
 "terminal.integrated.automationProfile.windows": {
-  "path": "C:\\Tools\\DevBoxShell\\cmd.exe"
+  "path": "C:\\Tools\\TestRunBoxShell\\cmd.exe"
 }
 ```
 
@@ -38,13 +38,13 @@ Full .vscode\settings.json:
 Warum `cmd.exe`?
 - Tasks brauchen keine Prompt‑Init.
 - `cmd` triggert auch nicht dein `pnpm.ps1` ExecutionPolicy-Thema, weil er typischerweise `pnpm.cmd` nimmt.
-- Da deine `cmd.exe` im `C:\Tools\DevBoxShell\` liegt, wird sie durch Sandboxie bei dir auch sauber in die Box gezogen.
+- Da deine `cmd.exe` im `C:\Tools\TestRunBoxShell\` liegt, wird sie durch Sandboxie bei dir auch sauber in die Box gezogen.
 
 #### Schritt 3 — VS Code neu laden
 `Ctrl+Shift+P` → **Developer: Reload Window**
 
 #### Ergebnis
-- **Terminal → New Terminal**: weiterhin **DevBox PowerShell** mit Starship.
+- **Terminal → New Terminal**: weiterhin **RunBox PowerShell** mit Starship.
 - **package.json → Run Script**: öffnet ein **Task-Terminal (cmd)** und führt das Script ohne Starship‑Init‑Fehler aus.
 
 Wenn du willst, dass „Run Script“ *unbedingt* PowerShell bleibt, sag kurz Bescheid – dann bauen wir ein separates „Task‑PowerShell ohne Starship“ Setup.

@@ -2,6 +2,15 @@
 
 ## Troubleshooting
 
+## Architectural status
+
+The command example below comes from an older host-shaped dependency layout and should now be treated as a **legacy troubleshooting reference**, not as the primary recommendation for the current install-box materialization architecture.
+
+Recommended architecture:
+
+- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+
 ### Start with specific node.exe
 
 ```shell
