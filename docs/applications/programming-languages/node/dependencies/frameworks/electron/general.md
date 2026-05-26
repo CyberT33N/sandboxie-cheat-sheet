@@ -45,6 +45,15 @@ ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\el
 
 When the runtime path is refactored from a flat `C:\shared\electron-<version>\` layout into the deeper `node-monorepo-general\tools\electron\<version>\` tree, do not remove the toolchain-scoped ancestor `ReadFilePath` surface. The narrower `C:\shared\sandbox-toolchains\` scope is sufficient; opening the entire shared root is not required. Otherwise `electron.exe` may exist and still fail during startup because traversal to the deeper shared path is blocked in the run box.
 
+## What is not part of the recommended pattern
+
+- no `ForceProcess=electron.exe`
+  - path-bound rules for the shared runtime are narrower and avoid capturing unrelated Electron executables
+- no repo-local `ForceFolder=...\.pnpm\electron@...\node_modules\electron\dist\`
+  - the shared mirror is the current runtime source of truth
+- no broad `ReadFilePath=...\C:\shared\`
+  - `C:\shared\sandbox-toolchains\` is the sufficient narrower ancestor surface
+
 ## Legacy repo-local / host-mirror references
 
 Older Electron documents that assume a host-shaped dependency tree remain in the repository, but they should now be read as **legacy / not recommended** references.

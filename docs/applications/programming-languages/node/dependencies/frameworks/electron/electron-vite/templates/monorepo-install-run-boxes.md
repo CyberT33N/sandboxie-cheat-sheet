@@ -63,10 +63,6 @@ NormalFilePath=esbuild.exe,C:\git\test\test-mono\
 Add the following lines to the generic run-box config:
 
 ```ini
-# --- Program control for the mirrored Electron runtime ---
-ForceProcess=electron.exe
-ForceFolder=C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
-
 # --- Shared toolchain ancestor traversal ---
 # When the Electron runtime moved from a flat shared path into the deeper
 # node-monorepo-general tree, these read rules became necessary.
@@ -95,6 +91,14 @@ ReadFilePath=esbuild.exe,C:\git\test\test-mono\libs\*\node_modules\*
 ReadFilePath=esbuild.exe,C:\git\test\test-mono\tools\*\node_modules
 ReadFilePath=esbuild.exe,C:\git\test\test-mono\tools\*\node_modules\*
 
+# App-local dependency surface needed by electron.exe
+ReadFilePath=electron.exe,C:\git\test\test-mono\apps\desktop-app\node_modules
+ReadFilePath=electron.exe,C:\git\test\test-mono\apps\desktop-app\node_modules\*
+
+# Optional: if the built packaged app is launched inside the monorepo
+ReadFilePath=desktop-app.exe,C:\git\test\test-mono\apps\desktop-app\node_modules
+ReadFilePath=desktop-app.exe,C:\git\test\test-mono\apps\desktop-app\node_modules\*
+
 # --- Shared Electron runtime mirror ---
 NormalFilePath=electron.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
 ReadFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
@@ -102,9 +106,21 @@ ReadFilePath=electron.exe,C:\shared\sandbox-toolchains\node-monorepo-general\too
 ReadFilePath=powershell.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
 ReadFilePath=cmd.exe,C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\
 
-# --- Desktop app package overlay ---
+# --- Workspace Electron / Vite command surfaces ---
 NormalFilePath=esbuild.exe,C:\git\test\test-mono\
+NormalFilePath=electron.exe,C:\git\test\test-mono\
+
+# --- Desktop app package execution surface ---
+NormalFilePath=esbuild.exe,C:\git\test\test-mono\apps\desktop-app\
+NormalFilePath=node.exe,C:\git\test\test-mono\apps\desktop-app\
+NormalFilePath=powershell.exe,C:\git\test\test-mono\apps\desktop-app\
+NormalFilePath=cmd.exe,C:\git\test\test-mono\apps\desktop-app\
+NormalFilePath=git.exe,C:\git\test\test-mono\apps\desktop-app\
 NormalFilePath=electron.exe,C:\git\test\test-mono\apps\desktop-app\
+NormalFilePath=electron.exe,C:\git\test\test-mono\
+
+# Optional packaged app surface inside the monorepo
+NormalFilePath=desktop-app.exe,C:\git\test\test-mono\apps\desktop-app\dist\
 
 # Vite temporary dependency optimization cache
 OpenFilePath=node.exe,C:\git\test\test-mono\apps\desktop-app\node_modules\.vite\
@@ -145,6 +161,23 @@ If the Electron-Vite package should use hover-run / Run Script directly with the
   }
 }
 ```
+
+## What this overlay intentionally does not add
+
+The following settings were removed from the recommended reduced configuration because they are unnecessary, too broad, or belong to a different responsibility boundary:
+
+- no `ForceProcess=electron.exe` or `ForceProcess=<product>.exe`
+  - too broad; this can capture unrelated Electron executables instead of only the intended shared runtime path
+- no repo-local `ForceFolder=...\.pnpm\electron@...\node_modules\electron\dist\`
+  - the shared Electron mirror is now the runtime source of truth
+- no broad `ReadFilePath=...\C:\shared\`
+  - the narrower `C:\shared\sandbox-toolchains\` ancestor surface is sufficient
+- no `nvm.exe` visibility
+  - boxed workflows use fixed versioned `node.exe` / `pnpm.cmd` directly and must not rely on `nvm use`
+- no Angular CLI config lookup in the Electron baseline
+  - only add framework-specific config lookups when that framework actually runs in the same box
+- no install-box-owned shared Electron mirror write surface in the baseline
+  - the install box owns dependency materialization and the PNPM store; refresh the shared Electron mirror on the host when the fallback download path is needed
 
 ## Electron-specific workflow
 
@@ -231,6 +264,8 @@ Get-ChildItem $dest
 ```
 
 A corrupt state is possible: `pnpm` may report a successful Electron postinstall while the shared mirror still lacks `electron.exe` or contains only a partial payload.
+
+The rebuild is still the correct first validation step, but in the reduced baseline the install box does **not** own the shared Electron mirror directly. If the shared mirror still lacks `electron.exe` after the rebuild, refresh the mirror from the host.
 
 If `electron.exe` is still missing, use the host-side fallback and refresh the shared mirror from the official Electron ZIP directly:
 

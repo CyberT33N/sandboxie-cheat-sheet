@@ -75,6 +75,8 @@ Also clear both boxes before retesting:
 - Use the fixed versioned binaries from the real NVM home instead.
 - Prefer `pnpm.cmd` over `pnpm.ps1` in boxed workflows.
 - Keep dependency installation in the install box and daily execution in the run box.
+- Do **not** add `nvm.exe` visibility to the box configs; the boxed workflow uses fixed versioned `node.exe` / `pnpm.cmd` paths directly.
+- Do **not** add framework-specific config lookups (for example Angular CLI user config) unless that exact framework actually runs in the box.
 
 Example fixed toolchain commands:
 
@@ -110,7 +112,9 @@ This file makes "Run Script" and new integrated terminals use the run box by def
     "InstallBox CMD": {
       "path": "C:\\Tools\\TestInstallBoxShell\\cmd.exe",
       "env": {
-        "PATH": "C:\\Users\\yourusername\\AppData\\Local\\nvm\\v26.2.0;${env:PATH}"
+        "PATH": "C:\\Users\\yourusername\\AppData\\Local\\nvm\\v26.2.0;${env:PATH}",
+        "NX_DAEMON": "false",
+        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native"
       }
     }
   }
@@ -242,6 +246,9 @@ NormalFilePath=pnpm.exe,C:\Users\yourusername\AppData\Local\pnpm\
 # --- Dedicated install shell binaries ---
 NormalFilePath=powershell.exe,C:\Tools\TestInstallBoxShell\
 NormalFilePath=cmd.exe,C:\Tools\TestInstallBoxShell\
+
+# --- Nx (only relevant for workspaces that load Nx native during install/rebuild) ---
+OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native\
 
 # --- Workspace read surface ---
 # node.exe sees the repo as read-only by default in this box.
@@ -458,6 +465,10 @@ Example:
 
 ```powershell
 Set-Location "C:\git\test\test-mono"
+# If the workspace uses Nx native during install/rebuild, keep the dedicated
+# shared cache active in this shell as well.
+$env:NX_DAEMON = "false"
+$env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"
 & "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\pnpm.cmd" install --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store"
 ```
 

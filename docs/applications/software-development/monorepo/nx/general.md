@@ -29,9 +29,32 @@ Option 1 (Not recommended)
 
 Using `OpenFilePath` against `%LOCALAPPDATA%\Temp\nx-native-file-cache-*` is too broad from a security perspective. It gives sandboxed `node.exe` direct host access to a volatile temp area, bypasses file virtualization for that path, and turns a general host temp location into a native code loading boundary. In practice, this means the exception is no longer limited to the intended workspace flow. Any sandboxed `node.exe` process in the same box can use that open host-backed path.
 
-Option 2
+Option 2 (recommended)
 
-Use a dedicated native cache directory and keep the exception as small as possible. The cache directory must be moved into an isolated host location that is explicitly allowed, the Nx daemon must be disabled, the run script must be started from the workspace root, and only the shared cache directory should be opened for `node.exe`.
+Use a dedicated native cache directory and keep the exception as small as possible. The cache directory must be moved into an isolated host location that is explicitly allowed, the Nx daemon must be disabled, and only the shared cache directory should be opened for `node.exe`.
+
+This can matter in **both** boxes:
+
+- **Install box**: when `pnpm install` / `pnpm rebuild` touches Nx native bindings during dependency work
+- **Run box**: when root-workspace Nx flows execute during daily development
+
+### Install / rebuild
+
+```powershell
+$env:NX_NATIVE_FILE_CACHE_DIRECTORY='C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native'
+$env:NX_DAEMON='false'
+pnpm install --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store"
+```
+
+or:
+
+```powershell
+$env:NX_NATIVE_FILE_CACHE_DIRECTORY='C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native'
+$env:NX_DAEMON='false'
+pnpm rebuild
+```
+
+### Run / serve
 
 ```powershell
 $env:NX_NATIVE_FILE_CACHE_DIRECTORY='C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native'
@@ -39,44 +62,27 @@ $env:NX_DAEMON='false'
 pnpm run serve:test
 ```
 
+### Sandboxie access rules
+
+Use the same narrow cache exception in every box that loads Nx native code:
+
 ```ini
+# Install box
+OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native\
+
+# Run box
 OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native\
 ```
 
-Oder direkt in der .vscode\settings.json
+### VS Code / Cursor terminal env
+
+If the install or run profiles are launched from VS Code / Cursor, keep the same env vars in those profiles too:
 
 ```json
 {
-  "terminal.integrated.automationProfile.windows": {
-    "args": [
-      "-NoExit",
-      "-ExecutionPolicy",
-      "Bypass"
-    ],
-    "env": {
-      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native",
-      "NX_DAEMON": "false"
-    },
-    "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-  },
-  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
-  "terminal.integrated.profiles.windows": {
-    "DevBox PowerShell": {
-      "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
-      ],
-      "env": {
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
-        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml",
-        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native",
-        "NX_DAEMON": "false"
-      },
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-    }
+  "env": {
+    "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\sandbox-toolchains\\node-monorepo-general\\cache\\nx-native",
+    "NX_DAEMON": "false"
   }
 }
 ```

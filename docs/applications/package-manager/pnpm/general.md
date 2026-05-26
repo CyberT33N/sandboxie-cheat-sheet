@@ -57,6 +57,8 @@ Set-Location "C:\git\test\test-mono"
 & "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\pnpm.cmd" --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store" rebuild
 ```
 
+If the workspace uses Nx native bindings during install or rebuild, keep `NX_DAEMON=false` and `NX_NATIVE_FILE_CACHE_DIRECTORY=C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native` active in the same shell. See `docs\applications\software-development\monorepo\nx\general.md`.
+
 ## Sandboxie access rules
 
 ```ini
