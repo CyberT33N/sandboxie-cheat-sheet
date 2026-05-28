@@ -250,43 +250,45 @@ NormalFilePath=cmd.exe,C:\Tools\TestInstallBoxShell\
 # --- Nx (only relevant for workspaces that load Nx native during install/rebuild) ---
 OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native\
 
-# --- Workspace read surface ---
-# node.exe sees the repo as read-only by default in this box.
-# Only the explicit OpenFilePath materialization surfaces below are direct host-write.
-ReadFilePath=node.exe,C:\git\test\test-mono\
-
+# --- Workspace command surface ---
 NormalFilePath=powershell.exe,C:\git\test\test-mono\
 NormalFilePath=cmd.exe,C:\git\test\test-mono\
 NormalFilePath=git.exe,C:\git\test\test-mono\
 
-# --- Host-visible dependency materialization surface ---
-# These paths are intentionally OPEN only for node.exe so pnpm install
-# writes directly to the real host project path.
-
-# Root virtual store + root node_modules
-OpenFilePath=node.exe,C:\git\test\test-mono\.pnpm\
-OpenFilePath=node.exe,C:\git\test\test-mono\node_modules\
-
-# Package-level node_modules
-OpenFilePath=node.exe,C:\git\test\test-mono\apps\*\node_modules
-OpenFilePath=node.exe,C:\git\test\test-mono\apps\*\node_modules\*
-OpenFilePath=node.exe,C:\git\test\test-mono\libs\*\node_modules
-OpenFilePath=node.exe,C:\git\test\test-mono\libs\*\node_modules\*
-OpenFilePath=node.exe,C:\git\test\test-mono\tools\*\node_modules
-OpenFilePath=node.exe,C:\git\test\test-mono\tools\*\node_modules\*
-
-# Package-manager-owned manifests that install/update/add are allowed to modify
-OpenFilePath=node.exe,C:\git\test\test-mono\package.json
-OpenFilePath=node.exe,C:\git\test\test-mono\pnpm-workspace.yaml
-OpenFilePath=node.exe,C:\git\test\test-mono\pnpm-lock.yaml
-
-OpenFilePath=node.exe,C:\git\test\test-mono\apps\*\package.json
-OpenFilePath=node.exe,C:\git\test\test-mono\libs\*\package.json
-OpenFilePath=node.exe,C:\git\test\test-mono\tools\*\package.json
+# --- Host-visible repo materialization surface ---
+# In PNPM monorepos, workspace commands such as `pnpm add` or `pnpm update`
+# may rewrite the shared root lockfile by creating a temporary file at the
+# repo root and then renaming/replacing it into `pnpm-lock.yaml`.
+# If only selected manifests or `node_modules` paths are open, the final rename
+# can still fail with:
+# [EPERM] EPERM: operation not permitted, rename
+# 'C:\git\test\test-mono\pnpm-lock.yaml.<random>' -> 'C:\git\test\test-mono\pnpm-lock.yaml'
+# The validated install-box baseline therefore opens the full example project
+# root for `node.exe`.
+OpenFilePath=node.exe,C:\git\test\test-mono\
 
 # Dedicated PNPM store
 OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store\
 ```
+
+### Why the install box opens the example project root for `node.exe`
+
+In the validated PNPM monorepo flow, the dedicated `--store-dir` solves only the content-addressable store side. It does **not** solve the final workspace commit step at the repo root.
+
+`pnpm add`, `pnpm update`, and similar commands may rewrite the shared lockfile by writing a temporary file such as `pnpm-lock.yaml.<random>` and then renaming/replacing it into `pnpm-lock.yaml`.
+
+During validation, narrower `OpenFilePath` lists that exposed only `.pnpm`, `node_modules`, `package.json`, `pnpm-workspace.yaml`, and `pnpm-lock.yaml*` still produced:
+
+```text
+[EPERM] EPERM: operation not permitted, rename
+'C:\git\test\test-mono\pnpm-lock.yaml.<random>' -> 'C:\git\test\test-mono\pnpm-lock.yaml'
+```
+
+Opening the full example project root for `node.exe` in the install box fixed that failure mode. This is broader than the earlier per-path materialization list, but it remains intentionally limited to:
+
+- the install box
+- `node.exe`
+- the example repo root
 
 ## Run box
 

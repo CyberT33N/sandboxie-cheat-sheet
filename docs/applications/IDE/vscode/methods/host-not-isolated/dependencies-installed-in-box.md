@@ -79,7 +79,7 @@ It means:
 
 - the install box writes the intended dependency-owned surfaces directly to the host-visible project path
 - the host editor sees the same resulting `node_modules` / `.pnpm` tree that the boxed runtime expects
-- the write boundary is narrow and intentional
+- in validated PNPM monorepos, the install box opens the repo root for `node.exe`, while keeping that broader write capability limited to the install box and the package-manager process layer
 
 ## Why manual copy is risky
 
@@ -108,6 +108,21 @@ This risk becomes worse with `pnpm`, especially in monorepos and workspaces:
 - strict governance surfaces such as `verifyDepsBeforeRun`, `nodeLinker: isolated`, shared lockfiles, catalogs, and explicit build approvals make half-synchronized states fail-closed instead of merely becoming flaky
 
 With `pnpm`, you must test the exact workflow you intend to rely on.
+
+## Why the validated boilerplate opens the repo root for `node.exe`
+
+In PNPM monorepos, workspace commands such as `pnpm add` or `pnpm update` may rewrite the shared root lockfile by writing a temporary file such as `pnpm-lock.yaml.<random>` and then renaming/replacing it into `pnpm-lock.yaml`.
+
+The dedicated shared `--store-dir` remains necessary, but it does **not** solve that final repo-root rename on its own.
+
+During validation, narrower install-box rules that opened only `.pnpm`, `node_modules`, and selected manifests still produced:
+
+```text
+[EPERM] EPERM: operation not permitted, rename
+'C:\git\test\test-mono\pnpm-lock.yaml.<random>' -> 'C:\git\test\test-mono\pnpm-lock.yaml'
+```
+
+For that reason, the current boilerplate opens the example project root for `node.exe` in the install box. This is broader than the earlier per-path materialization list, but it remains constrained to the install box and does not change the run-box model.
 
 ## Operational rules
 

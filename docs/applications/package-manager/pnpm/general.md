@@ -41,6 +41,21 @@ The resulting model is:
 - repo-local `.pnpm\` and `node_modules\` remain the host-visible materialized dependency tree
 - the content-addressable store itself lives under the shared toolchain cache root
 
+## Why the install box also opens the repo root
+
+The dedicated `--store-dir` is necessary, but in PNPM monorepos it is not sufficient on its own.
+
+Workspace commands such as `pnpm add` or `pnpm update` may rewrite the shared root lockfile by creating a temporary file such as `pnpm-lock.yaml.<random>` and then renaming/replacing it into `pnpm-lock.yaml`.
+
+If the install box keeps the repo root read-only and opens only selected manifests, the install can still fail with:
+
+```text
+[EPERM] EPERM: operation not permitted, rename
+'C:\git\test\test-mono\pnpm-lock.yaml.<random>' -> 'C:\git\test\test-mono\pnpm-lock.yaml'
+```
+
+For that reason, the validated install-box boilerplate opens the full example project root for `node.exe` in addition to the dedicated shared store path.
+
 ## Typical boxed install command
 
 ```powershell
@@ -67,6 +82,11 @@ NormalFilePath=node.exe,C:\Users\yourusername\AppData\Local\pnpm\
 NormalFilePath=powershell.exe,C:\Users\yourusername\AppData\Local\pnpm\
 NormalFilePath=cmd.exe,C:\Users\yourusername\AppData\Local\pnpm\
 NormalFilePath=pnpm.exe,C:\Users\yourusername\AppData\Local\pnpm\
+
+# --- Install-box repo materialization surface ---
+# PNPM monorepos may rewrite the shared root lockfile through a temp-file +
+# rename/replace flow at the repo root.
+OpenFilePath=node.exe,C:\git\test\test-mono\
 
 # --- Dedicated pnpm store ---
 OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store\
