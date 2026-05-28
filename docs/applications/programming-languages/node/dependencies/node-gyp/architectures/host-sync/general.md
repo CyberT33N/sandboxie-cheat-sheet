@@ -45,6 +45,14 @@ During validation, the following failure classes appeared until the host-sync ov
 - keep Microsoft Visual Studio Build Tools host-provided in the current validated baseline
 - do not use `nvm use` inside the boxes; call the fixed versioned `node.exe` directly
 
+This is the **preferred** `node-gyp` architecture track in the current repository state.
+
+The explored alternative where Microsoft Build Tools should be installed from inside the sandbox is documented here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
+
+That alternative is currently not validated and should not replace the host-sync method.
+
 ## Documentation map
 
 - architecture overview:

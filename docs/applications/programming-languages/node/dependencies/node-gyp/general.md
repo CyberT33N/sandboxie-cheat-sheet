@@ -16,6 +16,8 @@ It defines:
 
 - recommended host-sync overlay:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
+- exploratory box-owned-toolchain attempt:
+  `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
 
 ### Host-sync modules
 
@@ -48,6 +50,8 @@ The currently validated `node-gyp` posture for Node monorepos is:
 - consume Microsoft Visual Studio Build Tools and Windows SDK from the host system through explicit Sandboxie visibility rules
 - bootstrap the install-box session with both the Python path and the Visual Studio developer environment before running `node-gyp`
 
+The explored `box-owned-toolchain` attempt is currently **not validated** and remains secondary to the preferred host-sync method.
+
 ## Why `node-gyp` needs its own overlay
 
 Compared to a generic `pnpm install` / `pnpm rebuild` flow, `node-gyp` adds several extra moving parts:
@@ -65,3 +69,4 @@ That is why the generic monorepo boilerplate is necessary but not sufficient on 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\esbuild\general.md`
 - `docs\applications\programming-languages\python\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`

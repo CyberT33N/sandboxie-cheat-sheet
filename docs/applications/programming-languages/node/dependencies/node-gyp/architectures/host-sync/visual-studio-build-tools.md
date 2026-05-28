@@ -12,6 +12,12 @@ That means:
 
 This is the current validated baseline for this repository.
 
+The explored alternative where Microsoft Build Tools should be installed from inside the sandbox is documented here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
+
+That alternative is currently not validated. The host-provided method described on this page remains the preferred baseline.
+
 ## Why the host provides these tools in the validated baseline
 
 Compared to the central shared Python binary, Microsoft build tools are a much heavier Windows toolchain boundary:
