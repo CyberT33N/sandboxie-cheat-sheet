@@ -53,6 +53,29 @@ The explored alternative where Microsoft Build Tools should be installed from in
 
 That alternative is currently not validated and should not replace the host-sync method.
 
+## Governance
+
+From a pure security perspective, there is currently **no documented security advantage** in taking the host-provided Microsoft Visual Studio Build Tools and reinstalling them into a shared toolchain directory such as `C:\shared\sandbox-toolchains\...`.
+
+The security-relevant property of the current preferred method is:
+
+- the Microsoft Build Tools remain host-provided
+- the install box consumes them through explicit Sandboxie visibility rules
+- the same hardened install-box architecture can stay focused on controlled build execution instead of becoming a Microsoft installer box
+
+If the Build Tools were instead installed host-side into a shared toolchain path, that would currently change the architecture mainly in these ways:
+
+- clearer version pinning / side-by-side version management
+- clearer organizational ownership of the toolchain location
+- potentially cleaner operational documentation
+
+It would **not**, by itself, produce a meaningful security improvement over the current preferred host-sync method.
+
+Therefore:
+
+- if the question is primarily about security, the current host-provided baseline is already the preferred method
+- if a future change moves the Build Tools into a shared host-side install path, that should be justified by versioning or organizational reasons, not by an assumed security benefit
+
 ## Documentation map
 
 - architecture overview:
