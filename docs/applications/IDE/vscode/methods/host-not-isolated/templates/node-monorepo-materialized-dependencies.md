@@ -290,6 +290,19 @@ Opening the full example project root for `node.exe` in the install box fixed th
 - `node.exe`
 - the example repo root
 
+### Native addon overlay - `node-gyp`
+
+If the monorepo contains a Windows native addon that builds through `node-gyp`, apply the dedicated host-sync overlay here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+
+That overlay documents only the additional `node-gyp`-specific requirements on top of this generic monorepo baseline:
+
+- the central shared Python build helper binary
+- the host-provided Microsoft Visual Studio Build Tools visibility rules
+- the extra install-box `OpenFilePath` lines for `python.exe`, `MSBuild.exe`, and related spawned build tools
+- the validated direct `node-gyp` and default `pnpm` rebuild commands
+
 ## Run box
 
 ```ini
@@ -504,4 +517,5 @@ Set-Location "C:\git\test\test-mono\apps\frontend"
 - `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-on-host.md`
 - `docs\applications\package-manager\pnpm\general.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
 - framework-specific overlays such as Electron / Electron-Vite docs when a package needs more than the generic Node monorepo baseline

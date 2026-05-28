@@ -156,6 +156,10 @@ Electron / Electron-Vite overlays live here:
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`
 
+Native addon / `node-gyp` overlays live here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+
 ## Testing is mandatory
 
 If you use this variant, you must test at least:

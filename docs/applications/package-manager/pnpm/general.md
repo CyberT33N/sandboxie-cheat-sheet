@@ -74,6 +74,16 @@ Set-Location "C:\git\test\test-mono"
 
 If the workspace uses Nx native bindings during install or rebuild, keep `NX_DAEMON=false` and `NX_NATIVE_FILE_CACHE_DIRECTORY=C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native` active in the same shell. See `docs\applications\software-development\monorepo\nx\general.md`.
 
+## Native addon / `node-gyp` overlay
+
+If a Windows dependency rebuild in the install box needs `node-gyp`, the dedicated shared store path alone is not sufficient.
+
+Use the `node-gyp` host-sync overlay here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+
+That overlay documents the additional Python, Microsoft Build Tools, install-box config, and command-bootstrap steps that sit on top of the generic `pnpm` install-box baseline.
+
 ## Sandboxie access rules
 
 ```ini
@@ -97,3 +107,4 @@ OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\p
 - `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
