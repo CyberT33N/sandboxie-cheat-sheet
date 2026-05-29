@@ -92,6 +92,6 @@ Therefore:
 ## Related documents
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
-- `docs\applications\package-manager\pnpm\general.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\python\general.md`

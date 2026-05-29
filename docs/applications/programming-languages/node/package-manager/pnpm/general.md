@@ -84,6 +84,19 @@ Use the `node-gyp` host-sync overlay here:
 
 That overlay documents the additional Python, Microsoft Build Tools, install-box config, and command-bootstrap steps that sit on top of the generic `pnpm` install-box baseline.
 
+## Performance / large-install troubleshooting
+
+If `pnpm install` in a large monorepo is unexpectedly slow, use the dedicated troubleshooting page here:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\troubleshooting\performance.md`
+
+That page documents:
+
+- why a host-shared PNPM store is important for performance
+- why large file-count sandbox writes are slow
+- why Microsoft Defender scanning affects install throughput
+- how to run a full clean reinstall when the workspace also contains a native `node-gyp` dependency
+
 ## Sandboxie access rules
 
 ```ini
@@ -108,3 +121,5 @@ OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\p
 - `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\troubleshooting\performance.md`
+- `docs\performance\filesystem\high-file-count-workloads.md`

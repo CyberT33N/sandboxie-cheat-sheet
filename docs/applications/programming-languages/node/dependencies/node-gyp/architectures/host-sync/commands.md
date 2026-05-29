@@ -73,25 +73,66 @@ Expected result:
 
 After the direct `node-gyp` smoke test succeeds, validate the default package-manager route from the install box.
 
-### Rebuild an already-installed native package
+### Important note about `pnpm rebuild`
+
+In validated monorepo tests, `pnpm rebuild <package>` can be a no-op when:
+
+- the package is only transitive and not selected the way the caller expects
+- the workspace install state is already considered clean
+- `node_modules\.modules.yaml` no longer reports any pending builds
+
+So `pnpm rebuild` is useful, but it is **not** the strongest proof that the default route works.
+
+### Deterministic default-route validation
+
+For a deterministic validation of the automatic `pnpm install` path:
+
+1. clear the box contents
+2. delete the host-visible `node_modules` / `.pnpm` tree
+3. bootstrap the install-box shell as documented in Step 1
+4. run a fresh `pnpm install` with the shared store path
+
+Validated sanitized pattern:
 
 ```powershell
-Set-Location "C:\git\test\test-mono"
+$repoRoot = "C:\git\test\test-mono"
+$appDir   = Join-Path $repoRoot "apps\desktop-app"
+$pkg      = Join-Path $repoRoot ".pnpm\node-firebird-native-api@3.2.0\node_modules\node-firebird-native-api"
+
+# host-visible dependency cleanup
+Set-Location $repoRoot
+
+Remove-Item ".\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\apps\desktop-app\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\apps\frontend\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\apps\backend\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\apps\webpages\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\tools\installer\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\.pnpm" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item ".\node_modules\.modules.yaml" -Force -ErrorAction SilentlyContinue
+
+# Step 1 bootstrap from this document must already have been run in this shell.
 $env:NX_DAEMON = "false"
 $env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"
+$pnpm = "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\pnpm.cmd"
 
-& "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\pnpm.cmd" rebuild node-firebird-native-api --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store"
+Remove-Item -Recurse -Force "$pkg\build" -ErrorAction SilentlyContinue
+
+Set-Location $appDir
+
+& "$pnpm" install --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store" --reporter ndjson
 ```
 
-### Re-run the full install flow
+### What success looks like
 
-```powershell
-Set-Location "C:\git\test\test-mono"
-$env:NX_DAEMON = "false"
-$env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"
+If the default route is working, a fresh install should:
 
-& "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\pnpm.cmd" install --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store"
-```
+- enter the real install path rather than reporting "Already up to date"
+- run the native dependency install/build lifecycle
+- recreate repo-local build outputs such as:
+  - `build\binding.sln`
+  - `.vcxproj`
+  - `build\Release\addon.node`
 
 ## What a successful validation means
 
