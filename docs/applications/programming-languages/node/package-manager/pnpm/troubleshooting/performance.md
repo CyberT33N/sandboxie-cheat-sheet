@@ -95,77 +95,15 @@ Could not find any Visual Studio installation to use
 
 ## Full clean reinstall workflow
 
-This is the validated sanitized workflow for a clean reinstall when the workspace contains a native dependency that may auto-trigger `node-gyp`.
+The full source-of-truth reinstall flow lives here:
 
-### Step 1 - clear the sandbox contents
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 
-Delete the install-box contents through the Sandboxie UI before retesting.
+That document contains the exact three-step validated flow:
 
-### Step 2 - clear the host-visible dependency tree
-
-Run this on the host:
-
-```powershell
-Set-Location "C:\git\test\test-mono"
-
-Remove-Item ".\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-
-Remove-Item ".\apps\desktop-app\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\frontend\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\backend\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\webpages\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\tools\installer\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-
-Remove-Item ".\.pnpm" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\node_modules\.modules.yaml" -Force -ErrorAction SilentlyContinue
-```
-
-### Step 3 - bootstrap the install-box shell
-
-Run this inside the install box before `pnpm install`:
-
-```powershell
-$repoRoot = "C:\git\test\test-mono"
-
-$toolRoot      = "C:\shared\sandbox-toolchains\dev"
-$pythonVersion = (Get-Content (Join-Path $toolRoot "python\current.txt") -Raw).Trim()
-$pythonExe     = Join-Path $toolRoot "python\$pythonVersion\python.exe"
-
-$node = "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\node.exe"
-$pnpm = "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\pnpm.cmd"
-
-$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-$vsRoot  = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-$vsDevCmd = Join-Path $vsRoot "Common7\Tools\VsDevCmd.bat"
-
-cmd /c "`"$vsDevCmd`" -arch=x64 -host_arch=x64 && set" |
-ForEach-Object {
-    if ($_ -match '^(.*?)=(.*)$') {
-        Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
-    }
-}
-
-$env:PYTHON                = $pythonExe
-$env:NODE_GYP_FORCE_PYTHON = $pythonExe
-$env:npm_config_python     = $pythonExe
-
-$env:NX_DAEMON = "false"
-$env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"
-
-& $node -v
-& $pnpm -v
-& $pythonExe --version
-Get-Command cl.exe
-Get-Command msbuild.exe
-```
-
-### Step 4 - run the install in the install box
-
-```powershell
-Set-Location "C:\git\test\test-mono"
-
-& $pnpm install --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store"
-```
+1. clear the box contents
+2. clear the host-visible materialized dependency tree
+3. bootstrap the install-box shell and run `pnpm install`
 
 ## Interpretation
 
@@ -184,3 +122,4 @@ If the install still fails, the next troubleshooting step is no longer the gener
 - `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
 - `docs\performance\filesystem\high-file-count-workloads.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`

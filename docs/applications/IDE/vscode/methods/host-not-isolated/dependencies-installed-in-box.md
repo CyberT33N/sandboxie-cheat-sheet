@@ -17,6 +17,8 @@ In this variant, dependency installation runs inside a Sandboxie install box, fo
 
 The goal is to prevent dependency install scripts from executing directly on the host system while still keeping the host IDE operational.
 
+For governed Node monorepos in this repository, the recommended package manager is `pnpm`, because the documented supply-chain and workspace-governance posture is expressed through PNPM-specific policy surfaces.
+
 ## Core problem of the old box-only idea
 
 This variant conflicts with the host-not-isolated editor model if it is used without an additional host-visible materialization architecture.
@@ -159,6 +161,7 @@ Electron / Electron-Vite overlays live here:
 Native addon / `node-gyp` overlays live here:
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 
 ## Testing is mandatory
 

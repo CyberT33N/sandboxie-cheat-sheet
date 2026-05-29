@@ -92,36 +92,9 @@ For a deterministic validation of the automatic `pnpm install` path:
 3. bootstrap the install-box shell as documented in Step 1
 4. run a fresh `pnpm install` with the shared store path
 
-Validated sanitized pattern:
+The full source-of-truth command block lives here:
 
-```powershell
-$repoRoot = "C:\git\test\test-mono"
-$appDir   = Join-Path $repoRoot "apps\desktop-app"
-$pkg      = Join-Path $repoRoot ".pnpm\node-firebird-native-api@3.2.0\node_modules\node-firebird-native-api"
-
-# host-visible dependency cleanup
-Set-Location $repoRoot
-
-Remove-Item ".\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\desktop-app\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\frontend\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\backend\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\apps\webpages\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\tools\installer\node_modules" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\.pnpm" -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item ".\node_modules\.modules.yaml" -Force -ErrorAction SilentlyContinue
-
-# Step 1 bootstrap from this document must already have been run in this shell.
-$env:NX_DAEMON = "false"
-$env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"
-$pnpm = "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\pnpm.cmd"
-
-Remove-Item -Recurse -Force "$pkg\build" -ErrorAction SilentlyContinue
-
-Set-Location $appDir
-
-& "$pnpm" install --store-dir "C:\shared\sandbox-toolchains\node-monorepo-general\cache\pnpm-store" --reporter ndjson
-```
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 
 ### What success looks like
 
@@ -151,3 +124,4 @@ Any later failure is then more likely to be package-specific, addon-code-specifi
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\python-binary.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\visual-studio-build-tools.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\install-box-config.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\clean-reinstall.md`

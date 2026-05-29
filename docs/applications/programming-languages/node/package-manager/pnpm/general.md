@@ -10,6 +10,14 @@ That means:
 - the dependency store should live in a dedicated shared toolchain cache path
 - the install box materializes `node_modules` / `.pnpm` to the host-visible project path
 
+For governed Node monorepos in this repository, `pnpm` is the recommended package manager because the security-governance posture is documented around PNPM-specific controls such as:
+
+- the shared workspace lockfile
+- `allowBuilds`
+- time-based resolution policy
+- strict engine enforcement
+- explicit workspace ownership and anti-hoisting rules
+
 Recommended shared store location:
 
 ```text
@@ -84,6 +92,10 @@ Use the `node-gyp` host-sync overlay here:
 
 That overlay documents the additional Python, Microsoft Build Tools, install-box config, and command-bootstrap steps that sit on top of the generic `pnpm` install-box baseline.
 
+If the project uses `node-gyp` and should be reinstalled from a clean state, use the validated clean reinstall guide here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
+
 ## Performance / large-install troubleshooting
 
 If `pnpm install` in a large monorepo is unexpectedly slow, use the dedicated troubleshooting page here:
@@ -121,5 +133,6 @@ OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\p
 - `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\troubleshooting\performance.md`
 - `docs\performance\filesystem\high-file-count-workloads.md`

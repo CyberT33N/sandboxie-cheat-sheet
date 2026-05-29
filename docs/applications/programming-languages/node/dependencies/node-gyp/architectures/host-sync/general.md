@@ -86,6 +86,8 @@ Therefore:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`
 - install-box config additions:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\install-box-config.md`
+- full clean reinstall flow:
+  `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - command snippets and validation flow:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\commands.md`
 
@@ -95,3 +97,4 @@ Therefore:
 - `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\python\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`

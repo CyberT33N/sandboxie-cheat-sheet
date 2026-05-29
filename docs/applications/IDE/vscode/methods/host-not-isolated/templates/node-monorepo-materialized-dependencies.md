@@ -10,6 +10,8 @@ This is the recommended generic boilerplate for a governed Node / PNPM monorepo 
 
 This is the validated replacement for the older host-installed / host-mirror baseline.
 
+For governed monorepos in this repository, `pnpm` is the recommended package manager because the documented security-governance posture is built around PNPM-specific policy controls such as the shared lockfile, `allowBuilds`, strict engine enforcement, and time-based resolution.
+
 ## Shared toolchain root
 
 Recommended shared root:
@@ -302,6 +304,10 @@ That overlay documents only the additional `node-gyp`-specific requirements on t
 - the host-provided Microsoft Visual Studio Build Tools visibility rules
 - the extra install-box `OpenFilePath` lines for `python.exe`, `MSBuild.exe`, and related spawned build tools
 - the validated direct `node-gyp` and default `pnpm` rebuild commands
+
+If the project uses `node-gyp`, the full clean reinstall flow lives here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 
 ## Run box
 

@@ -24,6 +24,7 @@ It defines:
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\python-binary.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\install-box-config.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\commands.md`
 
 ### Generic baselines that remain the source of truth
@@ -69,4 +70,5 @@ That is why the generic monorepo boilerplate is necessary but not sufficient on 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\esbuild\general.md`
 - `docs\applications\programming-languages\python\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
