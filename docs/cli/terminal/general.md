@@ -43,6 +43,8 @@ That means the two stable patterns are:
 
 Use `-NoExit` when the shell should remain visible after the command flow finishes.
 
+For this repository's debugging-first workflows, treating `-NoExit` as the default for PowerShell-based host launch commands is recommended.
+
 ## Open CMD in a specific box
 
 ```powershell

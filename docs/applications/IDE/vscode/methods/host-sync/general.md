@@ -1,4 +1,4 @@
-# Method #1 - VS Code on Host, Toolchain in Dedicated Box, Debug via Attach-Inspect
+# Method #2 - Host-Sync / Materialization
 
 ## Core model
 
@@ -18,7 +18,7 @@ The box layer remains the execution plane:
 - Electron and Electron-Vite processes
 - build tools, test runners, and package-manager-driven commands
 
-This remains the strongest method currently available when the full IDE cannot be run inside the box with acceptable operability.
+This is now the second recommended method in this repository, used when the IDE must remain on the host.
 
 ## host-sync variants
 

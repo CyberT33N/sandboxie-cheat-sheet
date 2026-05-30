@@ -1,0 +1,147 @@
+# `test-mono` Boilerplate Scripts
+
+## Scope
+
+This document contains the complete project-adapter PowerShell boilerplate for a sanitized example project named `test-mono`.
+
+Replace:
+
+- `test-mono`
+- `VS_CODE_TEST_MONO`
+- `C:\Users\yourusername\source\test-mono`
+
+with your real project slug, box name, and repo path.
+
+## Why this document lives here
+
+This is not a generic CLI document and not a shared bootstrap-kernel document.
+
+It is a sanitized project adapter example, so the correct documentation location is:
+
+```text
+docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\
+```
+
+That keeps:
+
+- generic CLI semantics in `docs\cli\...`
+- shared bootstrap scripts in `bootstrap\...`
+- project-adapter examples in `boilerplates\...`
+
+## `Project.Config.ps1`
+
+```powershell
+$sharedRoot = 'C:\shared\sandbox-toolchains'
+$vsCodeRoot = Join-Path $sharedRoot 'ide\vscode'
+$devRoot = Join-Path $sharedRoot 'dev'
+
+return @{
+  SharedRoot = $sharedRoot
+  ProjectName = 'test-mono'
+  BoxName = 'VS_CODE_TEST_MONO'
+  DefaultRepoPath = 'C:\Users\yourusername\source\test-mono'
+  VSCode = @{
+    CodeExe = Join-Path $vsCodeRoot 'runtime\1.121.0\Code.exe'
+    CodeCli = Join-Path $vsCodeRoot 'runtime\1.121.0\bin\code.cmd'
+    CatalogUserRoot = Join-Path $vsCodeRoot 'catalog\vscode-user'
+    SharedExtensionsRoot = Join-Path $vsCodeRoot 'extensions'
+    SeedGlobalStorageRoot = Join-Path $vsCodeRoot 'catalog\seed\globalStorage'
+    SeedRooRoot = Join-Path $vsCodeRoot 'catalog\seed\roo'
+  }
+  Toolchain = @{
+    GitRoot = Join-Path $devRoot 'git\2.54.0'
+    NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
+    PnpmCli = Join-Path $devRoot 'pnpm\11.2.2\package\bin\pnpm.cjs'
+    AdditionalNodeCommands = [ordered]@{
+      node20 = Join-Path $devRoot 'node\20.19.6\node-v20.19.6-win-x64\node.exe'
+    }
+  }
+}
+```
+
+## `Start-TestMonoVSCode.ps1`
+
+```powershell
+param(
+  [ValidateSet('LaunchVSCode', 'OpenTerminal')]
+  [string]$Action = 'LaunchVSCode',
+
+  [string]$RepoPath
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$config = & (Join-Path $PSScriptRoot 'Project.Config.ps1')
+
+if (-not $config) {
+  throw 'Project config did not return a configuration object.'
+}
+
+$resolvedRepoPath = if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+  $config.DefaultRepoPath
+}
+else {
+  $RepoPath
+}
+
+$baseScript = Join-Path $config.SharedRoot 'dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1'
+
+if (-not (Test-Path -LiteralPath $baseScript)) {
+  throw "Base project launcher not found: $baseScript"
+}
+
+$parameters = @{
+  Action = $Action
+  ProjectName = $config.ProjectName
+  RepoPath = $resolvedRepoPath
+  CodeExe = $config.VSCode.CodeExe
+  CodeCli = $config.VSCode.CodeCli
+  CatalogUserRoot = $config.VSCode.CatalogUserRoot
+  SharedExtensionsRoot = $config.VSCode.SharedExtensionsRoot
+  SeedGlobalStorageRoot = $config.VSCode.SeedGlobalStorageRoot
+  SeedRooRoot = $config.VSCode.SeedRooRoot
+  GitRoot = $config.Toolchain.GitRoot
+  NodeRoot = $config.Toolchain.NodeRoot
+  PnpmCli = $config.Toolchain.PnpmCli
+  AdditionalNodeCommands = $config.Toolchain.AdditionalNodeCommands
+}
+
+& $baseScript @parameters
+
+if ($Action -eq 'OpenTerminal') {
+  return
+}
+
+exit $LASTEXITCODE
+```
+
+## `Start-TestMonoTerminal.ps1`
+
+```powershell
+param(
+  [string]$RepoPath
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+
+if (-not (Test-Path -LiteralPath $launcher)) {
+  throw "Project launcher not found: $launcher"
+}
+
+& $launcher -Action OpenTerminal -RepoPath $RepoPath
+```
+
+## Notes
+
+This boilerplate intentionally keeps `node20` as an additional command because it reflects the validated monorepo example currently used for the architecture.
+
+If a project does not need a secondary runtime, remove the `AdditionalNodeCommands` entry entirely.
+
+## Related
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`

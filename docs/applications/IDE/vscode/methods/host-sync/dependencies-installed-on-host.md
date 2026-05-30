@@ -4,7 +4,7 @@
 
 This is the former **host-installed / host-mirror** dependency variant.
 
-It remains documented because it can still work in simpler or weaker-governed environments, but for the current recommended architecture in this repository it is a **legacy / not recommended** path.
+It remains documented because it can still work in simpler or weaker-governed environments, but for the current recommended architecture in this repository it is a **legacy anti-pattern / not recommended** path.
 
 Recommended replacement:
 

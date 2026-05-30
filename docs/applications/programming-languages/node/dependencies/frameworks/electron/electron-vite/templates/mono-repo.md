@@ -158,7 +158,7 @@ ForceFolder=C:\git\test\test-mono\node_modules\.pnpm\electron@29.4.6\node_module
 # [test] - [ELECTRON-VITE] - Wir müssen die gebauten Artefakte freigeben für Cursor, weil es nicht boxed läuft damit wir debuggen können
 OpenFilePath=node.exe,C:\git\test\test-mono\apps\test\out\
 # Das Gleiche gilt für die Electron-Exe. Sonst hat die Electron-Exe in der Sandbox keinen Zugriff auf die Artefakte, die auf dem Host-System liegen.
-OpenFilePath=node.exe,C:\git\test\test-mono\apps\privyou\out\
+OpenFilePath=node.exe,C:\git\test\test-mono\apps\test\out\
 
 # =========================
 # [test] - [MONO] - Frontend

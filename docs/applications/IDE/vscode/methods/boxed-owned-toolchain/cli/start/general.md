@@ -76,11 +76,10 @@ The preferred target shape is:
   /box:VS_CODE_TEST_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
+  -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\dev\bootstrap\Start-BoxedVSCode.ps1" `
-  -Mode Project `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
   -Action LaunchVSCode `
-  -ProjectName "test-mono" `
   -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
@@ -93,12 +92,27 @@ The preferred target shape is:
   /box:VS_CODE_MAINTENANCE `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
+  -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\dev\bootstrap\Start-BoxedVSCode.ps1" `
-  -Mode Maintenance `
+  -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
   -Action InstallExtension `
   -ExtensionId "RooVeterinaryInc.roo-cline"
 ```
+
+## Example boilerplate launchers
+
+Using the sanitized example project name `test-mono`, the concrete launchers are:
+
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
+
+For the full shared bootstrap tree and the sanitized boilerplate start flow, read:
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 
 ## Terminal-specific guidance
 

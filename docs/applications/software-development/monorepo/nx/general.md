@@ -119,7 +119,7 @@ NormalFilePath=test.exe,C:\git\test-mono\node_modules\.pnpm\electron@29.4.6\node
 
 NormalFilePath=electron.exe,C:\git\test-mono\node_modules\.pnpm\electron@29.4.6\node_modules\electron\dist\
 NormalFilePath=electron.exe,C:\git\test-mono\
-NormalFilePath=electron.exe,C:\git\test-mono\apps\privyou\
+NormalFilePath=electron.exe,C:\git\test-mono\apps\test\
 ```
 
 

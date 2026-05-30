@@ -22,8 +22,8 @@ Die einfachste Möglichkeit ist, es mit Open File Path freizugeben. Wenn wir im 
 Natürlich wäre der präferierte Weg, dass Cursor oder VS Code ebenfalls in der Box laufen. Das ist aber im aktuellen Stand nicht möglich. Related:
 - docs\applications\IDE\vscode\general.md
 ```ini
-OpenFilePath=node.exe,C:\git\test\test-mono\apps\privyou\out\
-OpenFilePath=electron.exe,C:\git\test\test-mono\apps\privyou\out\
+OpenFilePath=node.exe,C:\git\test\test-mono\apps\test\out\
+OpenFilePath=electron.exe,C:\git\test\test-mono\apps\test\out\
 ```
 
 
