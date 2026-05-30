@@ -151,6 +151,16 @@ Remove-Item $SevenZipDir -Recurse -Force -ErrorAction SilentlyContinue
 Start-Process -FilePath $SevenZipInstaller -ArgumentList '/S',('/D=' + $SevenZipDir) -Wait
 ```
 
+## Download PortableGit self-extractor
+
+```powershell
+$GitSfx = Join-Path $env:TEMP 'PortableGit-2.54.0-64-bit.7z.exe'
+
+Invoke-WebRequest `
+  -Uri 'https://github.com/git-for-windows/git/releases/download/v2.54.0.windows.1/PortableGit-2.54.0-64-bit.7z.exe' `
+  -OutFile $GitSfx
+```
+
 ## Extract PortableGit `2.54.0`
 
 ```powershell
