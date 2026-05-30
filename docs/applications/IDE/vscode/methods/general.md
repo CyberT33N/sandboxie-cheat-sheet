@@ -13,19 +13,19 @@ The current recommended sub-variant for governed Node / PNPM monorepos is:
 
 Read here first:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\general.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\general.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 
 The former host-installed / host-mirror dependency variant is still documented, but it is no longer the preferred baseline for this repository:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-on-host.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-on-host.md`
 
 ---
 
 ## Method #2 (Not Fully Isolated)
 
-`docs\applications\IDE\vscode\methods\host-isolated\not-fully-isolated.md`
+`docs\applications\IDE\vscode\methods\boxed-owned-toolchain\overview.md`
 
 ---
 

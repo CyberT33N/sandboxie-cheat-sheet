@@ -8,7 +8,7 @@ It remains documented because it can still work in simpler or weaker-governed en
 
 Recommended replacement:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 
 ## Definition
 
@@ -23,7 +23,7 @@ That means the host-visible `node_modules` tree is the active source of truth fo
 
 ## Why it worked historically
 
-This is the operationally simplest variant of the host-not-isolated method.
+This is the operationally simplest variant of the host-sync method.
 
 The host IDE can resolve the workspace without additional synchronization because:
 

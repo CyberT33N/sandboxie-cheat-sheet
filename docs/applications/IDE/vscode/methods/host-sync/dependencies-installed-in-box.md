@@ -21,7 +21,7 @@ For governed Node monorepos in this repository, the recommended package manager 
 
 ## Core problem of the old box-only idea
 
-This variant conflicts with the host-not-isolated editor model if it is used without an additional host-visible materialization architecture.
+This variant conflicts with the host-sync editor model if it is used without an additional host-visible materialization architecture.
 
 The reason is simple:
 
@@ -49,7 +49,7 @@ This is why the issue was not just one missing allow rule. The architectural mis
 
 ## Important consequence
 
-A purely boxed dependency tree is not enough in the host-not-isolated method.
+A purely boxed dependency tree is not enough in the host-sync method.
 
 If the editor stays on the host, you still need a host-visible dependency tree for:
 
@@ -151,7 +151,7 @@ The validated workflow depends on a few strict rules:
 
 Full generic monorepo boilerplates live here:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 
 Electron / Electron-Vite overlays live here:
 

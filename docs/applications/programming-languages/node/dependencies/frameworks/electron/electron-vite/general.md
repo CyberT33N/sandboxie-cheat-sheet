@@ -11,7 +11,7 @@ This framework now has two documented architecture tracks in this repository:
 
 2. **Recommended install-box materialization + run-box execution**
    - generic monorepo baseline:  
-     `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+     `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
    - Electron-Vite-specific overlay:  
      `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
 

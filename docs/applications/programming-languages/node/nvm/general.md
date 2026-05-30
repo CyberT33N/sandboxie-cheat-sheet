@@ -60,4 +60,4 @@ The documented architecture keeps the shell on the approved tooling line and han
 ## Related documents
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`

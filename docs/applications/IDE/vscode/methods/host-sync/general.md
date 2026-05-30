@@ -20,16 +20,16 @@ The box layer remains the execution plane:
 
 This remains the strongest method currently available when the full IDE cannot be run inside the box with acceptable operability.
 
-## Host-not-isolated variants
+## host-sync variants
 
 This method now has two documented dependency-placement variants:
 
 1. **Dependencies installed in a dedicated install box and materialized on the host-visible workspace path**  
    Recommended for governed PNPM monorepos.  
-   `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+   `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 2. **Dependencies installed directly on the host**  
    Legacy host-mirror / host-installed variant. Keep only as a reference for simpler or exceptional environments.  
-   `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-on-host.md`
+   `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-on-host.md`
 
 ## Why the split matters
 
@@ -42,7 +42,7 @@ Dependency placement changes:
 - whether dependency install scripts execute on the host or only inside the install box
 - whether package-manager governance surfaces such as lockfiles, catalogs, native postinstalls, and package-level runtime intent remain consistent
 
-In practice, this is the main architectural fault line of the host-not-isolated method.
+In practice, this is the main architectural fault line of the host-sync method.
 
 ## Current recommendation
 
@@ -62,11 +62,11 @@ This recommendation became materially stronger after validating the architecture
 ## Reading order
 
 1. Read the install-box materialization architecture first:  
-   `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+   `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 2. Then read the full generic monorepo boilerplate:  
-   `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+   `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 3. Read the host-installed variant only as a legacy reference:  
-   `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-on-host.md`
+   `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-on-host.md`
 
 ## Decision summary
 

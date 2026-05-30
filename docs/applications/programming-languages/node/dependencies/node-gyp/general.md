@@ -7,7 +7,7 @@ This document is the primary architectural reference for `node-gyp` inside Sandb
 It defines:
 
 - the documented architecture track for `node-gyp` in governed Node monorepos
-- the current recommended host-sync overlay for host-not-isolated VS Code / Cursor workflows
+- the current recommended host-sync overlay for host-sync VS Code / Cursor workflows
 - the split between Python provisioning, host-provided Microsoft build tools, install-box config, and build commands
 
 ## Documentation map
@@ -29,8 +29,8 @@ It defines:
 
 ### Generic baselines that remain the source of truth
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 

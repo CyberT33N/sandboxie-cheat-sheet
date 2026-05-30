@@ -8,8 +8,8 @@ The command example below comes from an older host-shaped dependency layout and 
 
 Recommended architecture:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 
 ### Start with specific node.exe
 

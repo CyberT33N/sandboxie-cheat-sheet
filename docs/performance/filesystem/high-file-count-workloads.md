@@ -148,4 +148,4 @@ instead of:
 ## Related documents
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\troubleshooting\performance.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`

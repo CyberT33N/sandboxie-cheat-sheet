@@ -64,7 +64,7 @@ The new primary Electron-Vite overlay is:
 
 ## Related documents
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\troubleshooting.md`

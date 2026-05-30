@@ -2,14 +2,14 @@
 
 ## Architectural status
 
-This document is the `node-gyp`-specific overlay for the current recommended host-not-isolated IDE model in this repository.
+This document is the `node-gyp`-specific overlay for the current recommended host-sync IDE model in this repository.
 
 Single source of truth:
 
 - the generic Node / PNPM monorepo materialization baseline lives in
-  `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+  `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - the install-box / run-box architecture explanation lives in
-  `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
+  `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - this folder keeps only the `node-gyp`-specific host-sync deltas on top of that baseline
 
 ## Assumptions

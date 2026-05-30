@@ -4,8 +4,8 @@
 
 This document still applies to the host-visible debug artifact requirement (`out\` must stay readable on the host), but the recommended surrounding architecture is now the newer install-box materialization / run-box execution model:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
 
 

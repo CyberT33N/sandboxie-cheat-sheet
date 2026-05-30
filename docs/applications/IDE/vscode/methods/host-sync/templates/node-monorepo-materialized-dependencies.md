@@ -519,8 +519,8 @@ Set-Location "C:\git\test\test-mono\apps\frontend"
 
 ## Related documents
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-on-host.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-on-host.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`

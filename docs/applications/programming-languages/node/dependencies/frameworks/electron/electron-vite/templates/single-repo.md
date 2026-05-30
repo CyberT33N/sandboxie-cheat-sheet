@@ -6,7 +6,7 @@ This file documents the older **host-installed / host-mirror** shape.
 
 It remains in the repository as a legacy reference, but it is **not the recommended architecture** for the current repository posture anymore.
 
-For the current recommended install-box materialization / run-box execution model, use the newer host-not-isolated method documents instead.
+For the current recommended install-box materialization / run-box execution model, use the newer host-sync method documents instead.
 
 ```ini
 # =========================

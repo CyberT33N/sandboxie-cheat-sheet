@@ -41,7 +41,7 @@ Do **not** broadly open the entire package `node_modules` tree just because `esb
 
 ## Related documents
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\angular\general.md`
 - `docs\applications\programming-languages\node\dependencies\tsx\general.md`

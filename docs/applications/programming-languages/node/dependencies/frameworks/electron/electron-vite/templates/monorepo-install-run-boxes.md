@@ -2,11 +2,11 @@
 
 ## Architectural status
 
-This document is the Electron-Vite-specific overlay for the current recommended host-not-isolated IDE model in this repository.
+This document is the Electron-Vite-specific overlay for the current recommended host-sync IDE model in this repository.
 
 Single source of truth:
 
-- the generic Node / PNPM monorepo materialization baseline lives in `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- the generic Node / PNPM monorepo materialization baseline lives in `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - this document keeps only the Electron-Vite-specific deltas on top of that baseline
 
 Assumptions:
@@ -22,7 +22,7 @@ This replaces the older host-installed / host-mirror Electron-Vite templates as 
 
 Before applying anything below, complete the generic monorepo baseline here:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 
 That document is the source of truth for:
 
@@ -183,7 +183,7 @@ The following settings were removed from the recommended reduced configuration b
 
 Prerequisite:
 
-- complete the generic monorepo workflow from `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md` first
+- complete the generic monorepo workflow from `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md` first
 
 ### Step 1 - mirror the Electron runtime payload into the shared toolchain root
 
@@ -316,7 +316,7 @@ OpenFilePath=node.exe,C:\git\test\test-mono\apps\desktop-app\node_modules\.vite\
 
 ## Related documents
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\esbuild\general.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\general.md`

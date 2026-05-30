@@ -129,8 +129,8 @@ OpenFilePath=node.exe,C:\shared\sandbox-toolchains\node-monorepo-general\cache\p
 
 ## Related documents
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\dependencies-installed-in-box.md`
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`

@@ -8,7 +8,7 @@ Do **not** copy this page as a full standalone install-box config.
 
 The generic install-box baseline remains:
 
-- `docs\applications\IDE\vscode\methods\host-not-isolated\templates\node-monorepo-materialized-dependencies.md`
+- `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 
 This page documents only the extra rules that were required for:
 
