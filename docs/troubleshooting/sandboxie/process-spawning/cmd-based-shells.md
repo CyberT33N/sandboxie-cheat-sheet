@@ -134,6 +134,20 @@ Any application, framework, or runtime can be affected if it:
 - shells out through `powershell.exe`
 - or otherwise assumes that spawned host shells are available under the same rules as the interactive terminal
 
+## Important PNPM-specific nuance
+
+In validated boxed-owned-toolchain testing, there was an important split:
+
+- setting PNPM `scriptShell` to a box-local Bash `.exe` fixed lifecycle execution during `pnpm install`
+- but `pnpm exec ...` still remained a separate failure surface
+
+So when troubleshooting PNPM on Windows under Sandboxie, distinguish between:
+
+1. lifecycle script execution during install / rebuild
+2. `pnpm exec` command execution
+
+They are related, but they are not necessarily fixed by the same configuration change.
+
 ## Related
 
 - `docs\troubleshooting\sandboxie\privacy-mode\host-user-space-vs-box-root.md`

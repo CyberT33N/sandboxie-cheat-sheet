@@ -141,10 +141,66 @@ Any remaining failed optional native installs must now be analyzed individually.
 After the lifecycle-shell fix, the next mandatory validation steps are:
 
 1. inspect optional native installs that were skipped
-2. verify `nx` commands directly under the new shell setup:
-   - `pnpm exec nx --version`
-   - `pnpm exec nx report`
-   - `pnpm exec nx show projects`
+2. verify `nx` commands directly under the new shell setup
+
+## Important follow-up: `pnpm exec` versus direct `nx`
+
+The next validation showed that `pnpm exec nx ...` is a separate problem surface.
+
+Observed result:
+
+- `pnpm exec nx --version` still failed with `spawn EPERM`
+
+Architectural interpretation:
+
+- the `scriptShell` fix resolved PNPM lifecycle execution during `pnpm install`
+- but `pnpm exec` still uses its own Windows exec path
+- that means `pnpm exec` can still fall back into a host-shell / `cmd.exe`-dependent execution layer
+
+So for the boxed-owned-toolchain verification path, `pnpm exec nx ...` must not be treated as the primary proof surface.
+
+## Validated direct `nx` entrypoint
+
+The validated direct resolution flow was:
+
+```powershell
+$nxCli = node -p "try { require.resolve('nx/bin/nx.js') } catch { require.resolve('nx/dist/bin/nx.js') }"
+$nxCli
+```
+
+Then:
+
+```powershell
+node $nxCli --version
+node $nxCli report
+node $nxCli show projects
+```
+
+This proved:
+
+- `nx` itself is installed and executable
+- the remaining issue is not the Nx package as such
+- the remaining issue is in the execution path around `pnpm exec` and then, separately, Nx socket path handling
+
+## Current `nx` blocker: socket path length
+
+Direct `nx` execution produced the next concrete blocker:
+
+- `Attempted to open socket that exceeds the maximum socket length`
+
+That means the next required fix is to shorten the Nx socket directory explicitly, for example through `NX_SOCKET_DIR`.
+
+## Current next verification commands
+
+The next intended verification step is:
+
+```powershell
+$env:NX_SOCKET_DIR = (Join-Path $env:BOXED_LOCAL_TEMP_ROOT 'nx-sock')
+New-Item -ItemType Directory -Force -Path $env:NX_SOCKET_DIR | Out-Null
+
+node $nxCli report
+node $nxCli show projects
+```
 
 ## Related
 
