@@ -56,6 +56,13 @@ It does **not** contain project-specific absolute toolchain paths.
 
 Those belong in bootstrap and project-adapter logic.
 
+The current validated state keeps the terminal profile `env` block with:
+
+- `PATH` prepending only the Starship binary location
+- `STARSHIP_CONFIG` pointing to the host-side `starship.toml`
+
+The earlier terminal hang investigation showed that the blocking behavior came from slow boxed `git status` work in a large repository, not from the existence of the `env` block itself.
+
 ## Canonical settings content
 
 ```json

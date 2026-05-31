@@ -88,12 +88,14 @@ ForceFolder=C:\Tools\DevBoxShell
 # =========================
 # Monitoring / tracing
 # =========================
-FileTrace=*
-PipeTrace=*
-KeyTrace=*
-IpcTrace=*
-GuiTrace=*
-ClsidTrace=*
+# Debug-only tracing; do not leave enabled during normal operation.
+# It can massively distort performance for high-file-count workloads.
+# FileTrace=*
+# PipeTrace=*
+# KeyTrace=*
+# IpcTrace=*
+# GuiTrace=*
+# ClsidTrace=*
 
 # =========================
 # Resource access policy (least privilege, program-scoped)

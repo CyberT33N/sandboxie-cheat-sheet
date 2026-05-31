@@ -221,6 +221,13 @@ Target content:
 }
 ```
 
+This current validated state intentionally keeps the `env` block in the terminal profile:
+
+- `PATH` prepends `C:\Program Files\starship\bin`
+- `STARSHIP_CONFIG` points to `C:\Users\denni\.config\starship.toml`
+
+The boxed-terminal investigation showed that the blocking behavior came from slow boxed `git status` work in a large repository, not from the presence of the `env` property itself.
+
 ## Optional migration examples
 
 These are optional migration helpers, not required as part of the scratch-first default:

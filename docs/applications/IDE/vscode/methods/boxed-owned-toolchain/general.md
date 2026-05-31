@@ -62,6 +62,7 @@ Core model:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\project-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\observations-and-signals.md`
+- `docs\performance\filesystem\sandboxie-debug-tracing.md`
 
 ### 7. Provisioning
 

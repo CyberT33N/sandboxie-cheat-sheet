@@ -77,12 +77,13 @@ DropConHostIntegrity=y
 BlockNetworkFiles=y
 UseRamDisk=n
 
-FileTrace=*
-PipeTrace=*
-KeyTrace=*
-IpcTrace=*
-GuiTrace=*
-ClsidTrace=*
+# debug-only tracing lines; do not keep them enabled for normal operation
+# FileTrace=*
+# PipeTrace=*
+# KeyTrace=*
+# IpcTrace=*
+# GuiTrace=*
+# ClsidTrace=*
 
 # no Template=Chrome_KB5027231_fix
 # no SpecialImage=chrome,Code.exe
@@ -116,7 +117,10 @@ This target example intentionally omits:
 
 Those belonged to earlier or transitional states, not to the final method contract.
 
+The wildcard trace lines are intentionally shown commented out above because they are a debug surface, not part of the normal day-to-day box configuration.
+
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boxes\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\observations-and-signals.md`
+- `docs\performance\filesystem\sandboxie-debug-tracing.md`

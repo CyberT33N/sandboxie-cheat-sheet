@@ -64,3 +64,4 @@ over trying to preserve a Chromium-special-image classification for `Code.exe`.
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\project-box.md`
+- `docs\performance\filesystem\sandboxie-debug-tracing.md`

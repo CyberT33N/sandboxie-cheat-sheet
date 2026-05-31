@@ -91,12 +91,14 @@ ForceFolder=C:\git\test\test-synchronizer\.pnpm\electron@29.4.6\node_modules\ele
 # Monitoring / tracing
 # =========================
 DisableResourceMonitor=y
-FileTrace=*
-PipeTrace=*
-KeyTrace=*
-IpcTrace=*
-GuiTrace=*
-ClsidTrace=*
+# Debug-only tracing; do not leave enabled during normal operation.
+# It can massively distort performance for high-file-count workloads.
+# FileTrace=*
+# PipeTrace=*
+# KeyTrace=*
+# IpcTrace=*
+# GuiTrace=*
+# ClsidTrace=*
 
 # =========================
 # Resource access policy (least privilege, program-scoped)
