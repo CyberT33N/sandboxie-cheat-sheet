@@ -106,19 +106,23 @@ This confirms that the canonical extension store is populated before the project
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1" `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
+  -Action OpenTerminal `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 What happens:
 
 - the named project box is entered
+- the normal Windows PowerShell binary is started inside the box
 - the project config is loaded
 - the generic VS Code project bootstrap is called
 - local `user-data`, `extensions`, and `bootstrap-bin` paths are prepared
 - the shared extension store is mirrored into the local project runtime copy
 - the canonical VS Code user catalog is copied into local `user-data`
 - the Node stack is wired into `PATH`
+
+This intentionally avoids project-specific shell copies and shared terminal binaries.
 
 ## Step 3 - verify the project toolchain in the open boxed terminal
 

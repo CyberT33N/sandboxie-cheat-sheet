@@ -44,9 +44,17 @@ $LASTEXITCODE
 
 After opening a boxed project terminal according to `docs\cli\terminal\general.md`, use it to validate the project box bootstrap and toolchain visibility.
 
-The current sanitized example project terminal script is:
+The preferred sanitized example project terminal entrypoint is:
 
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1 -Action OpenTerminal`
+
+This keeps the launch path on:
+
+- `Start.exe`
+- normal Windows shell binaries
+- bootstrap-selected toolchain wiring
+
+and avoids project-specific shell copies.
 
 ### Verify the project toolchain
 

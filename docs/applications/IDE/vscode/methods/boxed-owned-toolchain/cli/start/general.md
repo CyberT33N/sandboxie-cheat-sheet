@@ -83,6 +83,31 @@ The preferred target shape is:
   -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
+## Recommended project terminal contract
+
+For terminal-only workflows, use the same project bootstrap with `-Action OpenTerminal`.
+
+This keeps the launch path auditable:
+
+- `Start.exe`
+- normal Windows `powershell.exe`
+- project bootstrap
+- explicit `-Action OpenTerminal`
+
+It does **not** require project-specific shell copies or shared terminal binaries.
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
+  -Action OpenTerminal `
+  -RepoPath "C:\Users\denni\source\test-mono"
+```
+
 ## Recommended maintenance action contract
 
 The preferred target shape is:
@@ -104,7 +129,7 @@ The preferred target shape is:
 Using the sanitized example project name `test-mono`, the concrete launchers are:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1` (optional thin convenience wrapper)
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
 
 For the full shared bootstrap tree and the sanitized boilerplate start flow, read:
