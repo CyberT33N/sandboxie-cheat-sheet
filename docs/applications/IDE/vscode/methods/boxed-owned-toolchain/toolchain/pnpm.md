@@ -31,8 +31,21 @@ Bootstrap is responsible for ensuring that:
 
 This keeps the package-manager runtime explicit and reviewable.
 
+## Preferred install guidance
+
+For the current preferred PNPM workflow in this repository, read:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+
+That document covers:
+
+- the preferred boxed-owned-toolchain PNPM posture
+- why a shared host PNPM store is not the baseline
+- how lifecycle shell spawning was fixed with a box-local Bash executable
+
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`

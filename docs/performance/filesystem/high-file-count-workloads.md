@@ -60,23 +60,33 @@ That means:
 
 This repository treats that as an architectural fact that must be accounted for during sandbox design.
 
-## Recommended pattern
+## Important repository correction
 
-For high-file-count, performance-sensitive, non-business-data surfaces, the recommended pattern is:
+In this repository, high-file-count performance analysis must start with trace hygiene first.
 
-- keep the business workspace / source tree governed
-- move large caches and stores into an explicit shared host path
-- expose only those specific paths through narrow Sandboxie rules
+Before treating host-shared caches or stores as the explanation for slowness, first verify that broad Sandboxie debug tracing is disabled and the box has been restarted cleanly.
 
-Typical examples:
+That cross-cutting prerequisite is documented here:
 
-- PNPM content-addressable store
-- Nx native cache
-- shared Python build helper root
+- `docs\performance\filesystem\sandboxie-debug-tracing.md`
+
+## Performance fact versus governance choice
+
+For high-file-count, performance-sensitive, non-business-data surfaces, moving cache-like paths onto the host can improve throughput.
+
+That part is technically true.
+
+However, in this repository it is **not** the preferred default baseline because a host-shared cache/store also changes the trust boundary and can widen cross-box blast radius.
+
+Typical examples of such high-churn infrastructural surfaces are:
+
+- PNPM content-addressable stores
+- Nx native caches
 - package-manager caches
-- other high-churn temp / cache paths
+- temporary unpack trees
+- other reproducible cache-like surfaces
 
-## Why host-shared cache paths help
+## Why host-shared cache paths can help
 
 When a heavy cache/store path is explicitly placed on the host and opened through a narrow rule such as `OpenFilePath`, the expensive sandboxed file-virtualization layer is avoided for that specific path.
 
@@ -87,9 +97,9 @@ That usually leads to much better throughput for:
 - cache reuse
 - repeated reinstall / rebuild cycles
 
-## What should be moved to the host-shared area
+## What may be considered for host-shared placement
 
-Good candidates:
+Technically plausible candidates:
 
 - package-manager stores
 - native caches
@@ -135,17 +145,18 @@ If a workload is:
 - reproducible
 - infrastructural rather than business data
 
-then prefer:
+then first ask:
 
-- a dedicated shared host path
-- a narrow explicit Sandboxie rule
+1. are broad trace wildcards already disabled?
+2. is this really an infrastructural cache/store surface instead of business data?
+3. does the architecture explicitly accept the security trade-off of a host-shared path?
 
-instead of:
+Only if all three answers are satisfactory should a host-shared path even be considered.
 
-- keeping the whole workload inside sandboxed storage
-- or relaxing protection more broadly at the volume level
+For the current preferred governance posture in this repository, box-local caches/stores remain the default baseline and host-shared cache/store placement is a selective legacy optimization, not the main recommendation.
 
 ## Related documents
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\troubleshooting\performance.md`
+- `docs\performance\filesystem\sandboxie-debug-tracing.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\troubleshooting\performance.md`
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`

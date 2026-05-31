@@ -31,7 +31,7 @@ It defines:
 
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 
 ## Architectural status

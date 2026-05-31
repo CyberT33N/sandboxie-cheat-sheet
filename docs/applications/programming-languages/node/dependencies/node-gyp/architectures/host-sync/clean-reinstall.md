@@ -133,4 +133,4 @@ If the reinstall succeeds, then:
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\commands.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\troubleshooting\performance.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\troubleshooting\performance.md`

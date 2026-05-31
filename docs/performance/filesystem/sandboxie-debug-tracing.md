@@ -138,14 +138,16 @@ But removing debug tracing gives you a fairer baseline for deciding:
 
 ## Relationship to host-shared caches and stores
 
-Even if tracing is removed, some high-file-count infrastructural surfaces can still be good candidates for explicit shared host paths, for example:
+Even if tracing is removed, host-shared caches and stores can still improve throughput for some high-file-count infrastructural surfaces.
 
-- pnpm store
-- native caches
-- rebuild caches
-- temp unpack areas
+That technical effect is real, but in this repository it is **not** the default recommendation because host-shared cache/store placement also widens the trust boundary across boxes.
 
-That decision should be made **after** measuring without tracing, not before.
+So the decision order is:
+
+1. remove tracing
+2. re-measure
+3. confirm that the slowdown is still real without debug overhead
+4. only then decide whether a host-shared cache/store trade-off is acceptable
 
 ## What should *not* be externalized first
 
@@ -186,6 +188,7 @@ When performance is poor, the right order is:
 ## Related documents
 
 - `docs\performance\filesystem\high-file-count-workloads.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\troubleshooting\performance.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\project-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\observations-and-signals.md`
