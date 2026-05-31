@@ -79,6 +79,10 @@ Core model:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 
+### 10. Git auth and initial clone
+
+- `docs\applications\git\boxed-owned-toolchain\overview.md`
+
 ## Full shared tree snapshot
 
 ```text

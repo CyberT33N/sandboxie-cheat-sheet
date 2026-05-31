@@ -10,34 +10,60 @@ This document keeps only the VS Code-specific inner commands and validation step
 
 ## Maintenance terminal
 
-After opening a boxed maintenance terminal according to `docs\cli\terminal\general.md`, use it for shared IDE maintenance tasks.
+The maintenance terminal is a valid boxed shell for diagnosis, but it is **not** the preferred day-to-day path for routine extension maintenance.
+
+The preferred operational path is:
+
+- host starts the maintenance wrapper through `Start.exe`
+- the wrapper receives an explicit action such as `InstallExtension` or `ListExtensions`
+- the wrapper runs the correct inner `code.cmd` flow inside the maintenance box
 
 The current maintenance script is:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
 
-### Install an extension
+### Preferred: install an extension from the host
 
 ```powershell
-& "C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code.cmd" `
-  --user-data-dir "C:\shared\sandbox-toolchains\ide\vscode\maintenance\user-data" `
-  --extensions-dir "C:\shared\sandbox-toolchains\ide\vscode\extensions" `
-  --install-extension RooVeterinaryInc.roo-cline
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_MAINTENANCE `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
+  -Action InstallExtension `
+  -ExtensionId "RooVeterinaryInc.roo-cline"
 ```
 
-### Verify success
+### Preferred: list extensions from the host
 
 ```powershell
-$LASTEXITCODE
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_MAINTENANCE `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
+  -Action ListExtensions
 ```
 
-### List installed extensions
+### Diagnostic fallback: run `code.cmd` manually inside an already-open maintenance terminal
+
+Use this only when you are debugging wrapper behavior, quoting, or bootstrap state.
 
 ```powershell
 & "C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code.cmd" `
   --user-data-dir "C:\shared\sandbox-toolchains\ide\vscode\maintenance\user-data" `
   --extensions-dir "C:\shared\sandbox-toolchains\ide\vscode\extensions" `
   --list-extensions
+```
+
+### Verify success
+
+```powershell
+$LASTEXITCODE
 ```
 
 ## Project terminal

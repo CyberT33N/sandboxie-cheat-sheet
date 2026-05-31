@@ -108,6 +108,10 @@ It does **not** require project-specific shell copies or shared terminal binarie
   -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
+Private Git authentication, helper selection, device-code sign-in, and the initial boxed clone before the repo exists are documented here:
+
+- `docs\applications\git\boxed-owned-toolchain\overview.md`
+
 ## Recommended maintenance action contract
 
 The preferred target shape is:
@@ -123,6 +127,22 @@ The preferred target shape is:
   -Action InstallExtension `
   -ExtensionId "RooVeterinaryInc.roo-cline"
 ```
+
+For list-only validation, use the same wrapper contract with `-Action ListExtensions`:
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_MAINTENANCE `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
+  -Action ListExtensions
+```
+
+These host-driven maintenance actions are the preferred standard workflow.
+An already-open maintenance terminal remains useful for troubleshooting, but routine extension installation and extension listing should normally be invoked through the explicit wrapper actions above.
 
 ## Example boilerplate launchers
 

@@ -97,7 +97,43 @@ Get-ChildItem -LiteralPath "C:\shared\sandbox-toolchains\ide\vscode\extensions" 
 
 This confirms that the canonical extension store is populated before the project box mirrors it locally.
 
-## Step 2 - open the project terminal from the host
+## Step 2 - initial boxed clone before the repo exists
+
+The project bootstrap requires the target `RepoPath` to already exist.
+
+That means:
+
+- `Start-TestMonoVSCode.ps1 -Action OpenTerminal` is the correct path only **after** the repo exists
+- a fresh machine or a fully cleared project box needs one initial boxed clone first
+
+The full Git auth and device-code login flow is the Git-domain source of truth:
+
+- `docs\applications\git\boxed-owned-toolchain\overview.md`
+
+The preferred one-shot clone pattern is:
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -Command "Set-Location 'C:\'; `$env:HOME = `$env:USERPROFILE; `$env:GIT_CEILING_DIRECTORIES = 'C:/Users/yourusername/source'; New-Item -ItemType Directory -Force -Path 'C:\Users\yourusername\source' | Out-Null; & 'C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe' -c credential.helper=manager clone 'https://yourgithubuser@github.com/yourorg/test-mono.git' 'C:\Users\yourusername\source\test-mono'"
+```
+
+If Git for Windows shows the helper-selection dialog during this first private access:
+
+- choose `manager`
+- enable `Always use this from now on`
+
+If Git Credential Manager then offers the device-code flow, complete that in the normal host browser according to:
+
+- `docs\applications\git\boxed-owned-toolchain\overview.md`
+
+This keeps the clone inside the project box while still letting the host launch exactly one reproducible command.
+
+## Step 3 - open the project terminal from the host
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
@@ -124,7 +160,7 @@ What happens:
 
 This intentionally avoids project-specific shell copies and shared terminal binaries.
 
-## Step 3 - verify the project toolchain in the open boxed terminal
+## Step 4 - verify the project toolchain in the open boxed terminal
 
 Run these commands inside the open project terminal:
 
@@ -144,7 +180,7 @@ Expected interpretation:
 
 If the resolved `pnpm` version does not match the design target, treat that as a follow-up command-resolution item rather than a project-box start failure.
 
-## Step 4 - start the boxed VS Code GUI from the host
+## Step 5 - start the boxed VS Code GUI from the host
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
@@ -167,7 +203,7 @@ What happens:
   - local `--extensions-dir`
   - the repo path
 
-## Step 5 - verify the VS Code integrated terminal
+## Step 6 - verify the VS Code integrated terminal
 
 Inside the integrated terminal in the boxed VS Code window, run:
 
@@ -181,6 +217,9 @@ node20 --version
 This confirms that the bootstrap-provided environment also reached the integrated terminal.
 
 ## Maintenance prerequisite commands
+
+These host-driven maintenance wrapper commands are the preferred operational path.
+Do not treat manual `code.cmd` typing inside an already-open maintenance terminal as the normal workflow; keep that as a troubleshooting fallback.
 
 ### Install an extension into the canonical shared store
 
