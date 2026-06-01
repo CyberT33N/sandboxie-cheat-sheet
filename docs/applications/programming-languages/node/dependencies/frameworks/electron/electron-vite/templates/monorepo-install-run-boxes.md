@@ -210,6 +210,9 @@ If that cache path does not exist on the host, use another complete host-side El
 
 If the package scripts use `cross-env` and that wrapper is unstable in the boxed Windows flow, use the raw call:
 
+The names `test-mono` and `desktop-app` in this section are sanitized example placeholders.
+Replace them with the real monorepo root and Electron package path in the target project.
+
 ```powershell
 Set-Location "C:\git\test\test-mono\apps\desktop-app"
 $env:PVS = "z1"
@@ -217,7 +220,35 @@ $env:ELECTRON_EXEC_PATH = "C:\shared\sandbox-toolchains\node-monorepo-general\to
 & "C:\Users\yourusername\AppData\Local\nvm\v26.2.0\pnpm.cmd" run _dev:cmd -- --watch
 ```
 
-This raw call remains the most reliable boxed Windows fallback even if the project later keeps the higher-level wrapper scripts for unboxed or other environments.
+This raw call remains the most reliable boxed Windows fallback when:
+
+- the higher-level package scripts are the unstable layer
+- `cross-env` should be bypassed
+- and the stable execution surface is still the versioned `pnpm.cmd` shim
+
+This example is **not** automatically the final answer for every project-specific run mode.
+If any of the following are true:
+
+- the inner `pnpm` surface is itself the failing layer
+- a mode flag such as `--server` must bypass additional package scripts
+- the package models a separate application/runtime line from the outer tooling line (for example through `package.json -> devEngines.runtime`)
+
+then expand the call one level further and invoke the local `electron-vite` binary directly with the package-appropriate `node.exe`.
+
+Example deeper fallback:
+
+```powershell
+Set-Location "C:\git\test\test-mono\apps\desktop-app"
+$node = "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\node.exe"
+$env:PVS = "z1"
+$env:ELECTRON_EXEC_PATH = "C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\electron.exe"
+& $node ".\node_modules\electron-vite\bin\electron-vite.js" dev --watch -- --server
+```
+
+Interpretation:
+
+- use the first example when only the high-level wrappers are unstable
+- use the deeper fallback when `pnpm` must be bypassed completely or when a package-specific runtime/mode contract must be expressed explicitly
 
 ## Troubleshooting
 
