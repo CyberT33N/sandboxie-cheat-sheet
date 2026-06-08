@@ -95,6 +95,7 @@ NormalFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
 NormalFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
 NormalFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
 NormalFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
 
 OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\
 OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\extensions\
@@ -103,7 +104,6 @@ OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\maintenance\
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code-tunnel.exe
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\tools\inno_updater.exe
 
-NormalFilePath=starship.exe,C:\Program Files\starship\bin\
 ReadFilePath=starship.exe,C:\Users\yourusername\.config\starship.toml
 ```
 

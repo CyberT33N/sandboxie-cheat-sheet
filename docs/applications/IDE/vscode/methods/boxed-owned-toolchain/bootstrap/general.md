@@ -39,11 +39,9 @@ Those belong in the bootstrap layer.
 
 The final method does not rely on project-specific `cmd.exe` / `powershell.exe` copies as an architecture principle.
 
-That was an older workaround pattern.
-
 The final design prefers:
 
-- normal Windows shell binaries
+- a locally mirrored shell runtime selected by bootstrap
 - canonical VS Code terminal settings
 - explicit bootstrap-provided environment
 
@@ -54,6 +52,8 @@ The current bootstrap split is:
 - `core\`
 - `platforms\vscode\`
 - `stacks\node\`
+- `stacks\python\`
+- `stacks\starship\`
 - `projects\test-mono\bootstrap\`
 
 This separates:

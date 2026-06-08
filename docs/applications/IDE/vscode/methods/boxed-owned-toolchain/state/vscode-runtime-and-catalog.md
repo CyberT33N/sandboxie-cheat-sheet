@@ -56,38 +56,57 @@ It does **not** contain project-specific absolute toolchain paths.
 
 Those belong in bootstrap and project-adapter logic.
 
-The current validated state keeps the terminal profile `env` block with:
+The current recovery state keeps the terminal profile wiring minimal and lets bootstrap provide the dynamic shell/runtime details.
 
-- `PATH` prepending only the Starship binary location
-- `STARSHIP_CONFIG` pointing to the host-side `starship.toml`
+In particular:
 
-The earlier terminal hang investigation showed that the blocking behavior came from slow boxed `git status` work in a large repository, not from the existence of the `env` block itself.
+- the terminal profile resolves its shell path via `${env:BOXED_GIT_ROOT}`
+- the terminal profile resolves its Bash RC file via `${env:BOXED_BASH_MINIMAL_RC}` / `${env:BOXED_BASH_STARSHIP_RC}`
+- the RC file performs the shell-specific Starship initialization
+
+This keeps the canonical settings file generic while still letting each box receive the correct local mirrored shell/runtime surfaces from bootstrap.
 
 ## Canonical settings content
 
 ```json
 {
   "terminal.integrated.automationProfile.windows": {
-    "path": "C:\\Windows\\System32\\cmd.exe"
+    "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
+    "args": [
+      "--noprofile",
+      "--rcfile",
+      "${env:BOXED_BASH_MINIMAL_RC}",
+      "-i"
+    ],
+    "env": {
+      "CHERE_INVOKING": "1"
+    }
   },
-  "terminal.integrated.defaultProfile.windows": "Boxed PowerShell",
+  "terminal.integrated.defaultProfile.windows": "Boxed Git Bash (Starship)",
   "terminal.integrated.profiles.windows": {
-    "Boxed PowerShell": {
-      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "Boxed Git Bash (Starship)": {
+      "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
       "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
+        "--noprofile",
+        "--rcfile",
+        "${env:BOXED_BASH_STARSHIP_RC}",
+        "-i"
       ],
       "env": {
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
-        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
+        "CHERE_INVOKING": "1"
       }
     },
-    "Boxed CMD": {
-      "path": "C:\\Windows\\System32\\cmd.exe"
+    "Boxed Git Bash (Minimal)": {
+      "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
+      "args": [
+        "--noprofile",
+        "--rcfile",
+        "${env:BOXED_BASH_MINIMAL_RC}",
+        "-i"
+      ],
+      "env": {
+        "CHERE_INVOKING": "1"
+      }
     }
   },
   "terminal.integrated.inheritEnv": true
@@ -108,25 +127,27 @@ Those belong in the bootstrap layer.
 
 The final method does not rely on project-specific `cmd.exe` / `powershell.exe` copies as an architecture principle.
 
-That was an older workaround pattern.
-
 The final design prefers:
 
-- normal Windows shell binaries
+- a locally mirrored shell runtime selected by bootstrap
 - canonical VS Code terminal settings
 - explicit bootstrap-provided environment
 
-## Host prompt exception
+## Starship location
 
-`Starship` can remain on the host because it is shell/prompt infrastructure, not project toolchain governance.
+`Starship` is provisioned under:
 
-The box consumes:
+- `C:\shared\sandbox-toolchains\dev\starship\...`
 
-- `C:\Program Files\starship\bin\starship.exe`
+and mirrored locally into the box execution tree during bootstrap.
+
+The prompt config file may still remain user-owned, for example:
+
 - `C:\Users\denni\.config\starship.toml`
 
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\extensions-seeds-and-local-state.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`

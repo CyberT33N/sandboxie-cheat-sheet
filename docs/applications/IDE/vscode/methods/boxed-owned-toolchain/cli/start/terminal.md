@@ -77,7 +77,7 @@ The preferred sanitized example project terminal entrypoint is:
 This keeps the launch path on:
 
 - `Start.exe`
-- normal Windows shell binaries
+- a bootstrap-selected locally mirrored shell runtime
 - bootstrap-selected toolchain wiring
 
 and avoids project-specific shell copies.

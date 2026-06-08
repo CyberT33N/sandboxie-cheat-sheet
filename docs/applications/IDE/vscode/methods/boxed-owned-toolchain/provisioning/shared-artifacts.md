@@ -51,6 +51,7 @@ $Dirs = @(
   "$SharedRoot\dev\node\26.2.0",
   "$SharedRoot\dev\node\20.19.6",
   "$SharedRoot\dev\pnpm\11.2.2",
+  "$SharedRoot\dev\starship\1.25.1",
   "$SharedBootstrapRoot\core",
   "$SharedBootstrapRoot\platforms\vscode",
   "$SharedBootstrapRoot\stacks\node",
@@ -136,6 +137,33 @@ Resulting entrypoint:
 C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\package\bin\pnpm.cjs
 ```
 
+## Download Starship `1.25.1`
+
+```powershell
+$StarshipVersion = '1.25.1'
+$StarshipZip = Join-Path $env:TEMP "starship-x86_64-pc-windows-msvc-$StarshipVersion.zip"
+$StarshipDest = "C:\shared\sandbox-toolchains\dev\starship\$StarshipVersion"
+
+Invoke-WebRequest `
+  -Uri "https://github.com/starship/starship/releases/download/v$StarshipVersion/starship-x86_64-pc-windows-msvc.zip" `
+  -OutFile $StarshipZip
+
+New-Item -ItemType Directory -Force -Path $StarshipDest | Out-Null
+Remove-Item "$StarshipDest\*" -Recurse -Force -ErrorAction SilentlyContinue
+
+Expand-Archive -LiteralPath $StarshipZip -DestinationPath $StarshipDest -Force
+
+& "$StarshipDest\starship.exe" --version
+```
+
+Expected verification:
+
+```text
+starship 1.25.1
+```
+
+This is the preferred provisioning shape for the boxed-owned-toolchain method.
+
 ## 7-Zip helper download for PortableGit extraction
 
 ```powershell
@@ -195,38 +223,55 @@ Target content:
 ```json
 {
   "terminal.integrated.automationProfile.windows": {
-    "path": "C:\\Windows\\System32\\cmd.exe"
+    "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
+    "args": [
+      "--noprofile",
+      "--rcfile",
+      "${env:BOXED_BASH_MINIMAL_RC}",
+      "-i"
+    ],
+    "env": {
+      "CHERE_INVOKING": "1"
+    }
   },
-  "terminal.integrated.defaultProfile.windows": "Boxed PowerShell",
+  "terminal.integrated.defaultProfile.windows": "Boxed Git Bash (Starship)",
   "terminal.integrated.profiles.windows": {
-    "Boxed PowerShell": {
-      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+    "Boxed Git Bash (Starship)": {
+      "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
       "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
+        "--noprofile",
+        "--rcfile",
+        "${env:BOXED_BASH_STARSHIP_RC}",
+        "-i"
       ],
       "env": {
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
-        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
+        "CHERE_INVOKING": "1"
       }
     },
-    "Boxed CMD": {
-      "path": "C:\\Windows\\System32\\cmd.exe"
+    "Boxed Git Bash (Minimal)": {
+      "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
+      "args": [
+        "--noprofile",
+        "--rcfile",
+        "${env:BOXED_BASH_MINIMAL_RC}",
+        "-i"
+      ],
+      "env": {
+        "CHERE_INVOKING": "1"
+      }
     }
   },
   "terminal.integrated.inheritEnv": true
 }
 ```
 
-This current validated state intentionally keeps the `env` block in the terminal profile:
+This current recovery state intentionally:
 
-- `PATH` prepends `C:\Program Files\starship\bin`
-- `STARSHIP_CONFIG` points to `C:\Users\denni\.config\starship.toml`
+- keeps the automation profile on a minimal Bash RC
+- keeps the default interactive profile on a Starship-enabled Bash RC
+- resolves the shell and RC paths through bootstrap-provided `${env:...}` variables
 
-The boxed-terminal investigation showed that the blocking behavior came from slow boxed `git status` work in a large repository, not from the presence of the `env` property itself.
+This allows the canonical settings file to remain shared while bootstrap still injects the correct box-local runtime paths at launch time.
 
 ## Optional migration examples
 
@@ -261,3 +306,4 @@ Copy-Item "$env:USERPROFILE\.roo\*" `
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`

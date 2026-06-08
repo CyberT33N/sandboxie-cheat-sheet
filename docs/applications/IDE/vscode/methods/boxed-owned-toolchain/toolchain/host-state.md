@@ -9,6 +9,7 @@ The final target state for this method is:
 - no host Node
 - no host pnpm
 - no host nvm
+- no host Starship binary
 
 The host must not remain the accidental fallback execution surface for the development toolchain.
 
@@ -21,16 +22,16 @@ If host-side developer toolchains remain installed, the architecture becomes vul
 - hidden dependence on host state
 - drift between intended boxed behavior and actual execution behavior
 
-## Host exception
+## Prompt config location
 
-`Starship` may remain on the host because it is shell/prompt infrastructure rather than project toolchain governance.
+The final method provisions the `Starship` binary under the shared toolchain root and mirrors it locally into the box execution tree during bootstrap.
 
-Consumed host paths include:
+The prompt config file may still remain user-owned, for example:
 
-- `C:\Program Files\starship\bin\starship.exe`
 - `C:\Users\denni\.config\starship.toml`
 
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\vscode-runtime-and-catalog.md`

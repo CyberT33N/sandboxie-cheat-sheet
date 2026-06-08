@@ -13,6 +13,7 @@ From a domain-driven and 12-factor perspective, this location and split are inte
 - reusable bootstrap primitives belong in shared infrastructure
 - VS Code-specific orchestration belongs in a VS Code platform layer
 - Node-specific runtime wiring belongs in a Node stack layer
+- prompt/runtime wiring can live in a dedicated stack layer when it must be mirrored and initialized explicitly
 - project-specific launchers belong under the specific project subtree
 
 This keeps the implementation split by responsibility instead of by accidental current usage.
@@ -59,6 +60,9 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    starship\
+      1.25.1\
+        starship.exe
     bootstrap\
       core\
         Bootstrap.Common.psm1
@@ -70,6 +74,10 @@ C:\shared\sandbox-toolchains\
       stacks\
         node\
           Bootstrap.Node.psm1
+        python\
+          Bootstrap.Python.psm1
+        starship\
+          Bootstrap.Starship.psm1
   projects\
     test-mono\
       bootstrap\
@@ -137,6 +145,32 @@ The current file is:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
 
+### `dev\bootstrap\stacks\python\`
+
+This is the Python stack adapter.
+
+It contains Python runtime mirroring and PATH wiring that can be reused by project or maintenance boxes.
+
+The current file is:
+
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
+
+### `dev\bootstrap\stacks\starship\`
+
+This is the Starship prompt/runtime adapter.
+
+It contains prompt-specific runtime support when `Starship` must be mirrored locally into the box execution tree:
+
+- detect whether shared Starship is provisioned
+- mirror the shared Starship runtime locally
+- prepend the local Starship directory into `PATH`
+- generate `bash.minimal.rc`
+- generate `bash.starship.rc`
+
+The current file is:
+
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\starship\Bootstrap.Starship.psm1`
+
 ### `projects\<project>\bootstrap\`
 
 This is the project adapter layer.
@@ -169,6 +203,8 @@ Provides the generic reusable helpers:
 - `Test-DirectoryHasContent`
 - `Sync-TreeMirror`
 - `Initialize-TreeIfMissing`
+- `Copy-TreeContents`
+- `Initialize-TreeCopyIfMissing`
 - `Write-AsciiFile`
 - `Prepend-PathEntries`
 
@@ -180,6 +216,24 @@ Provides the Node stack wiring:
 - creates `pnpm.cmd`
 - creates additional node wrappers such as `node20.cmd`
 - prepends `bootstrap-bin`, `git\cmd`, and the primary `Node` root to `PATH`
+
+### `Bootstrap.Python.psm1`
+
+Provides the Python stack wiring:
+
+- validates the shared Python surface
+- mirrors the selected Python version locally
+- prepends the local Python version root into `PATH`
+
+### `Bootstrap.Starship.psm1`
+
+Provides the Starship prompt/runtime wiring:
+
+- validates whether shared Starship is present
+- mirrors Starship locally when it is provisioned
+- prepends the local Starship directory into `PATH`
+- generates `bash.minimal.rc`
+- generates `bash.starship.rc`
 
 ### `Bootstrap.VSCode.psm1`
 
@@ -216,6 +270,8 @@ Provides the reusable project-box orchestration:
 - synchronizes shared extensions into a box-local extension runtime copy
 - initializes seeds
 - initializes the Node toolchain layer
+- initializes the Python toolchain layer when configured
+- initializes the Starship prompt/runtime layer
 - supports:
   - `LaunchVSCode`
   - `OpenTerminal`
@@ -231,6 +287,7 @@ Provides the example `test-mono` project contract:
 - seed paths
 - shared Git root
 - primary `Node 26.2.0`
+- optional shared Starship root
 - shared `pnpm.cjs`
 - additional `node20` command
 
@@ -259,6 +316,7 @@ The current runtime contract is:
 - project `user-data` is box-local
 - shared settings are copied into the local `user-data`
 - `.roo` and `globalStorage` are initialized from seeds only when missing
+- prompt/runtime helper files such as Bash RC files are generated in `bootstrap-bin`
 
 This preserves the architecture contract:
 

@@ -36,6 +36,7 @@ This layer contains:
 - the canonical extension store
 - seed material for path-hardcoded extension state
 - shared Git / Node / pnpm runtimes
+- shared Starship runtime
 - bootstrap and runner helpers
 
 ### Project box layer
@@ -132,6 +133,9 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    starship\
+      1.25.1\
+        starship.exe
     bootstrap\
       core\
         Bootstrap.Common.psm1
@@ -143,6 +147,10 @@ C:\shared\sandbox-toolchains\
       stacks\
         node\
           Bootstrap.Node.psm1
+        python\
+          Bootstrap.Python.psm1
+        starship\
+          Bootstrap.Starship.psm1
   projects\
     test-mono\
       bootstrap\
@@ -166,8 +174,6 @@ This method is ranked as:
 3. far above the host-installed toolchain anti-pattern
 
 Use the host-sync method only when the IDE must remain on the host.
-
-Keep host-installed dependency installation only as a legacy anti-pattern reference.
 
 ## Related
 

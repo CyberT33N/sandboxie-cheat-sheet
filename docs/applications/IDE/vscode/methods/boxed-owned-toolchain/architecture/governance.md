@@ -19,6 +19,7 @@ The following are treated as canonical shared assets:
 - canonical extension store
 - canonical seed material for path-hardcoded extension state
 - versioned shared Git / Node / pnpm runtimes
+- versioned shared Starship runtime
 
 ### Author
 
@@ -138,10 +139,7 @@ Final host target state:
 - no host Node
 - no host pnpm
 - no host nvm
-
-Host exception:
-
-- `Starship` may remain because it is shell/prompt infrastructure, not project toolchain governance
+- no host Starship binary
 
 ## Related
 
