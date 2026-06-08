@@ -12,13 +12,11 @@ The Git domain is being normalized toward an explicit `architectures\...` split.
 
 This file is the architecture entrypoint for the host-sync variant.
 
-## Current source of truth
+## Current scope
 
-The detailed current host-sync Git write-up still lives here:
+This file is the host-sync Git architecture entrypoint.
 
-- `docs\applications\git\host-sync\general.md`
-
-Use that document for the currently preserved host-visible / legacy Git path notes.
+It preserves the host-visible / legacy Git path as a secondary reference only.
 
 ## Related
 

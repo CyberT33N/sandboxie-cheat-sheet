@@ -49,7 +49,7 @@ This is the **preferred** `node-gyp` architecture track in the current repositor
 
 The explored alternative where Microsoft Build Tools should be installed from inside the sandbox is documented here:
 
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 
 That alternative is currently not validated and should not replace the host-sync method.
 
@@ -57,7 +57,7 @@ That alternative is currently not validated and should not replace the host-sync
 
 From a pure security perspective, there is currently **no documented security advantage** in taking the host-provided Microsoft Visual Studio Build Tools and reinstalling them into a shared toolchain directory such as `C:\shared\sandbox-toolchains\...`.
 
-The security-relevant property of the current preferred method is:
+The security-relevant property of the current documented host-sync baseline is:
 
 - the Microsoft Build Tools remain host-provided
 - the install box consumes them through explicit Sandboxie visibility rules
@@ -69,11 +69,11 @@ If the Build Tools were instead installed host-side into a shared toolchain path
 - clearer organizational ownership of the toolchain location
 - potentially cleaner operational documentation
 
-It would **not**, by itself, produce a meaningful security improvement over the current preferred host-sync method.
+It would **not**, by itself, produce a meaningful security improvement over the current documented host-sync baseline.
 
 Therefore:
 
-- if the question is primarily about security, the current host-provided baseline is already the preferred method
+- if the question is primarily about security, the current host-provided host-sync baseline is already sufficient from the documented `node-gyp` perspective
 - if a future change moves the Build Tools into a shared host-side install path, that should be justified by versioning or organizational reasons, not by an assumed security benefit
 
 ## Documentation map
@@ -94,7 +94,7 @@ Therefore:
 ## Related documents
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\host-sync\overview.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\python\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`

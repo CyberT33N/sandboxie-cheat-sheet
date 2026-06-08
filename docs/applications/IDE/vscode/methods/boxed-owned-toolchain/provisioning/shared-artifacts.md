@@ -100,7 +100,7 @@ Binary-specific provisioning is now owned by the application domains and is re-r
 - Git: `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 - Node runtime: `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
-- Python: `docs\applications\programming-languages\python\architectures\boxed-owned-toolchain\overview.md`
+- Python: `docs\applications\programming-languages\python\general.md`
 - Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
 
 This method document keeps only the shared-tree orchestration and VS Code-specific provisioning surfaces.

@@ -14,7 +14,7 @@ This is the current validated baseline for this repository.
 
 The explored alternative where Microsoft Build Tools should be installed from inside the sandbox is documented here:
 
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 
 That alternative is currently not validated. The host-provided method described on this page remains the preferred baseline.
 

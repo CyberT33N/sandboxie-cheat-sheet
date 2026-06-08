@@ -525,7 +525,7 @@ Set-Location "C:\git\test\test-mono\apps\frontend"
 
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-on-host.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\host-sync\overview.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
 - framework-specific overlays such as Electron / Electron-Vite docs when a package needs more than the generic Node monorepo baseline

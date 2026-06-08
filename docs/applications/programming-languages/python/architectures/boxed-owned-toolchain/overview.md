@@ -2,69 +2,42 @@
 
 ## Status
 
-This is the preferred Python architecture path for the current repository direction.
+This path exists because the repository-wide preferred direction is the boxed-owned-toolchain method.
 
-## Current shared runtime contract
+However, for the Python domain specifically, there is **not yet** a validated boxed-owned-toolchain workflow in this repository.
 
-The current shared Python runtime surface is:
+## What this means
 
-```text
-C:\shared\sandbox-toolchains\dev\python\
-  current.txt
-  3.14.5\
-    python.exe
-```
+At the current state:
 
-The current selected version is read from:
+- do **not** treat the Python domain as having a fully verified boxed-owned-toolchain runtime/package workflow
+- do **not** copy host-sync Python guidance into this path and relabel it as boxed-owned-toolchain truth
+- do **not** infer a validated boxed Python application workflow merely from optional Python hooks in shared bootstrap scripts
 
-```text
-C:\shared\sandbox-toolchains\dev\python\current.txt
-```
+## Current documentation boundary
 
-Bootstrap then mirrors that selected version into the local box execution tree.
+The current detailed Python runtime/package/install guidance in this repository remains on the host-sync side:
 
-## Provisioning contract
+- `docs\applications\programming-languages\python\architectures\host-sync\overview.md`
+- `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
 
-The current shared Python runtime contract is version-pointer based:
+That host-sync material covers the currently documented Python operational truth.
 
-1. place the selected runtime under `C:\shared\sandbox-toolchains\dev\python\<version>\`
-2. update `current.txt` so bootstrap can resolve the active version
+## Repository-level preference versus Python-domain validation
 
-Current selected version:
+The important distinction is:
 
-- `3.14.5`
+- **repository-level preference**: boxed-owned-toolchain remains the preferred overall architecture direction
+- **Python-domain validation state**: a Python-specific boxed-owned-toolchain workflow has not yet been verified enough to become detailed reference truth
 
-## Bootstrap consumption
+## Method-level note
 
-The current Python runtime mirror implementation lives in:
+The boxed-owned VS Code bootstrap currently contains optional Python runtime hooks.
 
-- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
-
-That layer:
-
-- reads `current.txt`
-- validates the selected shared runtime
-- mirrors it into the local box execution tree
-- prepends the local mirrored Python root into `PATH`
-
-## Why this is the preferred path
-
-This keeps Python aligned with the same boxed-owned-toolchain rules used for the other governed runtimes:
-
-- shared versioned source artifacts
-- local mirrored execution
-- host-independent runtime truth
-- bootstrap-owned process wiring
-
-## What this owns
-
-This architecture owns the governed Python binary truth for the boxed-owned-toolchain method.
-
-Application-specific package installation, wrapper automation, GPU specifics, and troubleshooting remain documented in the broader Python area.
+That is a method-level implementation detail, not a Python-domain proof that package installation, dependency behavior, GPU flows, or Python application execution are already validated under boxed-owned-toolchain.
 
 ## Related
 
 - `docs\applications\programming-languages\python\general.md`
 - `docs\applications\programming-languages\python\architectures\host-sync\overview.md`
-- `docs\applications\programming-languages\python\powershell-scripts.md`
-- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\python.md`

@@ -50,10 +50,11 @@ However, it can still be modeled as a versioned shared runtime when:
 
 The current method therefore distinguishes between:
 
-- project toolchain governance such as `Git`, `Node`, `pnpm`, and `Python`
+- governed boxed-owned toolchain/runtime surfaces such as `Git`, `Node`, and `pnpm`
+- optional method-level hooks such as the current Python bootstrap hook
 - shell/prompt runtime support such as `Starship`
 
-Both can live under `C:\shared\sandbox-toolchains\dev\` when local boxed execution requires a mirrored runtime surface.
+These surfaces can live under `C:\shared\sandbox-toolchains\dev\` when local boxed execution requires a mirrored runtime surface.
 
 ## Runtime selection
 
@@ -73,7 +74,7 @@ as the architecture center.
 - Git: `PortableGit` under `dev\git\2.54.0\`
 - Node: versioned runtimes under `dev\node\...`
 - pnpm: unpacked CLI content under `dev\pnpm\11.2.2\package\bin\pnpm.cjs`
-- Python: version-pointer-based shared runtime under `dev\python\`
+- Python: optional bootstrap hook under `dev\python\` exists in the shared scripts, but Python-domain boxed-owned runtime guidance is not yet validated
 - Starship: optional shared prompt runtime under `dev\starship\1.25.1\`
 
 ## Domain ownership
@@ -83,7 +84,7 @@ Binary-specific provisioning and architecture details belong to the application 
 - Git: `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 - Node runtime: `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
-- Python: `docs\applications\programming-languages\python\architectures\boxed-owned-toolchain\overview.md`
+- Python: `docs\applications\programming-languages\python\general.md`
 - Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
 
 This method area keeps the orchestration view, not the binary-specific source of truth.

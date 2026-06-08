@@ -2,7 +2,7 @@
 
 ## Architectural status
 
-This document captures the explored but **not validated** `node-gyp` architecture track where Microsoft Visual Studio Build Tools should be installed from inside a sandbox instead of being consumed from the host through the preferred host-sync model.
+This document captures the explored but **not validated** `node-gyp` architecture track where Microsoft Visual Studio Build Tools should be installed from inside a sandbox instead of being consumed from the host through the documented host-sync model.
 
 This track is currently:
 

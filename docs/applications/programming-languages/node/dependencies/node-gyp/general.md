@@ -16,12 +16,12 @@ It defines:
 
 - recommended host-sync overlay:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
-- exploratory box-owned-toolchain attempt:
-  `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
+- exploratory boxed-owned-toolchain attempt:
+  `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 
 ### Host-sync modules
 
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\python-binary.md`
+- `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\install-box-config.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
@@ -31,7 +31,7 @@ It defines:
 
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\host-sync\overview.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 
 ## Architectural status
@@ -51,7 +51,7 @@ The currently validated `node-gyp` posture for Node monorepos is:
 - consume Microsoft Visual Studio Build Tools and Windows SDK from the host system through explicit Sandboxie visibility rules
 - bootstrap the install-box session with both the Python path and the Visual Studio developer environment before running `node-gyp`
 
-The explored `box-owned-toolchain` attempt is currently **not validated** and remains secondary to the preferred host-sync method.
+The explored boxed-owned-toolchain attempt is currently **not validated** and remains secondary to the documented host-sync method for this `node-gyp` overlay.
 
 ## Why `node-gyp` needs its own overlay
 
@@ -69,6 +69,6 @@ That is why the generic monorepo boilerplate is necessary but not sufficient on 
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\esbuild\general.md`
-- `docs\applications\programming-languages\python\general.md`
+- `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\box-owned-toolchain\general.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`

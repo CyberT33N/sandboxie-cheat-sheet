@@ -124,4 +124,4 @@ This document changes only the inner execution surface for tests.
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\host-sync\overview.md`

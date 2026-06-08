@@ -35,8 +35,8 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 ### Project adapter example
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
 
 ## Why this document changed
 
@@ -353,7 +353,9 @@ Publish-VSCodeMaintenanceAuthoringState `
 
 ## Project adapter example
 
-The current real project adapter example is `test-mono`.
+This section uses the sanitized project adapter example `test-mono`.
+
+It is a documentation-safe boilerplate example, not a claim that the live shared project adapter currently uses that literal project name.
 
 Representative contract:
 

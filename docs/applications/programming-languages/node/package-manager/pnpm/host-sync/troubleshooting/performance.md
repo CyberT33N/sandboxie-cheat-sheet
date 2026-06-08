@@ -101,7 +101,7 @@ So the correct interpretation order is:
 
 ## Related
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\host-sync\overview.md`
 - `docs\performance\filesystem\sandboxie-debug-tracing.md`
 - `docs\performance\filesystem\high-file-count-workloads.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`

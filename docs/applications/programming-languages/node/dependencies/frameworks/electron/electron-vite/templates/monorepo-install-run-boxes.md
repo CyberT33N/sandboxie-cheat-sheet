@@ -350,5 +350,5 @@ OpenFilePath=node.exe,C:\git\test\test-mono\apps\desktop-app\node_modules\.vite\
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\esbuild\general.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\host-sync\overview.md`
 - `docs\applications\programming-languages\node\nvm\general.md`

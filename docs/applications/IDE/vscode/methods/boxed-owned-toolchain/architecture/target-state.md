@@ -103,6 +103,10 @@ The architecture uses fixed versioned binaries and bootstrap-selected runtimes. 
 
 For quick orientation, the current full modeled tree is:
 
+This is a **sanitized modeled snapshot**.
+
+The project subtree uses the sanitized example name `test-mono`.
+
 ```text
 C:\shared\sandbox-toolchains\
   ide\
@@ -133,6 +137,7 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    python\
     starship\
       1.25.1\
         starship.exe
@@ -144,6 +149,7 @@ C:\shared\sandbox-toolchains\
           Bootstrap.VSCode.psm1
           Start-VSCodeMaintenance.ps1
           Start-VSCodeProjectBase.ps1
+          Publish-VSCodeMaintenance.ps1
       stacks\
         node\
           Bootstrap.Node.psm1

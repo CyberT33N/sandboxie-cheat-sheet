@@ -99,6 +99,10 @@ Core model:
 
 ## Full shared tree snapshot
 
+This is a **sanitized modeled snapshot** of the current shared-tree shape.
+
+The project subtree uses the sanitized example name `test-mono`.
+
 ```text
 C:\shared\sandbox-toolchains\
   ide\
@@ -129,6 +133,10 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    python\
+    starship\
+      1.25.1\
+        starship.exe
     bootstrap\
       core\
         Bootstrap.Common.psm1
@@ -137,9 +145,14 @@ C:\shared\sandbox-toolchains\
           Bootstrap.VSCode.psm1
           Start-VSCodeMaintenance.ps1
           Start-VSCodeProjectBase.ps1
+          Publish-VSCodeMaintenance.ps1
       stacks\
         node\
           Bootstrap.Node.psm1
+        python\
+          Bootstrap.Python.psm1
+        starship\
+          Bootstrap.Starship.psm1
   projects\
     test-mono\
       bootstrap\

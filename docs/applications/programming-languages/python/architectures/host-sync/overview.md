@@ -12,6 +12,12 @@ The previous `docs\applications\programming-languages\python\general.md` contain
 
 That content is preserved here to avoid a breaking documentation loss while keeping `python/general.md` as the domain index.
 
+## Additional host-sync module
+
+The current shared `dev\python\current.txt` build-helper contract used by host-sync Node build flows is documented separately here:
+
+- `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
+
 ## Architectural problem statement
 
 Python inside Sandboxie is not just about launching `python.exe`.
@@ -204,6 +210,7 @@ See:
 ## Related
 
 - `docs\applications\programming-languages\python\general.md`
+- `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
 - `docs\applications\programming-languages\python\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\python\cli.md`
 - `docs\applications\programming-languages\python\dependencies.md`

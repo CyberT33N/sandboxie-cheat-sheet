@@ -17,6 +17,18 @@ The boxed-owned-toolchain method uses governed shared Node binaries under:
 
 Bootstrap selects and mirrors the required runtime into the local box execution tree.
 
+## Documentation boundary
+
+This document records the currently validated shared Node runtime contract used by the boxed bootstrap scripts.
+
+It does **not** mean that every Node-domain workflow in this repository is already validated under boxed-owned-toolchain.
+
+In particular:
+
+- dependency-install overlays such as `node-gyp` still have host-sync-owned reference material
+- host-managed runtime history remains on the host-sync side
+- this page should be read as runtime-placement truth, not as blanket proof for every Node use case
+
 ## Selected versions
 
 - `26.2.0` = primary control-plane / tooling runtime
