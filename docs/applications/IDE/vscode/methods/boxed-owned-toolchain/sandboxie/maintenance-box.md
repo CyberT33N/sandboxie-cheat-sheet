@@ -13,13 +13,13 @@ For CLI-driven extension operations, the Maintenance Box must **not** keep:
 
 ## Why this is required
 
-When those Chromium-oriented rules were active, `code.cmd`-based extension commands broke with injected Chromium flags such as:
+When those Chromium-oriented rules were active, `code.cmd`-based maintenance commands broke with injected Chromium flags such as:
 
 ```text
 bad option: --disable-features=PrintCompositorLPAC
 ```
 
-The Maintenance Box must support reliable CLI-driven `code.cmd` operations against the shared extension store, so those rules are incompatible with the method.
+The Maintenance Box must support reliable CLI-driven maintenance and publish operations, so those rules are incompatible with the method.
 
 ## Functional result
 
@@ -27,7 +27,8 @@ With those rules removed, the Maintenance Box can reliably perform:
 
 - extension installation
 - extension listing
-- other `code.cmd`-driven shared IDE maintenance actions
+- other `code.cmd`-driven maintenance actions
+- publish/promote approved maintenance state back to shared canonical surfaces
 
 ## Sanitized target config example
 
@@ -89,17 +90,19 @@ UseRamDisk=n
 # no SpecialImage=chrome,Code.exe
 
 ReadFilePath=C:\shared\sandbox-toolchains\
-
-NormalFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\bootstrap\
+ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\python\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
 
-OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\
+OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\vscode-user\
+OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\seed\globalStorage\
+OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\seed\roo\
 OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\extensions\
-OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\maintenance\
 
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code-tunnel.exe
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\tools\inno_updater.exe
@@ -116,6 +119,11 @@ This target example intentionally omits:
 - Chromium special-image handling for `Code.exe`
 
 Those belonged to earlier or transitional states, not to the final method contract.
+
+The current maintenance runtime itself is expected to execute locally from the mirrored box paths under:
+
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\...`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\execution\...`
 
 The wildcard trace lines are intentionally shown commented out above because they are a debug surface, not part of the normal day-to-day box configuration.
 

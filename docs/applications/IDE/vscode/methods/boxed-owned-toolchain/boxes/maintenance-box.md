@@ -21,11 +21,22 @@ Its responsibilities are:
 
 ## Authoritative write surfaces
 
-The Maintenance Box is the only box that should author:
+The Maintenance Box is the only box that should author and publish changes for:
 
 - `C:\shared\sandbox-toolchains\ide\vscode\catalog\...`
 - `C:\shared\sandbox-toolchains\ide\vscode\extensions\...`
-- `C:\shared\sandbox-toolchains\ide\vscode\maintenance\...`
+
+## Local authoring state
+
+The current maintenance workflow does not live-author directly against those shared surfaces.
+
+Instead, the Maintenance Box authors local working state under the box execution root, for example:
+
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\user-data`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\extensions`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\catalog\...`
+
+Approved changes are then promoted back into the canonical shared surfaces.
 
 ## Operating model
 
@@ -43,6 +54,7 @@ Typical maintenance actions are:
 - `ListExtensions`
 - `OpenTerminal`
 - optional GUI launch for manual inspection
+- publish/promote approved maintenance state
 
 ## Why this box exists
 

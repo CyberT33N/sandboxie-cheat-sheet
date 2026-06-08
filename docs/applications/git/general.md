@@ -22,7 +22,7 @@ This split is intentional:
 
 ### Preferred
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 
 This is the preferred architecture path.
 
@@ -35,7 +35,7 @@ It documents the Git access model for:
 
 ### Secondary / legacy reference
 
-- `docs\applications\git\host-sync\general.md`
+- `docs\applications\git\architectures\host-sync\overview.md`
 
 This remains only as a host-sync / legacy reference and is **not** the preferred default.
 

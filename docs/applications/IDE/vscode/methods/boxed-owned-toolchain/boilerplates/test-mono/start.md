@@ -68,12 +68,16 @@ The documentation tree intentionally keeps boilerplates separately from real pro
 
 The current project-box contract is:
 
-- Maintenance Box is the single writer for:
+- Maintenance Box publishes the canonical shared extension store:
   - `C:\shared\sandbox-toolchains\ide\vscode\extensions`
 - Project Box is a consumer
 - Shared extensions are mirrored to:
-  - `%APPDATA%\VSCodeBoxes\test-mono\extensions`
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\state\extensions`
 - VS Code `user-data` is local to the project box
+- local mirrored VS Code runtime lives under:
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\runtime\...`
+- local mirrored toolchain lives under:
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\...`
 - the canonical VS Code user catalog is copied into local `user-data`
 - seed-backed runtime state is initialized if missing
 
@@ -108,7 +112,7 @@ That means:
 
 The full Git auth and device-code login flow is the Git-domain source of truth:
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 
 The preferred one-shot clone pattern is:
 
@@ -129,7 +133,7 @@ If Git for Windows shows the helper-selection dialog during this first private a
 
 If Git Credential Manager then offers the device-code flow, complete that in the normal host browser according to:
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 
 This keeps the clone inside the project box while still letting the host launch exactly one reproducible command.
 
@@ -154,9 +158,11 @@ What happens:
 - the project config is loaded
 - the generic VS Code project bootstrap is called
 - local `user-data`, `extensions`, and `bootstrap-bin` paths are prepared
+- the selected VS Code runtime is mirrored locally
 - the shared extension store is mirrored into the local project runtime copy
 - the canonical VS Code user catalog is copied into local `user-data`
 - the Node stack is wired into `PATH`
+- optional Python and Starship runtime layers can also be initialized by the project config
 
 This intentionally avoids project-specific shell copies and shared terminal binaries.
 
@@ -169,6 +175,7 @@ git --version
 node --version
 pnpm --version
 node20 --version
+python --version
 ```
 
 Expected interpretation:
@@ -177,6 +184,7 @@ Expected interpretation:
 - `node` should resolve to the primary shared Node runtime
 - `pnpm` should be callable from the prepared environment
 - `node20` should resolve only if the example project keeps the additional secondary runtime
+- `python` should resolve only if the example project keeps the optional shared Python runtime
 
 If the resolved `pnpm` version does not match the design target, treat that as a follow-up command-resolution item rather than a project-box start failure.
 
@@ -212,6 +220,7 @@ git --version
 node --version
 pnpm --version
 node20 --version
+python --version
 ```
 
 This confirms that the bootstrap-provided environment also reached the integrated terminal.

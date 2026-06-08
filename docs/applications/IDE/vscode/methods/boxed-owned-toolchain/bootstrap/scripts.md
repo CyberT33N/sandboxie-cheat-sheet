@@ -2,742 +2,396 @@
 
 ## Scope
 
-This document contains the current shared PowerShell bootstrap scripts for the boxed-owned-toolchain VS Code method.
+This document captures the **current shared bootstrap script contract** for the boxed-owned-toolchain VS Code method.
 
-These are the reusable shared scripts that live under:
+It documents:
 
-```text
-C:\shared\sandbox-toolchains\dev\bootstrap\
-```
+- the exact live shared script paths
+- the responsibility split between the script layers
+- the current runtime contracts that matter architecturally
+- selected current code excerpts that define the behavior
 
-Project-specific example scripts are documented separately here:
+The live shared files under `C:\shared\sandbox-toolchains\...` remain the operational implementation.
 
-- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+## Current live script inventory
 
-## Why this document exists
+### Core
 
-The cheat-sheet should not only describe the bootstrap tree conceptually. It should also contain the complete script bodies so the implementation remains reviewable even when the live shared files are stored outside the repository.
+- `C:\shared\sandbox-toolchains\dev\bootstrap\core\Bootstrap.Common.psm1`
+
+### VS Code platform
+
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Bootstrap.VSCode.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Publish-VSCodeMaintenance.ps1`
+
+### Toolchain stacks
+
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\starship\Bootstrap.Starship.psm1`
+
+### Project adapter example
+
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoTerminal.ps1`
+
+## Why this document changed
+
+Older repository text described:
+
+- `%APPDATA%\VSCodeBoxes\...`
+- shared live maintenance `user-data`
+- direct runtime use from shared without the current local mirror/publish shape
+
+That is no longer the current implementation.
+
+The current architecture is:
+
+- shared canonical source artifacts
+- local mirrored execution
+- local maintenance authoring state
+- explicit promotion back into shared canonical surfaces
 
 ## `Bootstrap.Common.psm1`
 
+This is the filesystem/bootstrap helper kernel.
+
+Current helper families include:
+
+- path assertions
+- directory creation
+- file copy helpers
+- tree mirroring
+- tree-copy initialization with exclusion support
+- ASCII file generation
+- `PATH` prefix composition
+
+Representative current helpers:
+
 ```powershell
-Set-StrictMode -Version Latest
-
-function Assert-PathExists {
-  [CmdletBinding()]
+function Copy-TreeContents {
   param(
-    [Parameter(Mandatory = $true)]
-    [string]$Path,
-
-    [Parameter(Mandatory = $true)]
-    [string]$Label
-  )
-
-  if (-not (Test-Path -LiteralPath $Path)) {
-    throw "$Label not found: $Path"
-  }
-}
-
-function Ensure-Directory {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Path
-  )
-
-  if (-not (Test-Path -LiteralPath $Path)) {
-    New-Item -ItemType Directory -Force -Path $Path | Out-Null
-  }
-}
-
-function Copy-FileIfExists {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
     [string]$Source,
-
-    [Parameter(Mandatory = $true)]
-    [string]$Destination
-  )
-
-  if (-not (Test-Path -LiteralPath $Source)) {
-    return
-  }
-
-  $parent = Split-Path -Parent $Destination
-  if ($parent) {
-    Ensure-Directory -Path $parent
-  }
-
-  Copy-Item -LiteralPath $Source -Destination $Destination -Force
-}
-
-function Test-DirectoryHasContent {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Path
-  )
-
-  if (-not (Test-Path -LiteralPath $Path)) {
-    return $false
-  }
-
-  return @(
-    Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue
-  ).Count -gt 0
-}
-
-function Invoke-RobocopySync {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Source,
-
-    [Parameter(Mandatory = $true)]
     [string]$Destination,
-
-    [switch]$Mirror
+    [string[]]$ExcludeRelativePaths = @()
   )
 
-  Assert-PathExists -Path $Source -Label 'Sync source'
-  Ensure-Directory -Path $Destination
-
-  $arguments = @(
-    $Source
-    $Destination
-  )
-
-  if ($Mirror) {
-    $arguments += '/MIR'
-  }
-  else {
-    $arguments += '/E'
-  }
-
-  $arguments += @(
-    '/R:1'
-    '/W:1'
-    '/NFL'
-    '/NDL'
-    '/NJH'
-    '/NJS'
-    '/NP'
-  )
-
-  & robocopy @arguments | Out-Null
-
-  $exitCode = $LASTEXITCODE
-  if ($exitCode -ge 8) {
-    throw "robocopy failed: $Source -> $Destination (exit $exitCode)"
-  }
-
-  $global:LASTEXITCODE = 0
+  # copies a source tree into a destination while allowing excluded relative paths
 }
 
-function Sync-TreeMirror {
-  [CmdletBinding()]
+function Initialize-TreeCopyIfMissing {
   param(
-    [Parameter(Mandatory = $true)]
     [string]$Source,
-
-    [Parameter(Mandatory = $true)]
-    [string]$Destination
+    [string]$Destination,
+    [string[]]$ExcludeRelativePaths = @()
   )
 
-  Invoke-RobocopySync -Source $Source -Destination $Destination -Mirror
+  # initializes a destination tree once from a source tree copy
 }
-
-function Initialize-TreeIfMissing {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Source,
-
-    [Parameter(Mandatory = $true)]
-    [string]$Destination
-  )
-
-  if (-not (Test-Path -LiteralPath $Source)) {
-    return
-  }
-
-  if ((Test-Path -LiteralPath $Destination) -and (Test-DirectoryHasContent -Path $Destination)) {
-    return
-  }
-
-  Invoke-RobocopySync -Source $Source -Destination $Destination
-}
-
-function Write-AsciiFile {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$Path,
-
-    [Parameter(Mandatory = $true)]
-    [string]$Content
-  )
-
-  $parent = Split-Path -Parent $Path
-  if ($parent) {
-    Ensure-Directory -Path $parent
-  }
-
-  [System.IO.File]::WriteAllText($Path, $Content, [System.Text.Encoding]::ASCII)
-}
-
-function Prepend-PathEntries {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string[]]$Entries
-  )
-
-  $allEntries = New-Object 'System.Collections.Generic.List[string]'
-  $seen = New-Object 'System.Collections.Generic.HashSet[string]' ([System.StringComparer]::OrdinalIgnoreCase)
-
-  foreach ($entry in $Entries + ($env:PATH -split ';')) {
-    if ([string]::IsNullOrWhiteSpace($entry)) {
-      continue
-    }
-
-    if ($seen.Add($entry)) {
-      $allEntries.Add($entry)
-    }
-  }
-
-  $env:PATH = ($allEntries -join ';')
-  return $env:PATH
-}
-
-Export-ModuleMember -Function @(
-  'Assert-PathExists',
-  'Ensure-Directory',
-  'Copy-FileIfExists',
-  'Test-DirectoryHasContent',
-  'Sync-TreeMirror',
-  'Initialize-TreeIfMissing',
-  'Write-AsciiFile',
-  'Prepend-PathEntries'
-)
 ```
+
+These helpers are what make local runtime mirroring practical without forcing every higher-level script to reimplement filesystem logic.
 
 ## `Bootstrap.Node.psm1`
 
+This is the governed Node/Git/PNPM runtime adapter.
+
+Current responsibilities:
+
+- validate the shared Git / Node / PNPM surfaces
+- mirror them locally into the box execution tree
+- generate wrapper commands such as `pnpm.cmd`
+- generate additional node aliases such as `node20.cmd`
+- prepend the correct local runtime paths into `PATH`
+
+Representative current contract:
+
 ```powershell
-Set-StrictMode -Version Latest
-
-Import-Module (Join-Path $PSScriptRoot '..\..\core\Bootstrap.Common.psm1') -Force -DisableNameChecking
-
-function Assert-NodeToolchainLayout {
-  [CmdletBinding()]
+function Initialize-NodeToolchainMirror {
   param(
-    [Parameter(Mandatory = $true)]
     [string]$GitRoot,
-
-    [Parameter(Mandatory = $true)]
     [string]$NodeRoot,
-
-    [Parameter(Mandatory = $true)]
     [string]$PnpmCli,
-
+    [string]$LocalToolchainRoot,
     [hashtable]$AdditionalNodeCommands = @{}
   )
 
-  Assert-PathExists -Path $GitRoot -Label 'Shared Git root'
-  Assert-PathExists -Path (Join-Path $GitRoot 'cmd\git.exe') -Label 'Git executable'
-  Assert-PathExists -Path $NodeRoot -Label 'Primary Node root'
-  Assert-PathExists -Path (Join-Path $NodeRoot 'node.exe') -Label 'Primary Node executable'
-  Assert-PathExists -Path $PnpmCli -Label 'pnpm CLI entrypoint'
-
-  foreach ($name in $AdditionalNodeCommands.Keys) {
-    Assert-PathExists -Path $AdditionalNodeCommands[$name] -Label "Additional Node executable '$name'"
-  }
+  # mirrors Git, Node, PNPM, and optional additional Node runtimes locally
 }
 
 function Initialize-NodeToolchainRuntime {
-  [CmdletBinding()]
   param(
-    [Parameter(Mandatory = $true)]
     [string]$GitRoot,
-
-    [Parameter(Mandatory = $true)]
     [string]$NodeRoot,
-
-    [Parameter(Mandatory = $true)]
     [string]$PnpmCli,
-
-    [Parameter(Mandatory = $true)]
     [string]$BootstrapBin,
-
+    [string]$LocalToolchainRoot,
     [hashtable]$AdditionalNodeCommands = @{}
   )
 
-  Assert-NodeToolchainLayout `
-    -GitRoot $GitRoot `
-    -NodeRoot $NodeRoot `
-    -PnpmCli $PnpmCli `
-    -AdditionalNodeCommands $AdditionalNodeCommands
+  # generates wrapper commands and exposes the local mirrored toolchain
+}
+```
 
-  Ensure-Directory -Path $BootstrapBin
+## `Bootstrap.Python.psm1`
 
-  $primaryNodeExe = Join-Path $NodeRoot 'node.exe'
+This is the version-pointer-based Python runtime adapter.
 
-  Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.cmd') -Content @"
-@echo off
-set "NODE_EXE=$primaryNodeExe"
-set "PNPM_CLI=$PnpmCli"
-"%NODE_EXE%" "%PNPM_CLI%" %*
-"@
+Current responsibilities:
 
-  foreach ($name in $AdditionalNodeCommands.Keys) {
-    $nodeExe = $AdditionalNodeCommands[$name]
+- read `C:\shared\sandbox-toolchains\dev\python\current.txt`
+- validate the selected shared Python runtime
+- mirror that version locally into the box execution tree
+- prepend the local Python root into `PATH`
 
-    Write-AsciiFile -Path (Join-Path $BootstrapBin "$name.cmd") -Content @"
-@echo off
-"$nodeExe" %*
-"@
-  }
+Representative current contract:
 
-  Prepend-PathEntries -Entries @(
-    $BootstrapBin
-    (Join-Path $GitRoot 'cmd')
-    $NodeRoot
-  ) | Out-Null
-
-  $env:BOXED_GIT_ROOT = $GitRoot
-  $env:BOXED_NODE_ROOT = $NodeRoot
-  $env:BOXED_PNPM_CLI = $PnpmCli
-  $env:BOXED_BOOTSTRAP_BIN = $BootstrapBin
-
-  return [pscustomobject]@{
-    GitRoot = $GitRoot
-    NodeRoot = $NodeRoot
-    PnpmCli = $PnpmCli
-    BootstrapBin = $BootstrapBin
-    AdditionalNodeCommands = $AdditionalNodeCommands
-  }
+```powershell
+function Get-SharedPythonCurrentVersion {
+  param([string]$PythonRoot)
 }
 
-Export-ModuleMember -Function @(
-  'Assert-NodeToolchainLayout',
-  'Initialize-NodeToolchainRuntime'
-)
+function Initialize-PythonToolchainRuntime {
+  param(
+    [string]$PythonRoot,
+    [string]$LocalToolchainRoot
+  )
+
+  # resolves the selected version and mirrors it locally
+}
+```
+
+## `Bootstrap.Starship.psm1`
+
+This is the Starship prompt/runtime adapter.
+
+Current responsibilities:
+
+- validate whether shared Starship exists
+- mirror Starship locally
+- prepend the local Starship directory into `PATH`
+- generate `bash.minimal.rc`
+- generate `bash.starship.rc`
+
+Representative current contract:
+
+```powershell
+function Initialize-StarshipRuntime {
+  param(
+    [string]$StarshipRoot,
+    [string]$LocalToolchainRoot,
+    [string]$BootstrapBin,
+    [string]$StarshipConfigPath
+  )
+
+  # mirrors Starship locally and writes the Bash RC files
+}
 ```
 
 ## `Bootstrap.VSCode.psm1`
 
+This is the VS Code platform adapter.
+
+Current responsibilities:
+
+- compute the local box-root-aligned state and execution paths
+- mirror the VS Code runtime locally
+- mirror shared extensions into local runtime state
+- initialize local maintenance authoring state
+- publish/promote approved maintenance state back into shared surfaces
+
+Current path model:
+
 ```powershell
-Set-StrictMode -Version Latest
-
-Import-Module (Join-Path $PSScriptRoot '..\..\core\Bootstrap.Common.psm1') -Force -DisableNameChecking
-
-function Assert-VSCodeLayout {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$CodeExe,
-
-    [Parameter(Mandatory = $true)]
-    [string]$CodeCli,
-
-    [Parameter(Mandatory = $true)]
-    [string]$CatalogUserRoot,
-
-    [Parameter(Mandatory = $true)]
-    [string]$SharedExtensionsRoot
-  )
-
-  Assert-PathExists -Path $CodeExe -Label 'VS Code GUI'
-  Assert-PathExists -Path $CodeCli -Label 'VS Code CLI'
-  Ensure-Directory -Path $CatalogUserRoot
-  Ensure-Directory -Path $SharedExtensionsRoot
-}
-
 function New-VSCodeProjectPaths {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$ProjectName
-  )
+  param([string]$ProjectName)
 
-  $boxRoot = Join-Path $env:APPDATA "VSCodeBoxes\$ProjectName"
-
-  return [pscustomobject]@{
-    BoxRoot = $boxRoot
-    UserData = Join-Path $boxRoot 'user-data'
-    ExtensionsDir = Join-Path $boxRoot 'extensions'
-    BootstrapBin = Join-Path $boxRoot 'bootstrap-bin'
-    LocalGlobalStorage = Join-Path $boxRoot 'user-data\User\globalStorage'
-    RooPath = Join-Path $env:USERPROFILE '.roo'
-  }
+  $boxRoot = Join-Path $env:ProgramFiles "SandboxToolchains\VSCodeBoxes\$ProjectName"
+  $stateRoot = Join-Path $boxRoot 'state'
+  $localExecutionRoot = Join-Path $boxRoot 'execution'
 }
 
-function Sync-VSCodeUserCatalog {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$CatalogUserRoot,
-
-    [Parameter(Mandatory = $true)]
-    [string]$UserDataDir
-  )
-
-  $userRoot = Join-Path $UserDataDir 'User'
-  $settingsPath = Join-Path $CatalogUserRoot 'settings.json'
-  $keybindingsPath = Join-Path $CatalogUserRoot 'keybindings.json'
-  $snippetsSource = Join-Path $CatalogUserRoot 'snippets'
-  $snippetsTarget = Join-Path $userRoot 'snippets'
-
-  Ensure-Directory -Path $userRoot
-
-  Copy-FileIfExists -Source $settingsPath -Destination (Join-Path $userRoot 'settings.json')
-  Copy-FileIfExists -Source $keybindingsPath -Destination (Join-Path $userRoot 'keybindings.json')
-
-  if (Test-Path -LiteralPath $snippetsSource) {
-    Sync-TreeMirror -Source $snippetsSource -Destination $snippetsTarget
-  }
+function New-VSCodeMaintenancePaths {
+  $boxRoot = Join-Path $env:ProgramFiles 'SandboxToolchains\VSCodeBoxes\maintenance'
 }
+```
 
-function Initialize-VSCodeSeedRuntime {
-  [CmdletBinding()]
+Current mirror/publish contract:
+
+```powershell
+function Initialize-VSCodeRuntimeMirror {
   param(
-    [string]$SeedGlobalStorageRoot,
-    [string]$LocalGlobalStorageDir,
-    [string]$SeedRooRoot,
-    [string]$LocalRooDir
-  )
-
-  if (-not [string]::IsNullOrWhiteSpace($SeedGlobalStorageRoot) -and -not [string]::IsNullOrWhiteSpace($LocalGlobalStorageDir)) {
-    Initialize-TreeIfMissing -Source $SeedGlobalStorageRoot -Destination $LocalGlobalStorageDir
-  }
-
-  if (-not [string]::IsNullOrWhiteSpace($SeedRooRoot) -and -not [string]::IsNullOrWhiteSpace($LocalRooDir)) {
-    Initialize-TreeIfMissing -Source $SeedRooRoot -Destination $LocalRooDir
-  }
-}
-
-function Sync-VSCodeExtensionsMirror {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$SharedExtensionsRoot,
-
-    [Parameter(Mandatory = $true)]
-    [string]$LocalExtensionsDir
-  )
-
-  Ensure-Directory -Path $SharedExtensionsRoot
-  Sync-TreeMirror -Source $SharedExtensionsRoot -Destination $LocalExtensionsDir
-}
-
-function Invoke-VSCodeCliInstallExtension {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$CodeCli,
-
-    [Parameter(Mandatory = $true)]
-    [string]$UserDataDir,
-
-    [Parameter(Mandatory = $true)]
-    [string]$ExtensionsDir,
-
-    [Parameter(Mandatory = $true)]
-    [string]$ExtensionId
-  )
-
-  & $CodeCli `
-    --user-data-dir $UserDataDir `
-    --extensions-dir $ExtensionsDir `
-    --install-extension $ExtensionId
-
-  return $LASTEXITCODE
-}
-
-function Invoke-VSCodeCliListExtensions {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
-    [string]$CodeCli,
-
-    [Parameter(Mandatory = $true)]
-    [string]$UserDataDir,
-
-    [Parameter(Mandatory = $true)]
-    [string]$ExtensionsDir
-  )
-
-  & $CodeCli `
-    --user-data-dir $UserDataDir `
-    --extensions-dir $ExtensionsDir `
-    --list-extensions
-
-  return $LASTEXITCODE
-}
-
-function Invoke-VSCodeGui {
-  [CmdletBinding()]
-  param(
-    [Parameter(Mandatory = $true)]
     [string]$CodeExe,
-
-    [Parameter(Mandatory = $true)]
-    [string]$UserDataDir,
-
-    [Parameter(Mandatory = $true)]
-    [string]$ExtensionsDir,
-
-    [string]$WorkspacePath
+    [string]$CodeCli,
+    [string]$LocalRuntimeRoot
   )
 
-  $arguments = @(
-    '--user-data-dir'
-    $UserDataDir
-    '--extensions-dir'
-    $ExtensionsDir
-  )
-
-  if (-not [string]::IsNullOrWhiteSpace($WorkspacePath)) {
-    $arguments += $WorkspacePath
-  }
-
-  & $CodeExe @arguments
-  return $LASTEXITCODE
+  # mirrors the shared VS Code runtime locally and excludes blocked components
 }
 
-Export-ModuleMember -Function @(
-  'Assert-VSCodeLayout',
-  'New-VSCodeProjectPaths',
-  'Sync-VSCodeUserCatalog',
-  'Initialize-VSCodeSeedRuntime',
-  'Sync-VSCodeExtensionsMirror',
-  'Invoke-VSCodeCliInstallExtension',
-  'Invoke-VSCodeCliListExtensions',
-  'Invoke-VSCodeGui'
-)
+function Initialize-VSCodeMaintenanceAuthoringState {
+  # initializes local maintenance catalog/extensions/seeds
+}
+
+function Publish-VSCodeMaintenanceAuthoringState {
+  # promotes local maintenance extensions/catalog/seeds back into shared surfaces
+}
 ```
 
 ## `Start-VSCodeMaintenance.ps1`
 
+This is the maintenance control-plane entry point.
+
+Current behavior:
+
+- mirrors the VS Code runtime locally
+- initializes local maintenance authoring state
+- initializes local Node/Python/Starship toolchain layers
+- sets the Nx environment contract
+- sets local temp/cache paths
+- exposes the promotion script path
+
+Representative current initialization:
+
 ```powershell
-param(
-  [ValidateSet('InstallExtension', 'ListExtensions', 'OpenTerminal', 'LaunchVSCode')]
-  [string]$Action = 'OpenTerminal',
+$maintenancePaths = New-VSCodeMaintenancePaths
+$localRuntimeRoot = Join-Path $maintenancePaths.LocalRuntimeRoot "vscode\$VSCodeVersion"
+$localNxCacheRoot = Join-Path $maintenancePaths.LocalCacheRoot 'nx-native'
+$promotionScript = Join-Path $PSScriptRoot 'Publish-VSCodeMaintenance.ps1'
 
-  [string]$ExtensionId,
-
-  [string]$SharedRoot = 'C:\shared\sandbox-toolchains',
-
-  [string]$VSCodeVersion = '1.121.0'
-)
-
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
-
-Import-Module (Join-Path $PSScriptRoot 'Bootstrap.VSCode.psm1') -Force -DisableNameChecking -Global
-
-$vsCodeRoot = Join-Path $SharedRoot 'ide\vscode'
-$codeExe = Join-Path $vsCodeRoot "runtime\$VSCodeVersion\Code.exe"
-$codeCli = Join-Path $vsCodeRoot "runtime\$VSCodeVersion\bin\code.cmd"
-$catalogUserRoot = Join-Path $vsCodeRoot 'catalog\vscode-user'
-$sharedExtensionsRoot = Join-Path $vsCodeRoot 'extensions'
-$maintenanceUserData = Join-Path $vsCodeRoot 'maintenance\user-data'
-
-Assert-VSCodeLayout `
+$localRuntime = Initialize-VSCodeRuntimeMirror `
   -CodeExe $codeExe `
   -CodeCli $codeCli `
-  -CatalogUserRoot $catalogUserRoot `
-  -SharedExtensionsRoot $sharedExtensionsRoot
+  -LocalRuntimeRoot $localRuntimeRoot
 
-if (-not (Test-Path -LiteralPath $maintenanceUserData)) {
-  New-Item -ItemType Directory -Force -Path $maintenanceUserData | Out-Null
-}
-Sync-VSCodeUserCatalog -CatalogUserRoot $catalogUserRoot -UserDataDir $maintenanceUserData
+Initialize-VSCodeMaintenanceAuthoringState `
+  -SharedCatalogUserRoot $catalogUserRoot `
+  -SharedExtensionsRoot $sharedExtensionsRoot `
+  -SharedSeedGlobalStorageRoot $sharedSeedGlobalStorageRoot `
+  -SharedSeedRooRoot $sharedSeedRooRoot `
+  -MaintenancePaths $maintenancePaths
+```
 
-$env:BOXED_VSCODE_MODE = 'Maintenance'
-$env:BOXED_VSCODE_USERDATA = $maintenanceUserData
-$env:BOXED_SHARED_EXTENSIONS = $sharedExtensionsRoot
+Current env contract highlights:
 
-switch ($Action) {
-  'InstallExtension' {
-    if ([string]::IsNullOrWhiteSpace($ExtensionId)) {
-      throw 'ExtensionId is required for -Action InstallExtension.'
-    }
-
-    $exitCode = Invoke-VSCodeCliInstallExtension `
-      -CodeCli $codeCli `
-      -UserDataDir $maintenanceUserData `
-      -ExtensionsDir $sharedExtensionsRoot `
-      -ExtensionId $ExtensionId
-
-    exit $exitCode
-  }
-
-  'ListExtensions' {
-    $exitCode = Invoke-VSCodeCliListExtensions `
-      -CodeCli $codeCli `
-      -UserDataDir $maintenanceUserData `
-      -ExtensionsDir $sharedExtensionsRoot
-
-    exit $exitCode
-  }
-
-  'LaunchVSCode' {
-    $exitCode = Invoke-VSCodeGui `
-      -CodeExe $codeExe `
-      -UserDataDir $maintenanceUserData `
-      -ExtensionsDir $sharedExtensionsRoot
-
-    exit $exitCode
-  }
-
-  'OpenTerminal' {
-    Write-Host 'Maintenance terminal ready.'
-    Write-Host "UserData: $maintenanceUserData"
-    Write-Host "SharedExtensions: $sharedExtensionsRoot"
-    return
-  }
-
-  default {
-    throw "Unsupported action: $Action"
-  }
-}
+```powershell
+$env:NX_DAEMON = 'false'
+$env:NX_SOCKET_DIR = 'C:\nxs'
+$env:NX_ISOLATE_PLUGINS = 'false'
+$env:BOXED_PROMOTION_SCRIPT = $promotionScript
+$env:BOXED_CODE_CLI = $localRuntime.CodeCli
+$env:BOXED_LOCAL_EXTENSIONS = $maintenancePaths.ExtensionsDir
 ```
 
 ## `Start-VSCodeProjectBase.ps1`
 
+This is the reusable project-box entry point.
+
+Current behavior:
+
+- validates the repo path
+- mirrors the VS Code runtime locally
+- mirrors the shared extension store locally
+- initializes seeds
+- initializes Node, optional Python, and Starship layers
+- sets local temp/Nx environment state
+
+Representative current initialization:
+
 ```powershell
-param(
-  [ValidateSet('LaunchVSCode', 'OpenTerminal')]
-  [string]$Action = 'LaunchVSCode',
-
-  [Parameter(Mandatory = $true)]
-  [string]$ProjectName,
-
-  [Parameter(Mandatory = $true)]
-  [string]$RepoPath,
-
-  [Parameter(Mandatory = $true)]
-  [string]$CodeExe,
-
-  [Parameter(Mandatory = $true)]
-  [string]$CodeCli,
-
-  [Parameter(Mandatory = $true)]
-  [string]$CatalogUserRoot,
-
-  [Parameter(Mandatory = $true)]
-  [string]$SharedExtensionsRoot,
-
-  [string]$SeedGlobalStorageRoot,
-
-  [string]$SeedRooRoot,
-
-  [Parameter(Mandatory = $true)]
-  [string]$GitRoot,
-
-  [Parameter(Mandatory = $true)]
-  [string]$NodeRoot,
-
-  [Parameter(Mandatory = $true)]
-  [string]$PnpmCli,
-
-  [hashtable]$AdditionalNodeCommands = @{}
-)
-
-$ErrorActionPreference = 'Stop'
-Set-StrictMode -Version Latest
-
-Import-Module (Join-Path $PSScriptRoot 'Bootstrap.VSCode.psm1') -Force -DisableNameChecking -Global
-Import-Module (Join-Path $PSScriptRoot '..\..\stacks\node\Bootstrap.Node.psm1') -Force -DisableNameChecking -Global
-
-if (-not (Test-Path -LiteralPath $RepoPath)) {
-  throw "Project repo not found: $RepoPath"
-}
-
-Assert-VSCodeLayout `
+$projectPaths = New-VSCodeProjectPaths -ProjectName $ProjectName
+$localRuntimeRoot = Join-Path $projectPaths.LocalRuntimeRoot "vscode\$vsCodeVersion"
+$localRuntime = Initialize-VSCodeRuntimeMirror `
   -CodeExe $CodeExe `
   -CodeCli $CodeCli `
-  -CatalogUserRoot $CatalogUserRoot `
-  -SharedExtensionsRoot $SharedExtensionsRoot
+  -LocalRuntimeRoot $localRuntimeRoot
 
-$projectPaths = New-VSCodeProjectPaths -ProjectName $ProjectName
-
-if (-not (Test-Path -LiteralPath $projectPaths.UserData)) {
-  New-Item -ItemType Directory -Force -Path $projectPaths.UserData | Out-Null
-}
-
-if (-not (Test-Path -LiteralPath $projectPaths.ExtensionsDir)) {
-  New-Item -ItemType Directory -Force -Path $projectPaths.ExtensionsDir | Out-Null
-}
-
-if (-not (Test-Path -LiteralPath $projectPaths.BootstrapBin)) {
-  New-Item -ItemType Directory -Force -Path $projectPaths.BootstrapBin | Out-Null
-}
-
-Sync-VSCodeUserCatalog -CatalogUserRoot $CatalogUserRoot -UserDataDir $projectPaths.UserData
 Sync-VSCodeExtensionsMirror -SharedExtensionsRoot $SharedExtensionsRoot -LocalExtensionsDir $projectPaths.ExtensionsDir
-
-Initialize-VSCodeSeedRuntime `
-  -SeedGlobalStorageRoot $SeedGlobalStorageRoot `
-  -LocalGlobalStorageDir $projectPaths.LocalGlobalStorage `
-  -SeedRooRoot $SeedRooRoot `
-  -LocalRooDir $projectPaths.RooPath
-
-$nodeRuntime = Initialize-NodeToolchainRuntime `
-  -GitRoot $GitRoot `
-  -NodeRoot $NodeRoot `
-  -PnpmCli $PnpmCli `
+$starshipRuntime = Initialize-StarshipRuntime `
+  -StarshipRoot $StarshipRoot `
+  -LocalToolchainRoot $projectPaths.LocalToolchainRoot `
   -BootstrapBin $projectPaths.BootstrapBin `
-  -AdditionalNodeCommands $AdditionalNodeCommands
+  -StarshipConfigPath $StarshipConfigPath
+```
 
-$env:BOXED_VSCODE_MODE = 'Project'
-$env:BOXED_PROJECT_NAME = $ProjectName
-$env:BOXED_REPO_PATH = $RepoPath
-$env:BOXED_VSCODE_USERDATA = $projectPaths.UserData
-$env:BOXED_LOCAL_EXTENSIONS = $projectPaths.ExtensionsDir
-$env:BOXED_SHARED_EXTENSIONS = $SharedExtensionsRoot
-$env:BOXED_NODE_ROOT = $nodeRuntime.NodeRoot
-$env:BOXED_PNPM_CLI = $nodeRuntime.PnpmCli
-$env:BOXED_NODE_EXTRA_COMMANDS = (($AdditionalNodeCommands.Keys | Sort-Object) -join ',')
+Current env contract highlights:
 
-Set-Location $RepoPath
+```powershell
+$env:NX_DAEMON = 'false'
+$env:NX_SOCKET_DIR = 'C:\nxs'
+$env:NX_ISOLATE_PLUGINS = 'false'
+$env:BOXED_CODE_EXE = $localRuntime.CodeExe
+$env:BOXED_CODE_CLI = $localRuntime.CodeCli
+$env:BOXED_LOCAL_TOOLCHAIN_ROOT = $projectPaths.LocalToolchainRoot
+```
 
-switch ($Action) {
-  'LaunchVSCode' {
-    $null = Invoke-VSCodeGui `
-      -CodeExe $CodeExe `
-      -UserDataDir $projectPaths.UserData `
-      -ExtensionsDir $projectPaths.ExtensionsDir `
-      -WorkspacePath $RepoPath
+## `Publish-VSCodeMaintenance.ps1`
 
-    return
-  }
+This is the current publish/promotion entry point.
 
-  'OpenTerminal' {
-    Write-Host 'Project terminal ready.'
-    Write-Host "ProjectName: $ProjectName"
-    Write-Host "RepoPath: $RepoPath"
-    Write-Host "UserData: $($projectPaths.UserData)"
-    Write-Host "LocalExtensions: $($projectPaths.ExtensionsDir)"
-    Write-Host 'Commands on PATH: git, node, pnpm'
+It promotes:
 
-    if ($AdditionalNodeCommands.Count -gt 0) {
-      Write-Host ("Additional commands: " + (($AdditionalNodeCommands.Keys | Sort-Object) -join ', '))
+- extensions
+- catalog user content
+- seed content
+
+into the canonical shared surfaces below `C:\shared\sandbox-toolchains\ide\vscode\...`.
+
+Representative contract:
+
+```powershell
+Publish-VSCodeMaintenanceAuthoringState `
+  -MaintenancePaths $maintenancePaths `
+  -SharedCatalogUserRoot $sharedCatalogUserRoot `
+  -SharedExtensionsRoot $sharedExtensionsRoot `
+  -SharedSeedGlobalStorageRoot $sharedSeedGlobalStorageRoot `
+  -SharedSeedRooRoot $sharedSeedRooRoot
+```
+
+## Project adapter example
+
+The current real project adapter example is `test-mono`.
+
+Representative contract:
+
+```powershell
+return @{
+  ProjectName = 'test-mono'
+  BoxName = 'VS_CODE_test_MONO'
+  Toolchain = @{
+    GitRoot = Join-Path $devRoot 'git\2.54.0'
+    NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
+    PnpmCli = Join-Path $devRoot 'pnpm\11.2.2\package\bin\pnpm.cjs'
+    PythonRoot = Join-Path $devRoot 'python'
+    StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
+    StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
+    AdditionalNodeCommands = [ordered]@{
+      node20 = Join-Path $devRoot 'node\20.19.6\node-v20.19.6-win-x64\node.exe'
     }
-
-    return
-  }
-
-  default {
-    throw "Unsupported action: $Action"
   }
 }
 ```
 
+## Operational conclusion
+
+The current bootstrap implementation is no longer:
+
+- APPDATA-centered
+- shared-live-maintenance-user-data-centered
+- or direct-shared-runtime execution as the live model
+
+It is now:
+
+- local-mirror execution
+- local maintenance authoring
+- explicit publish/promotion
+- governed multi-runtime bootstrap wiring
+
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`

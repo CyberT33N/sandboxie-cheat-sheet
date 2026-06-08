@@ -192,7 +192,7 @@ and `show projects` returned:
 - `frontend`
 - `webpages`
 - `backend`
-- `privyou`
+- `test`
 
 ## Important nuance: `pnpm exec nx`
 
@@ -260,7 +260,7 @@ For the boxed-own-toolchain architecture in this repository, the current target 
 
 ## Related
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - `docs\troubleshooting\sandboxie\privacy-mode\host-user-space-vs-box-root.md`
 - `docs\applications\version-control\monorepo\nx\host-sync\overview.md`

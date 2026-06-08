@@ -1,24 +1,25 @@
-settings.ini:
-```ini
-# --- Starship ---
-NormalFilePath=starship.exe,C:\Program Files\starship\bin\
-NormalFilePath=powershell.exe,C:\Program Files\starship\bin\
-ReadFilePath=starship.exe,C:\Users\denni\.config\starship.toml
+# Starship
 
-# --- Git (needed by Starship prompt) ---
-NormalFilePath=starship.exe,C:\Program Files\Git\
-NormalFilePath=git.exe,C:\Program Files\Git\
-```
+## Scope
 
+This folder is the Starship-domain documentation area for this repository.
 
+It owns:
 
+- architecture-specific Starship binary placement
+- prompt/runtime boundary guidance
+- host-versus-boxed Starship behavior
 
+## Architecture split
 
-<br><br
+### Preferred
 
----
+- `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
 
-<br><br>
+### Secondary / legacy reference
 
-# Troubleshooting
-- docs\troubleshooting\IDE\vscode\terminal\starship\general.md
+- `docs\applications\terminal\starship\architectures\host-sync\overview.md`
+
+## Related
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`

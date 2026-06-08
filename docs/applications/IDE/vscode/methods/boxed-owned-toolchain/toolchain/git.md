@@ -39,6 +39,6 @@ git version 2.54.0.windows.1
 
 ## Related
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`

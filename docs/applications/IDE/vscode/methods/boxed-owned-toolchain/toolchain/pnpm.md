@@ -35,7 +35,7 @@ This keeps the package-manager runtime explicit and reviewable.
 
 For the current preferred PNPM workflow in this repository, read:
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 
 That document covers:
 
@@ -45,7 +45,8 @@ That document covers:
 
 ## Related
 
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`

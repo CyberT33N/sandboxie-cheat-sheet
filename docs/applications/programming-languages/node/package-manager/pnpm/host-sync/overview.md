@@ -8,7 +8,7 @@ It is **not** the preferred PNPM method in this repository.
 
 The preferred method now lives here:
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 
 This host-sync document remains as a legacy / reference write-up for cases where:
 
@@ -152,7 +152,7 @@ Again:
 
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\nvm\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`

@@ -151,4 +151,4 @@ They are related, but they are not necessarily fixed by the same configuration c
 ## Related
 
 - `docs\troubleshooting\sandboxie\privacy-mode\host-user-space-vs-box-root.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`

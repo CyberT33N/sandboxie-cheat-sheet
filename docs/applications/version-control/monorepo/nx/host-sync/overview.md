@@ -8,7 +8,7 @@ It is **not** the preferred NX method in this repository.
 
 The preferred method now lives here:
 
-- `docs\applications\version-control\monorepo\nx\boxed-own-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 
 This host-sync write-up is kept as a legacy / reference description for environments where:
 
@@ -117,11 +117,11 @@ The preferred architecture is now the boxed-owned-toolchain variant because it k
 
 Read that preferred write-up here:
 
-- `docs\applications\version-control\monorepo\nx\boxed-own-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 
 ## Related
 
-- `docs\applications\version-control\monorepo\nx\boxed-own-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\host-sync\overview.md`
 - `docs\troubleshooting\sandboxie\privacy-mode\host-user-space-vs-box-root.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`

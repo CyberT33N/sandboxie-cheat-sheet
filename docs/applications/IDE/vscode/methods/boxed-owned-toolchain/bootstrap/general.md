@@ -10,9 +10,12 @@ Bootstrap is the place where the method:
 
 - selects the correct shared artifacts
 - initializes the local runtime state
+- mirrors the selected runtime binaries into the local execution tree
 - copies canonical catalog files
 - initializes seed-backed paths
 - mirrors the shared extension store locally
+- prepares local maintenance authoring state
+- applies the current Nx runtime contract
 - wires the toolchain environment
 - launches `Code.exe` or `code.cmd`
 

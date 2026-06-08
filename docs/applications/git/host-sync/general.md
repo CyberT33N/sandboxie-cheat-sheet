@@ -8,7 +8,7 @@ It is **not** the preferred architecture path anymore.
 
 The recommended Git architecture for this repository is:
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 
 ## Why this document still exists
 
@@ -37,4 +37,4 @@ Do not reuse this as the default baseline for the boxed-owned-toolchain method.
 ## Related
 
 - `docs\applications\git\general.md`
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`

@@ -52,6 +52,9 @@ return @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
     PnpmCli = Join-Path $devRoot 'pnpm\11.2.2\package\bin\pnpm.cjs'
+    PythonRoot = Join-Path $devRoot 'python'
+    StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
+    StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
     AdditionalNodeCommands = [ordered]@{
       node20 = Join-Path $devRoot 'node\20.19.6\node-v20.19.6-win-x64\node.exe'
     }
@@ -104,6 +107,9 @@ $parameters = @{
   GitRoot = $config.Toolchain.GitRoot
   NodeRoot = $config.Toolchain.NodeRoot
   PnpmCli = $config.Toolchain.PnpmCli
+  PythonRoot = $config.Toolchain.PythonRoot
+  StarshipRoot = $config.Toolchain.StarshipRoot
+  StarshipConfigPath = $config.Toolchain.StarshipConfigPath
   AdditionalNodeCommands = $config.Toolchain.AdditionalNodeCommands
 }
 
@@ -138,6 +144,8 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 ## Notes
 
 This boilerplate intentionally keeps `node20` as an additional command because it reflects the validated monorepo example currently used for the architecture.
+
+The optional `PythonRoot`, `StarshipRoot`, and `StarshipConfigPath` entries reflect the current boxed-owned-toolchain runtime shape where the project bootstrap can initialize Python and Starship in addition to the core Git/Node/pnpm surfaces.
 
 If a project does not need a secondary runtime, remove the `AdditionalNodeCommands` entry entirely.
 

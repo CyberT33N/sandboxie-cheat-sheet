@@ -49,6 +49,7 @@ Core model:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\git.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\pnpm.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\python.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\host-state.md`
 
 ### 5. Bootstrap
@@ -81,7 +82,20 @@ Core model:
 
 ### 10. Git auth and initial clone
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
+
+### 11. Extension-specific settings
+
+- `docs\applications\IDE\vscode\extensions\eslint\general.md`
+
+### 12. Application-domain toolchain sources of truth
+
+- `docs\applications\git\general.md`
+- `docs\applications\programming-languages\node\runtime\general.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\general.md`
+- `docs\applications\programming-languages\python\general.md`
+- `docs\applications\terminal\starship\general.md`
+- `docs\applications\version-control\monorepo\nx\general.md`
 
 ## Full shared tree snapshot
 

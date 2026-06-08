@@ -27,6 +27,7 @@ This currently contains:
 - `git\`
 - `node\`
 - `pnpm\`
+- `python\`
 - `bootstrap\`
 
 ## Optional prompt/runtime addition
@@ -49,7 +50,7 @@ However, it can still be modeled as a versioned shared runtime when:
 
 The current method therefore distinguishes between:
 
-- project toolchain governance such as `Git`, `Node`, and `pnpm`
+- project toolchain governance such as `Git`, `Node`, `pnpm`, and `Python`
 - shell/prompt runtime support such as `Starship`
 
 Both can live under `C:\shared\sandbox-toolchains\dev\` when local boxed execution requires a mirrored runtime surface.
@@ -72,12 +73,26 @@ as the architecture center.
 - Git: `PortableGit` under `dev\git\2.54.0\`
 - Node: versioned runtimes under `dev\node\...`
 - pnpm: unpacked CLI content under `dev\pnpm\11.2.2\package\bin\pnpm.cjs`
+- Python: version-pointer-based shared runtime under `dev\python\`
 - Starship: optional shared prompt runtime under `dev\starship\1.25.1\`
+
+## Domain ownership
+
+Binary-specific provisioning and architecture details belong to the application domains:
+
+- Git: `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
+- Node runtime: `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
+- PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
+- Python: `docs\applications\programming-languages\python\architectures\boxed-owned-toolchain\overview.md`
+- Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
+
+This method area keeps the orchestration view, not the binary-specific source of truth.
 
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\git.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\pnpm.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\python.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\host-state.md`

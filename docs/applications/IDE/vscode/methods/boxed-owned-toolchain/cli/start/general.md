@@ -110,7 +110,7 @@ It does **not** require project-specific shell copies or shared terminal binarie
 
 Private Git authentication, helper selection, device-code sign-in, and the initial boxed clone before the repo exists are documented here:
 
-- `docs\applications\git\boxed-owned-toolchain\overview.md`
+- `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 
 ## Recommended maintenance action contract
 

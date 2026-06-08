@@ -42,7 +42,13 @@ These files are copied or mirrored into the box-local `user-data` runtime paths 
 ide\vscode\maintenance\user-data\
 ```
 
-This is the maintenance control-plane user-data context used for shared IDE maintenance operations.
+This path remains part of the shared tree model, but it is not the current live maintenance authoring surface.
+
+The current maintenance workflow authors local state under:
+
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\user-data`
+
+and then promotes approved catalog or seed changes back into the canonical shared surfaces.
 
 ## Canonical settings role
 
@@ -51,10 +57,15 @@ The canonical `settings.json` contains:
 - editor and terminal UX defaults
 - Starship integration
 - shell profile defaults
+- extension-specific governed runtime bindings such as `eslint.runtime`
 
-It does **not** contain project-specific absolute toolchain paths.
+It does **not** contain project-specific absolute toolchain paths as a general toolchain-selection mechanism.
 
 Those belong in bootstrap and project-adapter logic.
+
+The deliberate exception is an extension-specific runtime binding that must point at one explicit governed binary to remain stable and reviewable.
+
+In the current boxed-owned-toolchain contract, `eslint.runtime` is such an exception and is documented in the VS Code extension domain instead of being treated as generic terminal/toolchain selection.
 
 The current recovery state keeps the terminal profile wiring minimal and lets bootstrap provide the dynamic shell/runtime details.
 
@@ -109,9 +120,29 @@ This keeps the canonical settings file generic while still letting each box rece
       }
     }
   },
-  "terminal.integrated.inheritEnv": true
+  "terminal.integrated.inheritEnv": true,
+  "[windows]": {
+    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.19.6\\node-v20.19.6-win-x64\\node.exe"
+  }
 }
 ```
+
+## ESLint runtime exception
+
+`eslint.runtime` is intentionally bound to an explicit Node binary:
+
+- `C:\shared\sandbox-toolchains\dev\node\20.19.6\node-v20.19.6-win-x64\node.exe`
+
+Why:
+
+- the ESLint extension needs a deterministic runtime surface
+- the old host `nvm` path is not part of the boxed-owned-toolchain contract
+- this binding is extension-specific, not a generic replacement for bootstrap-selected terminal/runtime wiring
+
+The extension-specific explanation lives here:
+
+- `docs\applications\IDE\vscode\extensions\eslint\general.md`
+- `docs\applications\IDE\vscode\extensions\eslint\architectures\boxed-owned-toolchain\settings-json.md`
 
 ## Why not workspace settings for toolchain selection
 
@@ -151,3 +182,4 @@ The prompt config file may still remain user-owned, for example:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\extensions-seeds-and-local-state.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
+- `docs\applications\IDE\vscode\extensions\eslint\general.md`

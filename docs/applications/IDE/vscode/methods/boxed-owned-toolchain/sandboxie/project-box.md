@@ -106,15 +106,18 @@ UseRamDisk=n
 UseWin32kHooks=y
 
 ReadFilePath=C:\shared\sandbox-toolchains\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\bootstrap\
+ReadFilePath=C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\
 
-NormalFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\
+ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\
 ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\
 ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\extensions\
 
-NormalFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
-NormalFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\python\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
 
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code-tunnel.exe
@@ -134,6 +137,11 @@ This target example intentionally omits:
 Those belonged to earlier or transitional states, not to the final method contract.
 
 The wildcard trace lines are intentionally shown commented out above because they are a debug surface, not part of the normal day-to-day box configuration.
+
+The live runtime is expected to execute locally from mirrored paths such as:
+
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\state\...`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\...`
 
 ## Related
 

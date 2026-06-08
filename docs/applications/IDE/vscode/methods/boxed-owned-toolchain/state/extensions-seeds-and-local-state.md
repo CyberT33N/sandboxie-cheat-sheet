@@ -18,7 +18,7 @@ The canonical extension store lives here:
 C:\shared\sandbox-toolchains\ide\vscode\extensions\
 ```
 
-This store is authored by the Maintenance Box.
+This store is the canonical published extension surface.
 
 ## Why project boxes do not use it directly as live runtime
 
@@ -33,9 +33,10 @@ Why:
 
 ## Final extension runtime contract
 
-Therefore the final runtime contract is:
+Therefore the current runtime contract is:
 
-- Maintenance Box writes to the canonical shared extension store
+- Maintenance Box authors a local maintenance extension state
+- approved changes are published into the canonical shared extension store
 - project bootstrap mirrors that shared store into a box-local extension directory
 - the project VS Code instance runs with the local mirrored `--extensions-dir`
 
@@ -53,10 +54,22 @@ It preserves:
 The project box uses a local mirrored extension runtime copy, for example:
 
 ```text
-%APPDATA%\VSCodeBoxes\test-mono\extensions
+C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\state\extensions
 ```
 
 That local directory is the runtime `--extensions-dir` for the project box.
+
+The maintenance authoring surface follows the same local-state rule, for example:
+
+```text
+C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\extensions
+```
+
+That local maintenance state is then promoted into:
+
+```text
+C:\shared\sandbox-toolchains\ide\vscode\extensions\
+```
 
 ## What remains box-local
 

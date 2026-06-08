@@ -54,11 +54,13 @@ The current maintenance script is:
 Use this only when you are debugging wrapper behavior, quoting, or bootstrap state.
 
 ```powershell
-& "C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code.cmd" `
-  --user-data-dir "C:\shared\sandbox-toolchains\ide\vscode\maintenance\user-data" `
-  --extensions-dir "C:\shared\sandbox-toolchains\ide\vscode\extensions" `
+& $env:BOXED_CODE_CLI `
+  --user-data-dir $env:BOXED_VSCODE_USERDATA `
+  --extensions-dir $env:BOXED_LOCAL_EXTENSIONS `
   --list-extensions
 ```
+
+This fallback intentionally uses the already-initialized local maintenance state, not the old shared live-writer path.
 
 ### Verify success
 

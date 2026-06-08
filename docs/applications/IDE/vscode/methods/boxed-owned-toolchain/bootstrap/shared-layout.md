@@ -253,8 +253,9 @@ Provides the VS Code platform wiring:
 
 Provides the maintenance control-plane entry point:
 
-- shared maintenance `user-data`
-- shared extension-store maintenance
+- local maintenance authoring state under `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\...`
+- local mirrored runtime/toolchain execution
+- explicit publish/promotion back into shared canonical surfaces
 - CLI-first actions:
   - `InstallExtension`
   - `ListExtensions`
@@ -287,6 +288,7 @@ Provides the example `test-mono` project contract:
 - seed paths
 - shared Git root
 - primary `Node 26.2.0`
+- optional shared Python root
 - optional shared Starship root
 - shared `pnpm.cjs`
 - additional `node20` command
@@ -310,7 +312,8 @@ This is the thin convenience wrapper that forwards directly to:
 
 The current runtime contract is:
 
-- Maintenance Box is the single writer to the shared extension store
+- Maintenance Box is the only publisher of shared IDE changes
+- Maintenance authoring state is local first
 - Project Box is a consumer
 - Shared extensions are mirrored into a box-local runtime copy
 - project `user-data` is box-local

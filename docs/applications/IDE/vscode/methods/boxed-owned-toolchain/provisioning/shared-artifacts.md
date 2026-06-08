@@ -43,6 +43,7 @@ $Dirs = @(
   "$SharedIdeRoot\runtime\$VsCodeVersion",
   "$SharedIdeRoot\catalog\vscode-user",
   "$SharedIdeRoot\catalog\vscode-user\snippets",
+  "$SharedIdeRoot\catalog\vscode-user\assets\backgrounds\t33n",
   "$SharedIdeRoot\catalog\seed\globalStorage",
   "$SharedIdeRoot\catalog\seed\roo",
   "$SharedIdeRoot\extensions",
@@ -51,10 +52,13 @@ $Dirs = @(
   "$SharedRoot\dev\node\26.2.0",
   "$SharedRoot\dev\node\20.19.6",
   "$SharedRoot\dev\pnpm\11.2.2",
+  "$SharedRoot\dev\python\3.14.5",
   "$SharedRoot\dev\starship\1.25.1",
   "$SharedBootstrapRoot\core",
   "$SharedBootstrapRoot\platforms\vscode",
   "$SharedBootstrapRoot\stacks\node",
+  "$SharedBootstrapRoot\stacks\python",
+  "$SharedBootstrapRoot\stacks\starship",
   "$SharedProjectRoot\bootstrap",
   "$SharedProjectRoot\export",
   "$SharedProjectRoot\runner-input"
@@ -64,6 +68,10 @@ $Dirs | ForEach-Object {
   New-Item -ItemType Directory -Force -Path $_ | Out-Null
 }
 ```
+
+The shared `maintenance\user-data` path above remains part of the modeled tree, but it is not the current live maintenance authoring surface.
+
+The current maintenance workflow authors local state under `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\...` and promotes approved changes back into the shared canonical surfaces.
 
 ## Download VS Code runtime
 
@@ -85,130 +93,17 @@ Expand-Archive -LiteralPath $ZipPath -DestinationPath $RuntimePath -Force
 Test-Path "$RuntimePath\Code.exe"
 ```
 
-## Download Node `26.2.0`
+## Toolchain-specific provisioning ownership
 
-```powershell
-$Node26Version = "26.2.0"
-$Node26Zip = Join-Path $env:TEMP "node-v$Node26Version-win-x64.zip"
-$Node26Dest = "C:\shared\sandbox-toolchains\dev\node\$Node26Version"
+Binary-specific provisioning is now owned by the application domains and is re-referenced here instead of duplicated in full:
 
-Invoke-WebRequest `
-  -Uri "https://nodejs.org/dist/v$Node26Version/node-v$Node26Version-win-x64.zip" `
-  -OutFile $Node26Zip
+- Git: `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
+- Node runtime: `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
+- PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
+- Python: `docs\applications\programming-languages\python\architectures\boxed-owned-toolchain\overview.md`
+- Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
 
-Remove-Item "$Node26Dest\*" -Recurse -Force -ErrorAction SilentlyContinue
-Expand-Archive -LiteralPath $Node26Zip -DestinationPath $Node26Dest -Force
-```
-
-## Download Node `20.19.6`
-
-```powershell
-$Node20Version = "20.19.6"
-$Node20Zip = Join-Path $env:TEMP "node-v$Node20Version-win-x64.zip"
-$Node20Dest = "C:\shared\sandbox-toolchains\dev\node\$Node20Version"
-
-Invoke-WebRequest `
-  -Uri "https://nodejs.org/dist/v$Node20Version/node-v$Node20Version-win-x64.zip" `
-  -OutFile $Node20Zip
-
-Remove-Item "$Node20Dest\*" -Recurse -Force -ErrorAction SilentlyContinue
-Expand-Archive -LiteralPath $Node20Zip -DestinationPath $Node20Dest -Force
-```
-
-## Prepare shared pnpm CLI content
-
-```powershell
-$Node26Root = "C:\shared\sandbox-toolchains\dev\node\26.2.0\node-v26.2.0-win-x64"
-$PnpmVersion = "11.2.2"
-$PnpmRoot = "C:\shared\sandbox-toolchains\dev\pnpm\$PnpmVersion"
-
-New-Item -ItemType Directory -Force -Path $PnpmRoot | Out-Null
-Remove-Item "$PnpmRoot\*" -Recurse -Force -ErrorAction SilentlyContinue
-
-Push-Location $PnpmRoot
-& "$Node26Root\npm.cmd" pack "pnpm@$PnpmVersion"
-tar -xf "pnpm-$PnpmVersion.tgz"
-Pop-Location
-```
-
-Resulting entrypoint:
-
-```text
-C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\package\bin\pnpm.cjs
-```
-
-## Download Starship `1.25.1`
-
-```powershell
-$StarshipVersion = '1.25.1'
-$StarshipZip = Join-Path $env:TEMP "starship-x86_64-pc-windows-msvc-$StarshipVersion.zip"
-$StarshipDest = "C:\shared\sandbox-toolchains\dev\starship\$StarshipVersion"
-
-Invoke-WebRequest `
-  -Uri "https://github.com/starship/starship/releases/download/v$StarshipVersion/starship-x86_64-pc-windows-msvc.zip" `
-  -OutFile $StarshipZip
-
-New-Item -ItemType Directory -Force -Path $StarshipDest | Out-Null
-Remove-Item "$StarshipDest\*" -Recurse -Force -ErrorAction SilentlyContinue
-
-Expand-Archive -LiteralPath $StarshipZip -DestinationPath $StarshipDest -Force
-
-& "$StarshipDest\starship.exe" --version
-```
-
-Expected verification:
-
-```text
-starship 1.25.1
-```
-
-This is the preferred provisioning shape for the boxed-owned-toolchain method.
-
-## 7-Zip helper download for PortableGit extraction
-
-```powershell
-$SevenZipInstaller = Join-Path $env:TEMP '7z2601-x64.exe'
-$SevenZipDir = Join-Path $env:TEMP '7zip2601'
-
-Invoke-WebRequest `
-  -Uri 'https://github.com/ip7z/7zip/releases/download/26.01/7z2601-x64.exe' `
-  -OutFile $SevenZipInstaller
-
-Remove-Item $SevenZipDir -Recurse -Force -ErrorAction SilentlyContinue
-
-Start-Process -FilePath $SevenZipInstaller -ArgumentList '/S',('/D=' + $SevenZipDir) -Wait
-```
-
-## Download PortableGit self-extractor
-
-```powershell
-$GitSfx = Join-Path $env:TEMP 'PortableGit-2.54.0-64-bit.7z.exe'
-
-Invoke-WebRequest `
-  -Uri 'https://github.com/git-for-windows/git/releases/download/v2.54.0.windows.1/PortableGit-2.54.0-64-bit.7z.exe' `
-  -OutFile $GitSfx
-```
-
-## Extract PortableGit `2.54.0`
-
-```powershell
-$SevenZipDir = Join-Path $env:TEMP '7zip2601'
-$SevenZipExe = Join-Path $SevenZipDir '7z.exe'
-$GitSfx = Join-Path $env:TEMP 'PortableGit-2.54.0-64-bit.7z.exe'
-$GitDest = 'C:\shared\sandbox-toolchains\dev\git\2.54.0'
-
-Remove-Item "$GitDest\*" -Recurse -Force -ErrorAction SilentlyContinue
-
-& $SevenZipExe x $GitSfx ('-o' + $GitDest) -y
-
-& "$GitDest\cmd\git.exe" --version
-```
-
-Expected verification:
-
-```text
-git version 2.54.0.windows.1
-```
+This method document keeps only the shared-tree orchestration and VS Code-specific provisioning surfaces.
 
 ## Canonical VS Code settings file
 
@@ -261,7 +156,10 @@ Target content:
       }
     }
   },
-  "terminal.integrated.inheritEnv": true
+  "terminal.integrated.inheritEnv": true,
+  "[windows]": {
+    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.19.6\\node-v20.19.6-win-x64\\node.exe"
+  }
 }
 ```
 
@@ -272,6 +170,13 @@ This current recovery state intentionally:
 - resolves the shell and RC paths through bootstrap-provided `${env:...}` variables
 
 This allows the canonical settings file to remain shared while bootstrap still injects the correct box-local runtime paths at launch time.
+
+The deliberate extension-specific exception is `eslint.runtime`, which is pinned to the governed Node 20 binary instead of a host `nvm` path.
+
+For the architecture rationale, read:
+
+- `docs\applications\IDE\vscode\extensions\eslint\general.md`
+- `docs\applications\IDE\vscode\extensions\eslint\architectures\boxed-owned-toolchain\settings-json.md`
 
 ## Optional migration examples
 
