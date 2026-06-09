@@ -21,7 +21,7 @@ The current live shared implementation surfaces are:
 
 The current live project adapter chain used in the active project context includes:
 
-- `C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1`
 
 The sanitized documentation-safe boilerplate equivalent remains:
 
@@ -279,14 +279,14 @@ The current live project-terminal launch shape is:
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_PRIVADENT_MONO `
+  /box:VS_CODE_test_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoVSCode.ps1" `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1" `
   -Action OpenTerminal `
-  -RepoPath "C:\Users\denni\source\privadent-mono"
+  -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
 ### Plain boxed Nx command surface
@@ -321,7 +321,7 @@ Latest validated boxed output showed:
 
 under:
 
-- `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin`
 
 And `Get-Command nx -All` showed:
 
@@ -331,7 +331,7 @@ And `Get-Command nx -All` showed:
 
 with PowerShell resolving `nx` from:
 
-- `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin\nx.ps1`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin\nx.ps1`
 
 And:
 
@@ -341,12 +341,12 @@ nx show projects
 
 returned:
 
-- `privyou-tooling`
+- `test-tooling`
 - `installer`
 - `frontend`
 - `webpages`
 - `backend`
-- `privyou`
+- `test`
 
 The latest validated boxed environment also showed:
 
@@ -358,7 +358,7 @@ $env:ComSpec
 returning:
 
 ```text
-C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\toolchain\git\2.54.0\bin\bash.exe
+C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\git\2.54.0\bin\bash.exe
 ```
 
 That means the default Windows shell surface used by `nx:run-commands` is now redirected by bootstrap for the currently validated command set.

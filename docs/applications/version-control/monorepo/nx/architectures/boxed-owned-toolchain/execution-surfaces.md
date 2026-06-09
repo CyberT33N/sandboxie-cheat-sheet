@@ -42,7 +42,7 @@ node scripts/port-guard.mjs
 cd ../frontend
 node scripts/port-guard.mjs
 
-cd ../privyou-tooling
+cd ../test-tooling
 node scripts/smoke-electron-runtime.mjs
 ```
 
@@ -95,7 +95,7 @@ That later manual shell-selection validation has now been superseded by the boot
 - the boxed project terminal now validates:
   - `nx run backend:port-guard`
   - `nx run frontend:port-guard`
-  - `nx run privyou:smoke-electron-runtime`
+  - `nx run test:smoke-electron-runtime`
 
 ## Current command-surface split
 
@@ -172,13 +172,13 @@ The current prioritized repository solution is:
 Latest validated boxed result:
 
 - `COMSPEC` points to:
-  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\toolchain\git\2.54.0\bin\bash.exe`
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\git\2.54.0\bin\bash.exe`
 - `nx` resolves from:
-  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin\nx.ps1`
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin\nx.ps1`
 - individual Nx targets succeed:
   - `backend:port-guard`
   - `frontend:port-guard`
-  - `privyou:smoke-electron-runtime`
+  - `test:smoke-electron-runtime`
 
 ## Related
 
