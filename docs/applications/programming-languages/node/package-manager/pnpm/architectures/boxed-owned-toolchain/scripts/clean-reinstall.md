@@ -182,6 +182,10 @@ After the clean reinstall finishes, the next direct PNPM-domain validation step 
 
 If that probe still reports that Electron was not materialized correctly, switch from the PNPM-domain reinstall document to the Electron-domain troubleshooting document above.
 
+The architecture-specific troubleshooting interpretation of that failure class lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
+
 ## Related
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
@@ -189,3 +193,4 @@ If that probe still reports that Electron was not materialized correctly, switch
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`

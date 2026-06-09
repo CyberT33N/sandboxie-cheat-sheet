@@ -38,6 +38,10 @@ Electron-specific runtime-materialization troubleshooting is owned here:
 
 That document explains how to verify `path.txt` / `dist\electron.exe`, when the package is only partially materialized after `pnpm install`, and how to run the current validated repair sequence.
 
+The architecture-specific troubleshooting interpretation of the Electron failure class lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
+
 ## Current real script path
 
 ```text
@@ -109,3 +113,4 @@ That boilerplate remains useful as a reusable example, but PNPM-specific install
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`

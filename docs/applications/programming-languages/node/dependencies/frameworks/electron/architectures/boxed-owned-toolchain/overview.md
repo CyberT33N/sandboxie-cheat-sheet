@@ -11,6 +11,28 @@ Use this document when:
 - Electron is still not available afterwards
 - a runtime probe such as `smoke-electron-runtime` reports that Electron was not materialized correctly
 
+The operational troubleshooting trail for this architecture lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
+
+## Current validated outcome
+
+The validated troubleshooting flow in this repository reached a healthy Electron runtime state again.
+
+The decisive healthy signals were:
+
+- `path.txt exists=true`
+- `path.txt content=electron.exe`
+- `dist dir exists=true`
+- `electron.exe exists=true`
+- direct runtime probe succeeds:
+
+```text
+[smoke-electron-runtime] ok electron=29.4.6 node=20.9.0 @types/node=20.19.41
+```
+
+This means the Electron package can begin in a broken partial state after a normal install, but it can be repaired through the explicit flow below.
+
 ## Core problem
 
 The relevant failure class is:
@@ -52,6 +74,44 @@ However, Electron still remained vulnerable to a second failure class:
 - but the native runtime payload is not ready
 
 This can happen even when the overall `pnpm install` run looks mostly healthy.
+
+That is why a project can legitimately show both of these statements at different points in time:
+
+- "`pnpm install` did not obviously fail on Electron"
+- "the Electron runtime is still not correctly materialized afterward"
+
+Those two observations are not contradictory in this failure class.
+
+## Official Electron guidance
+
+The official Electron installation guidance says:
+
+- Electron's JavaScript package binds to a native binary payload
+- that binary payload is critical for runtime use
+- Electron supports custom mirrors and cache locations during installation
+- troubleshooting often starts with retrying the install or manually triggering the download/install step
+
+The official documentation also explicitly documents a cache override surface via:
+
+- `electron_config_cache`
+
+and documents mirror overrides such as:
+
+- `ELECTRON_MIRROR`
+- `ELECTRON_CUSTOM_DIR`
+- `ELECTRON_CUSTOM_FILENAME`
+
+The current repository-local boxed-owned-toolchain repair flow was validated with:
+
+- a box-local Electron cache export
+- direct `install.js`
+- the secondary boxed `node20` command
+
+So this document records the **validated repository repair path**, while still acknowledging that Electron's official guidance treats cache and download source selection as first-class installation concerns.
+
+The current repository troubleshooting interpretation of those facts is kept separately here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
 
 ## What must be checked first
 
@@ -95,6 +155,13 @@ Why:
 - Electron should not fall back to an uncontrolled host-user-space cache during repair
 - the browser/runtime payload should stay in the box-local execution cache tree
 
+Important note:
+
+- the validated repair flow in this repository used `ELECTRON_CACHE`
+- the official Electron installation documentation describes `electron_config_cache` as the supported cache override in the generic install path
+
+This document records the validated local flow as it was actually proven in this repository.
+
 ### Step 2 - resolve the current `install.js`
 
 ```bash
@@ -119,6 +186,11 @@ Why `node20`:
 - the current boxed-owned-toolchain project uses Node `26.2.0` as the primary control-plane runtime
 - but the Electron runtime truth in this project is Node `20.9.0`
 - in the validated debugging flow, the direct Electron install path had to be retried with the boxed `node20` command
+
+Validated repository observation:
+
+- direct `install.js` with the primary Node 26 surface was not sufficient to leave a healthy runtime state
+- direct `install.js` with the secondary boxed `node20` surface was part of the successful repair sequence
 
 ### Step 4 - verify the package state again
 
@@ -163,6 +235,21 @@ It means:
 - this failure surface is real
 - the troubleshooting sequence above is the current validated repair path
 
+## Architectural interpretation
+
+The current best interpretation is:
+
+1. a plain boxed `pnpm install` remains the correct default baseline
+2. Electron-specific runtime verification must still be treated as a separate concern
+3. when Electron is not correctly materialized, the explicit repair path above is the current validated corrective action
+
+So the repository should **not** reinterpret the situation as "Electron must always be manually installed after every normal install".
+
+The narrower, more correct statement is:
+
+- a normal install may leave Electron in a broken partial state in this architecture
+- when that happens, the repair sequence above is currently required
+
 ## Relationship to the existing PNPM and Puppeteer documents
 
 The boxed-owned-toolchain PNPM documents still own:
@@ -202,6 +289,15 @@ For the current boxed-owned-toolchain architecture, the most correct posture is:
 
 That stronger strategy can include a mirrored explicit runtime path similar to the older host-sync Electron fallback, but that is **not** the first boxed-owned-toolchain troubleshooting step.
 
+It also means the most sensible automation target is **not** a silent mutation inside every generic bootstrap path.
+
+The better automation shape is:
+
+- a project-owned explicit Electron runtime validation / repair step
+- or a project-specific preflight that runs only when an Electron-bearing workflow actually needs the runtime
+
+That preserves determinism and keeps the generic bootstrap from silently mutating the workspace on every launch.
+
 ## Related
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
@@ -209,3 +305,4 @@ That stronger strategy can include a mirrored explicit runtime path similar to t
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\host-sync\general.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
