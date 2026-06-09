@@ -116,7 +116,7 @@ ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\extensions\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
-ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\python\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
 
@@ -142,6 +142,32 @@ The live runtime is expected to execute locally from mirrored paths such as:
 
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\state\...`
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\...`
+
+## PNPM box-visibility governance
+
+For Sandboxie visibility rules, PNPM should normally be opened at the **folder level**:
+
+```ini
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
+```
+
+not as a version-pinned rule such as:
+
+```ini
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.5.0\
+```
+
+Why this is the recommended rule:
+
+- the project contract still selects one exact `PnpmCli` version
+- but PNPM itself often needs security updates
+- a version-pinned Sandboxie allow rule would otherwise have to be changed every time PNPM is upgraded
+- the broader folder rule avoids repetitive box-config churn while still keeping visibility scoped to the PNPM subtree
+
+So the correct split is:
+
+- **project contract** = exact selected PNPM version
+- **Sandboxie box rule** = broad `dev\pnpm\` visibility
 
 ## Related
 

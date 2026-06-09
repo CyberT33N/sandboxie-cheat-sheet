@@ -31,6 +31,18 @@ Bootstrap is responsible for ensuring that:
 
 This keeps the package-manager runtime explicit and reviewable.
 
+## Sandboxie visibility note
+
+The exact PNPM version belongs in the project contract, but the Sandboxie visibility rule should normally allow the broader PNPM subtree:
+
+```ini
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
+```
+
+instead of pinning the box rule to one exact version directory.
+
+This avoids repeated box-config edits when PNPM must be updated for security reasons.
+
 ## Preferred install guidance
 
 For the current preferred PNPM workflow in this repository, read:

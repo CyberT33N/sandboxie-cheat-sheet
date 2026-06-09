@@ -80,7 +80,7 @@ The preferred target shape is:
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
   -Action LaunchVSCode `
-  -RepoPath "C:\Users\denni\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 ## Recommended project terminal contract
@@ -105,7 +105,7 @@ It does **not** require project-specific shell copies or shared terminal binarie
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
   -Action OpenTerminal `
-  -RepoPath "C:\Users\denni\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 Private Git authentication, helper selection, device-code sign-in, and the initial boxed clone before the repo exists are documented here:
@@ -143,6 +143,24 @@ For list-only validation, use the same wrapper contract with `-Action ListExtens
 
 These host-driven maintenance actions are the preferred standard workflow.
 An already-open maintenance terminal remains useful for troubleshooting, but routine extension installation and extension listing should normally be invoked through the explicit wrapper actions above.
+
+## Host-driven dependency install pattern
+
+For the boxed-owned-toolchain method, the preferred governance is:
+
+- keep the selected PNPM version in the project contract
+- keep the install flow in a project-owned PS1
+- do **not** make the host launch command itself choose the PNPM version
+
+The project-owned install PS1 is the preferred shape because it preserves the deterministic project/box contract and avoids smuggling toolchain-version choices into host launch parameters.
+
+For the single source of truth for the sanitized install script body and host launch command, read:
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+
+For the single source of truth for provisioning or updating the governed PNPM binary before the project contract changes, read:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 
 ## Example boilerplate launchers
 

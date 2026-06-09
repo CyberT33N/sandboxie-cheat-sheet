@@ -257,6 +257,24 @@ Do not treat manual `code.cmd` typing inside an already-open maintenance termina
   -Action ListExtensions
 ```
 
+## Project-box example - run `pnpm install` from the host
+
+The governance-approved boxed-owned-toolchain pattern is:
+
+1. keep the selected PNPM version in the project contract
+2. let the host launch one explicit project-owned install PS1
+3. let that script enter the project box through the normal project bootstrap
+4. let that script set the validated lifecycle `scriptShell`
+5. run `pnpm install`
+
+The single source of truth for the sanitized install script body and the host command lives in:
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+
+The single source of truth for the PNPM version-provisioning step that must happen **before** such an install when the project contract is updated lives in:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
+
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`

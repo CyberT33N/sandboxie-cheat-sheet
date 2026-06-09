@@ -51,7 +51,7 @@ return @{
   Toolchain = @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
-    PnpmCli = Join-Path $devRoot 'pnpm\11.2.2\package\bin\pnpm.cjs'
+    PnpmCli = Join-Path $devRoot 'pnpm\11.5.0\package\bin\pnpm.cjs'
     PythonRoot = Join-Path $devRoot 'python'
     StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
     StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
@@ -140,6 +140,69 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 & $launcher -Action OpenTerminal -RepoPath $RepoPath
 ```
+
+## `Start-TestMonoPnpmInstall.ps1`
+
+This is the sanitized project-box install script.
+
+It encodes the governance-approved boxed-owned-toolchain contract:
+
+- the host launches one explicit project-owned PS1
+- the script enters the project box through the normal project bootstrap
+- the script does **not** choose the PNPM version through host arguments
+- the effective PNPM version comes from `Project.Config.ps1`
+
+```powershell
+param(
+  [string]$RepoPath = 'C:\Users\yourusername\source\test-mono'
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+
+if (-not (Test-Path -LiteralPath $launcher)) {
+  throw "Project launcher not found: $launcher"
+}
+
+& $launcher -Action OpenTerminal -RepoPath $RepoPath
+
+if ([string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
+  throw 'BOXED_LOCAL_TOOLCHAIN_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Bash executable not found.'
+}
+
+pnpm config set --location=project scriptShell "$bashExe"
+pnpm install
+
+exit $LASTEXITCODE
+```
+
+### Host command after materializing the boilerplate above into the shared project bootstrap subtree
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
+After you materialize the boilerplate script above into the sanitized shared project subtree, this host command executes it.
+
+The example assumes the sanitized project keeps its repo path visible inside the project box and wants to run a project-owned dependency refresh with the currently validated boxed PNPM lifecycle-shell setup.
 
 ## Notes
 

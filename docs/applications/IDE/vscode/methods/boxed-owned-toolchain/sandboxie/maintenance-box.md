@@ -95,7 +95,7 @@ ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\20.19.6\
-ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\python\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
 
@@ -124,6 +124,32 @@ The current maintenance runtime itself is expected to execute locally from the m
 
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\...`
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\execution\...`
+
+## PNPM box-visibility governance
+
+For Sandboxie visibility rules, PNPM should normally be opened at the **folder level**:
+
+```ini
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
+```
+
+not as a version-pinned rule such as:
+
+```ini
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.5.0\
+```
+
+Why this is the recommended rule:
+
+- PNPM often needs security updates
+- a version-specific Sandboxie rule would otherwise have to be changed repeatedly in the box config
+- the maintenance box is expected to work against the governed PNPM inventory under `dev\pnpm\...`
+- the broader folder rule keeps visibility scoped to PNPM while avoiding needless operational churn
+
+So the correct split is:
+
+- **project or maintenance contract** = exact selected PNPM version
+- **Sandboxie box rule** = broad `dev\pnpm\` visibility
 
 The wildcard trace lines are intentionally shown commented out above because they are a debug surface, not part of the normal day-to-day box configuration.
 
