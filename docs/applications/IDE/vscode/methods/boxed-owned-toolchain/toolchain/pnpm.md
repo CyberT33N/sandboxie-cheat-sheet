@@ -62,20 +62,33 @@ This avoids repeated box-config edits when PNPM must be updated for security rea
 
 ## Preferred install guidance
 
-For the current preferred PNPM workflow in this repository, read:
+The PNPM-domain source of truth now lives in the PNPM architecture area and is split by concern.
+
+Start here:
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 
-That document covers:
+Then follow the domain-owned documents from there.
 
-- the preferred boxed-owned-toolchain PNPM posture
-- why a shared host PNPM store is not the baseline
-- how lifecycle shell spawning was fixed with a box-local Bash executable
+The current split covers:
+
+- runtime contract and version selection
+- lifecycle shell and command-surface behavior
+- install and clean-reinstall scripts
+
+The current real script-owned install / reinstall flows live here:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 
 ## Related
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\runtime-contract.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\versioning-and-provisioning.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
-- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`

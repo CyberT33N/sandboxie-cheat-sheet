@@ -154,13 +154,17 @@ For the boxed-owned-toolchain method, the preferred governance is:
 
 The project-owned install PS1 is the preferred shape because it preserves the deterministic project/box contract and avoids smuggling toolchain-version choices into host launch parameters.
 
-For the single source of truth for the sanitized install script body and host launch command, read:
+For the PNPM-domain source of truth for install-script ownership, read:
 
-- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 
-For the single source of truth for provisioning or updating the governed PNPM binary before the project contract changes, read:
+For the PNPM-domain source of truth for clean reinstall flows, read:
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+
+For the PNPM-domain source of truth for provisioning or updating the governed PNPM binary before the project contract changes, read:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\versioning-and-provisioning.md`
 
 ## Example boilerplate launchers
 
@@ -176,6 +180,8 @@ For the full shared bootstrap tree and the sanitized boilerplate start flow, rea
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 
 ## Terminal-specific guidance
 

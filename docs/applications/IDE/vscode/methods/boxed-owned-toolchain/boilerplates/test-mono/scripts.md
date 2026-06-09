@@ -145,6 +145,14 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 This is the sanitized project-box install script.
 
+The PNPM-domain source of truth for the install-script contract now lives here:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+
+The PNPM-domain source of truth for the clean-reinstall script contract now lives here:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+
 It encodes the governance-approved boxed-owned-toolchain contract:
 
 - the host launches one explicit project-owned PS1
@@ -208,6 +216,10 @@ exit $LASTEXITCODE
 After you materialize the boilerplate script above into the sanitized shared project subtree, this host command executes it.
 
 The example assumes the sanitized project keeps its repo path visible inside the project box and wants to run a project-owned dependency refresh with the currently validated boxed PNPM lifecycle-shell setup.
+
+The version-provisioning SSOT for moving the project contract to a newer PNPM version lives here:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\versioning-and-provisioning.md`
 
 ## Notes
 

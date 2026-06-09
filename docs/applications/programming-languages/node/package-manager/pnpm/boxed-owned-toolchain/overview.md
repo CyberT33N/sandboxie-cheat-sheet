@@ -8,6 +8,8 @@ The architecture-folder source of truth now lives here:
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 
+That file is now the TOC / entrypoint for the split boxed-owned-toolchain PNPM SSOT.
+
 ## Why this file still exists
 
 Older repository references still point to this path.

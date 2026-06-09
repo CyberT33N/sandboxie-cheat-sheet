@@ -269,13 +269,21 @@ The governance-approved boxed-owned-toolchain pattern is:
 4. let that script set the validated lifecycle `scriptShell`
 5. run `pnpm install`
 
-The single source of truth for the sanitized install script body and the host command lives in:
+The sanitized boilerplate install script body still lives in:
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 
-The single source of truth for the PNPM version-provisioning step that must happen **before** such an install when the project contract is updated lives in:
+The PNPM-domain source of truth for the install-script contract lives in:
 
-- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+
+The PNPM-domain source of truth for the clean-reinstall script contract lives in:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+
+The PNPM-domain source of truth for the version-provisioning step that must happen **before** such an install when the project contract is updated lives in:
+
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\versioning-and-provisioning.md`
 
 ## Related
 

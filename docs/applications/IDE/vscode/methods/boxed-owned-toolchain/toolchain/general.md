@@ -89,6 +89,13 @@ Binary-specific provisioning and architecture details belong to the application 
 
 This method area keeps the orchestration view, not the binary-specific source of truth.
 
+For PNPM specifically, the architecture entrypoint above is now a TOC that splits the SSOT into:
+
+- runtime contract
+- lifecycle and command surface
+- versioning and provisioning
+- install / clean-reinstall scripts
+
 ## Related
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\git.md`
