@@ -1,229 +1,121 @@
-# Boxed-Owned-Toolchain NX Overview
+# Boxed-Owned-Toolchain NX
 
 ## Architectural status
 
-This is the **preferred NX method** in this repository.
+This is the **preferred Nx architecture path** in this repository.
 
-Use this document when the architecture is:
+Use this area when the architecture is:
 
 - fully boxed authoring
 - box-local runtime mirroring
 - box-local mutable working state
 - explicit promotion instead of live shared authoring
 
-The legacy host-sync write-up remains only as a secondary reference here:
+The legacy host-sync write-up remains only as a secondary reference:
 
 - `docs\applications\version-control\monorepo\nx\architectures\host-sync\overview.md`
 
-## Preferred cache posture
+## Role of this file
 
-For the current boxed-owned-toolchain architecture:
+This file is now the **TOC / entrypoint** for the boxed-owned-toolchain Nx source of truth.
 
-- keep the Nx native file cache box-local
-- do **not** externalize the native cache to a host-shared path as the baseline
+The previous dense overview has been split by concern so the Nx domain can stay:
 
-Why:
+- single-source-of-truth oriented
+- easier to scale by bounded context
+- easier to re-reference from VS Code and PNPM documents without duplicating Nx detail
+- easier to keep current-state-only as the bootstrap and shell surfaces evolve
 
-1. the native cache contains execution-relevant native artifacts
-2. host-shared reuse widens the blast radius across box boundaries
-3. per-box isolation is stronger and simpler to reason about
-4. there is no strong architectural need for multiple monorepos or boxes to share the same Nx native cache
+No previously established boxed-owned-toolchain Nx truth is intentionally dropped by this split. The content now lives in the documents below.
 
-So the correct baseline is:
+## Current reference snapshot
 
-- box-local Nx native cache
-- box-local runtime mirror
-- no shared host-visible Nx native cache as the default
+The current boxed-owned-toolchain Nx reference truth is:
 
-## The problem chain we actually hit
+1. box-local Nx native cache and socket surfaces remain the baseline
+2. the Nx runtime contract is bootstrap-owned and environment-driven
+3. plain `nx` is now provided through bootstrap-generated wrappers:
+   - `nx`
+   - `nx.cmd`
+   - `nx-cli.cjs`
+4. the plain `nx` command surface is validated in the boxed project terminal
+5. `pnpm exec nx ...` remains a separate failure surface
+6. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
+7. manual `ComSpec=bash` validation has already shown that the current `run-commands` blocker is on the Windows shell path, not in Nx business logic itself
 
-The validated boxed project workflow exposed multiple distinct layers of failure:
+## Current architectural boundary
 
-1. `pnpm install` first failed because PNPM lifecycle execution on Windows tried to use spawned host shell surfaces such as `cmd.exe`
-2. switching PNPM to a box-local Bash `.exe` fixed that lifecycle shell problem
-3. `pnpm exec nx ...` still failed with `spawn EPERM`
-4. direct `nx` execution via Node worked, but `nx report` / `nx show projects` then failed because the socket path was too long
-5. after shortening the socket path, isolated Nx plugin workers still timed out / exited unexpectedly
-6. disabling plugin isolation made `nx report` and `nx show projects` succeed
+The current accepted solution-space boundary is:
 
-That means the current boxed-owned-toolchain answer is not one single flag, but a small governed environment contract.
+- the box/bootstrap layer must adapt to the project command surface
+- the first-class answer is **not** to refactor the project away from Nx `run-commands` / `command` usage just to fit the sandbox
 
-## Validated environment contract
+That boundary is part of the current architecture discussion and is therefore recorded here explicitly.
 
-The current validated boxed-owned-toolchain environment is:
+## Domain map
 
-```powershell
-$env:NX_DAEMON = 'false'
-$env:NX_SOCKET_DIR = 'C:\nxs'
-$env:NX_ISOLATE_PLUGINS = 'false'
-```
+### Architecture rationale
 
-And the socket directory must exist:
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\architecture-rationale.md`
 
-```powershell
-New-Item -ItemType Directory -Force -Path $env:NX_SOCKET_DIR | Out-Null
-```
+Owns:
 
-## What each variable means
+- the enterprise-grade / domain-driven interpretation
+- the twelve-factor reading of the current Nx model
+- why Nx belongs to its own bounded context instead of being absorbed into the VS Code method docs
 
-### `NX_DAEMON=false`
+### Cache boundary
 
-This disables the long-lived Nx daemon process.
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\cache-boundary.md`
 
-Architecturally, that means:
+Owns:
 
-- no background workspace watcher/graph server
-- fewer background processes
-- fewer IPC surfaces
-- less hidden state between commands
+- box-local cache posture
+- socket and native-cache boundary rationale
+- why host-shared native-cache reuse is not the baseline
 
-This does **not** disable Nx itself.
+### Execution surfaces
 
-It changes the execution model from:
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 
-- long-lived performance infrastructure
+Owns:
 
-to:
+- the validated failure chain
+- direct `nx` versus `pnpm exec nx`
+- `nx:run-commands` shell behavior on Windows
+- the current `ComSpec`-related findings
 
-- direct foreground computation
+### Runtime contract
 
-### `NX_SOCKET_DIR`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\runtime-contract.md`
 
-This controls where Nx places its sockets.
+Owns:
 
-In the validated boxed setup, the default path became too long, so a very short path was required:
+- `NX_DAEMON`
+- `NX_SOCKET_DIR`
+- `NX_ISOLATE_PLUGINS`
+- `NX_NATIVE_FILE_CACHE_DIRECTORY`
+- the current boxed-owned-toolchain runtime posture
 
-```powershell
-$env:NX_SOCKET_DIR = 'C:\nxs'
-```
+### Bootstrap integration
 
-Why this is correct:
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`
 
-- the path is short enough for the validated Nx socket limit
-- under Sandboxie this remains within the box's local execution boundary unless explicitly opened outward
-- it avoids the long nested runtime/cache path that previously broke plugin loading
+Owns:
 
-### `NX_ISOLATE_PLUGINS=false`
+- the exact live shared bootstrap files
+- the current Nx wrapper implementation in shared bootstrap
+- how the project and maintenance entrypoints call into that implementation
+- how the current command surface is validated
 
-This forces Nx inference plugins to run **in-process** instead of in isolated worker processes.
+## Cross-domain references
 
-What changes:
-
-- plugin worker isolation is turned off
-- plugin logic still runs
-- but it runs inside the main Nx process rather than via separate plugin worker processes
-
-What this does **not** mean:
-
-- it does not disable the plugins
-- it does not remove project graph functionality
-- it does not remove normal Nx command capability
-
-That is proven by the validated result:
-
-- `node $nxCli report` succeeded
-- `node $nxCli show projects` returned real projects
-
-## Why this is still enterprise-correct
-
-This is the key architectural point:
-
-`NX_DAEMON` and `NX_ISOLATE_PLUGINS` are primarily **performance / infrastructure topology controls**, not core monorepo business functionality.
-
-From an enterprise-grade sandbox perspective, fewer background processes and fewer cross-process IPC edges are often preferable because they reduce:
-
-- invisible runtime state
-- worker lifecycle fragility
-- timeout sensitivity
-- cross-process coordination overhead
-- sandbox mediation complexity
-
-So in this specific boxed-owned-toolchain environment, the current configuration is not a bad "hack".
-
-It is a valid, conservative runtime posture:
-
-- smaller execution surface
-- simpler trust boundary
-- more deterministic command behavior
-
-## Validated direct Nx entrypoint
-
-The validated direct entrypoint was:
-
-```powershell
-$nxCli = node -p "try { require.resolve('nx/bin/nx.js') } catch { require.resolve('nx/dist/bin/nx.js') }"
-$nxCli
-```
-
-Then:
-
-```powershell
-node $nxCli --version
-node $nxCli report
-node $nxCli show projects
-```
-
-With the environment contract above active, the following commands were validated:
-
-```powershell
-node $nxCli report
-node $nxCli show projects
-```
-
-and `show projects` returned:
-
-- `installer`
-- `frontend`
-- `webpages`
-- `backend`
-- `test`
-
-## Important nuance: `pnpm exec nx`
-
-`pnpm exec nx ...` remained a separate failure surface during validation.
-
-So for this architecture, direct `nx` verification via the resolved Node entrypoint is currently the validated proof path.
-
-That should be treated separately from:
-
-- PNPM lifecycle shell execution
-- `pnpm exec`
-- and direct Nx execution
-
-## Bootstrap ownership
-
-These variables belong in bootstrap, not in editor settings.
-
-Why bootstrap is the correct place:
-
-- these are runtime/toolchain environment controls
-- they belong to process startup, not editor UI preferences
-- every shell and every child process launched through the bootstrap should inherit the same contract
-
-## Bootstrap implementation
-
-The validated bootstrap-level implementation is to set these values during shell startup before Nx commands are executed:
-
-```powershell
-$localNxSocketRoot = 'C:\nxs'
-if (-not (Test-Path -LiteralPath $localNxSocketRoot)) {
-  New-Item -ItemType Directory -Force -Path $localNxSocketRoot | Out-Null
-}
-
-$env:NX_DAEMON = 'false'
-$env:NX_SOCKET_DIR = $localNxSocketRoot
-$env:NX_ISOLATE_PLUGINS = 'false'
-```
-
-## Current target state
-
-For the boxed-owned-toolchain architecture in this repository, the current target state is:
-
-1. box-local Nx native cache
-2. `NX_DAEMON=false`
-3. `NX_SOCKET_DIR='C:\nxs'`
-4. `NX_ISOLATE_PLUGINS=false`
-5. direct Nx execution works in the boxed project context
+- PNPM lifecycle and command-surface behavior:
+  `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
+- Sandboxie shell-spawn troubleshooting:
+  `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- VS Code boxed-owned-toolchain bootstrap:
+  `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 
 ## Related
 

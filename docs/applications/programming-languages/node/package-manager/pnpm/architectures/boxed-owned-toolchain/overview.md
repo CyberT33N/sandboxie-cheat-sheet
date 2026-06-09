@@ -92,6 +92,8 @@ Owns:
   `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - Boxed-owned-toolchain Nx execution contract:
   `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- Boxed-owned-toolchain Nx execution-surface split:
+  `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 - Puppeteer-specific browser-cache and postinstall contract:
   `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
 - Electron-specific runtime-materialization and repair contract:

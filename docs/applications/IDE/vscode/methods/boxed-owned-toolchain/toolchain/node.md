@@ -31,7 +31,7 @@ C:\shared\sandbox-toolchains\dev\node\26.2.0\node-v26.2.0-win-x64\
 Secondary Node:
 
 ```text
-C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\
+C:\shared\sandbox-toolchains\dev\node\20.9.0\node-v20.9.0-win-x64\
 ```
 
 ## Multi-runtime monorepo model
@@ -39,7 +39,7 @@ C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\
 For sanitized monorepo examples such as `test-mono`, the method allows:
 
 - primary tooling and package-manager shell on `Node 26.2.0`
-- a secondary project-visible command such as `node20` bound to `Node 20.9.0
+- a secondary project-visible command such as `node20` bound to `Node 20.9.0`
 
 This keeps the runtime contract explicit and reviewable.
 
@@ -56,8 +56,17 @@ It also needs shell-native wrappers for Bash-oriented command resolution, for ex
 
 - `pnpm`
 - `node20`
+- `nx`
 
 This is why the boxed-owned-toolchain bootstrap generates more than just `pnpm.cmd` and `node20.cmd`.
+
+It also publishes:
+
+- `nx.cmd`
+- `nx`
+- `nx-cli.cjs`
+
+so the plain `nx` command surface is available inside the boxed bootstrap environment without requiring developers to resolve the local Nx entrypoint manually every time.
 
 ## `nvm` is not part of the final contract
 
@@ -77,3 +86,5 @@ The method uses fixed versioned binaries selected by bootstrap.
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\pnpm.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`

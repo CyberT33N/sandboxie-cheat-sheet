@@ -104,3 +104,4 @@ For PNPM specifically, the architecture entrypoint above is now a TOC that split
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\python.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\host-state.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`

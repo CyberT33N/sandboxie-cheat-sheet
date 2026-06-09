@@ -16,6 +16,14 @@ It owns:
 
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 
+The boxed-owned-toolchain Nx source of truth is now split by concern under that TOC:
+
+- architecture rationale
+- cache boundary
+- execution surfaces
+- runtime contract
+- bootstrap integration
+
 ### Secondary / legacy reference
 
 - `docs\applications\version-control\monorepo\nx\architectures\host-sync\overview.md`

@@ -190,3 +190,4 @@ Use the host-sync method only when the IDE must remain on the host.
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\architecture\governance.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\architecture\edge-cases-and-runners.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`

@@ -92,3 +92,5 @@ The current real script-owned install / reinstall flows live here:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`

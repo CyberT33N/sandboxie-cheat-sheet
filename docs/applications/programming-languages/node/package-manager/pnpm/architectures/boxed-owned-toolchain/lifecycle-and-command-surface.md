@@ -119,9 +119,12 @@ Architectural interpretation:
 For the current Nx proof-path and environment contract, read:
 
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\runtime-contract.md`
 
 ## Related
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`

@@ -104,7 +104,9 @@ Current responsibilities:
 - validate the shared Git / Node / PNPM surfaces
 - mirror them locally into the box execution tree
 - generate wrapper commands such as `pnpm.cmd`
+- generate wrapper commands such as `nx.cmd`
 - generate shell-native wrappers such as `pnpm`
+- generate shell-native wrappers such as `nx`
 - generate additional node aliases such as `node20.cmd`
 - generate shell-native additional aliases such as `node20`
 - prepend the correct local runtime paths into `PATH`
@@ -290,6 +292,7 @@ Current env contract highlights:
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
+$env:BOXED_NX_LAUNCHER = $nodeRuntime.NxLauncher
 $env:BOXED_PROMOTION_SCRIPT = $promotionScript
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
 $env:BOXED_LOCAL_EXTENSIONS = $maintenancePaths.ExtensionsDir
@@ -351,6 +354,7 @@ Current env contract highlights:
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
+$env:BOXED_NX_SOCKET_DIR = $localNxSocketRoot
 $env:BOXED_CODE_EXE = $localRuntime.CodeExe
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
 $env:BOXED_LOCAL_TOOLCHAIN_ROOT = $projectPaths.LocalToolchainRoot
@@ -399,7 +403,7 @@ return @{
     StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
     StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
     AdditionalNodeCommands = [ordered]@{
-      node20 = Join-Path $devRoot 'node\20.19.6\node-v20.19.6-win-x64\node.exe'
+      node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
   }
 }
@@ -425,3 +429,5 @@ It is now:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`

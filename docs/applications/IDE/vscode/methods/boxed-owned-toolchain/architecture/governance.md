@@ -147,3 +147,4 @@ Final host target state:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boxes\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boxes\project-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\extensions-seeds-and-local-state.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
