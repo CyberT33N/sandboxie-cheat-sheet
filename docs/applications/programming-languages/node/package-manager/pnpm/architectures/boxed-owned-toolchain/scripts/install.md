@@ -26,6 +26,18 @@ The current shell-specific requirement is part of this contract:
 - Git Bash must be able to resolve bare `pnpm`
 - so the bootstrap provides a shell-native wrapper in `bootstrap-bin`, not only `pnpm.cmd`
 
+The Puppeteer-specific browser-cache contract for boxed-owned-toolchain installs is owned here:
+
+- `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
+
+That document explains why browser-download postinstall hooks must not use host-user-space defaults such as `C:\Users\<user>\.cache\...` in this architecture.
+
+Electron-specific runtime-materialization troubleshooting is owned here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
+
+That document explains how to verify `path.txt` / `dist\electron.exe`, when the package is only partially materialized after `pnpm install`, and how to run the current validated repair sequence.
+
 ## Current real script path
 
 ```text
@@ -95,3 +107,5 @@ That boilerplate remains useful as a reusable example, but PNPM-specific install
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+- `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`

@@ -71,14 +71,14 @@ If a project still keeps `pnpm` inside test run scripts, do **not** treat that n
 In the run box, expand the script one level further and invoke Vitest directly through the package-appropriate `node.exe`.
 
 If the tested package models a package-specific runtime through `package.json -> devEngines.runtime`, use that runtime line for the direct call.
-The sanitized example below shows a desktop package that remains pinned to the Node `20.19.6` line at the application/runtime boundary.
+The sanitized example below shows a desktop package that remains pinned to the Node `20.9.0` line at the application/runtime boundary.
 
 ### Direct replacement for `test`
 
 ```powershell
 Set-Location "C:\git\test\test-mono\apps\desktop-app"
 
-$node = "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\node.exe"
+$node = "C:\Users\yourusername\AppData\Local\nvm\v20.9.0node.exe"
 
 $env:NX_DAEMON = "false"
 $env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"
@@ -91,7 +91,7 @@ $env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorep
 ```powershell
 Set-Location "C:\git\test\test-mono\apps\desktop-app"
 
-$node = "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\node.exe"
+$node = "C:\Users\yourusername\AppData\Local\nvm\v20.9.0node.exe"
 
 $env:NX_DAEMON = "false"
 $env:NX_NATIVE_FILE_CACHE_DIRECTORY = "C:\shared\sandbox-toolchains\node-monorepo-general\cache\nx-native"

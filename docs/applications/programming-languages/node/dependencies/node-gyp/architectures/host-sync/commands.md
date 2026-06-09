@@ -52,7 +52,7 @@ The package name below is only an example of a native addon package. Replace the
 
 ```powershell
 $repoRoot = "C:\git\test\test-mono"
-$node = "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\node.exe"
+$node = "C:\Users\yourusername\AppData\Local\nvm\v20.9.0\node.exe"
 $gyp  = "$repoRoot\.pnpm\node-gyp@12.3.0\node_modules\node-gyp\bin\node-gyp.js"
 $pkg  = "$repoRoot\.pnpm\node-firebird-native-api@3.2.0\node_modules\node-firebird-native-api"
 

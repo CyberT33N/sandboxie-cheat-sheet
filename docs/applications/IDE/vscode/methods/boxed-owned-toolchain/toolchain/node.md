@@ -9,7 +9,7 @@ Node is provided as versioned shared runtimes.
 The current validated example architecture uses:
 
 - `26.2.0` as the primary control-plane / tooling runtime
-- `20.19.6` as an additional secondary runtime domain
+- `20.9.0` as an additional secondary runtime domain
 
 ## Why multiple versions exist
 
@@ -31,7 +31,7 @@ C:\shared\sandbox-toolchains\dev\node\26.2.0\node-v26.2.0-win-x64\
 Secondary Node:
 
 ```text
-C:\shared\sandbox-toolchains\dev\node\20.19.6\node-v20.19.6-win-x64\
+C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\
 ```
 
 ## Multi-runtime monorepo model
@@ -39,7 +39,7 @@ C:\shared\sandbox-toolchains\dev\node\20.19.6\node-v20.19.6-win-x64\
 For sanitized monorepo examples such as `test-mono`, the method allows:
 
 - primary tooling and package-manager shell on `Node 26.2.0`
-- a secondary project-visible command such as `node20` bound to `Node 20.19.6`
+- a secondary project-visible command such as `node20` bound to `Node 20.9.0
 
 This keeps the runtime contract explicit and reviewable.
 

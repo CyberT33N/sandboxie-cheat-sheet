@@ -8,6 +8,10 @@ For the current recommended Sandboxie architecture in this repository:
 - the **Electron runtime binary tree** may be mirrored into the shared toolchain root when the repo-local postinstall result is not reliable enough
 - the **run box** launches the application by referencing that mirrored runtime explicitly
 
+For the boxed-owned-toolchain counterpart that keeps the runtime repo-local first and documents the validated Electron repair flow there, read:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
+
 Recommended shared destination pattern:
 
 ```text
@@ -64,6 +68,7 @@ The new primary Electron-Vite overlay is:
 
 ## Related documents
 
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\IDE\vscode\methods\host-sync\dependencies-installed-in-box.md`
 - `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\general.md`

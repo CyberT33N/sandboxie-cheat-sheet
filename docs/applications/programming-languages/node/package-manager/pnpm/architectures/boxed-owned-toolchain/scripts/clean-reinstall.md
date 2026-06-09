@@ -20,6 +20,17 @@ The current scope is:
 - remove workspace-root `node_modules`
 - remove package-level `node_modules` under `apps`, `libs`, and `tools`
 - remove `node_modules\.modules.yaml` if present
+- remove box-local browser caches exposed through:
+  - `BOXED_PUPPETEER_CACHE_DIR`
+  - `BOXED_PLAYWRIGHT_BROWSERS_PATH`
+
+The Puppeteer-specific meaning of these browser-cache paths is owned here:
+
+- `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
+
+Electron-specific follow-up verification and repair after a clean reinstall is owned here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
 
 The current scope does **not** include:
 
@@ -110,6 +121,18 @@ if (Test-Path -LiteralPath $modulesYaml) {
   Remove-Item -LiteralPath $modulesYaml -Force -ErrorAction SilentlyContinue
 }
 
+@(
+  $env:BOXED_PUPPETEER_CACHE_DIR,
+  $env:BOXED_PLAYWRIGHT_BROWSERS_PATH
+) |
+Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+Sort-Object -Unique |
+Where-Object { Test-Path -LiteralPath $_ } |
+ForEach-Object {
+  Write-Host "Removing $_"
+  Remove-Item -LiteralPath $_ -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 if ([string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
   throw 'BOXED_LOCAL_TOOLCHAIN_ROOT was not initialized by project bootstrap.'
 }
@@ -157,8 +180,12 @@ After the clean reinstall finishes, the next direct PNPM-domain validation step 
 ( cd apps/test-tooling && node scripts/smoke-electron-runtime.mjs )
 ```
 
+If that probe still reports that Electron was not materialized correctly, switch from the PNPM-domain reinstall document to the Electron-domain troubleshooting document above.
+
 ## Related
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
+- `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`

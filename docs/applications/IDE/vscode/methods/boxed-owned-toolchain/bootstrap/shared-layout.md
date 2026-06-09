@@ -53,8 +53,8 @@ C:\shared\sandbox-toolchains\
     node\
       26.2.0\
         node-v26.2.0-win-x64\
-      20.19.6\
-        node-v20.19.6-win-x64\
+      20.9.0\
+        node-v20.9.0win-x64\
     pnpm\
       11.2.2\
         package\

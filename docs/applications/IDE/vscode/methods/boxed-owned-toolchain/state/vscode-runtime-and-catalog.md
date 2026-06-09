@@ -128,7 +128,7 @@ This keeps the canonical settings file generic while still letting each box rece
   },
   "terminal.integrated.inheritEnv": true,
   "[windows]": {
-    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.19.6\\node-v20.19.6-win-x64\\node.exe"
+    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.9.0\\node-v20.9.0-win-x64\\node.exe"
   }
 }
 ```
@@ -137,7 +137,7 @@ This keeps the canonical settings file generic while still letting each box rece
 
 `eslint.runtime` is intentionally bound to an explicit Node binary:
 
-- `C:\shared\sandbox-toolchains\dev\node\20.19.6\node-v20.19.6-win-x64\node.exe`
+- `C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\node.exe`
 
 Why:
 

@@ -92,6 +92,10 @@ Owns:
   `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - Boxed-owned-toolchain Nx execution contract:
   `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- Puppeteer-specific browser-cache and postinstall contract:
+  `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
+- Electron-specific runtime-materialization and repair contract:
+  `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
 - VS Code method orchestration view:
   `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\pnpm.md`
 

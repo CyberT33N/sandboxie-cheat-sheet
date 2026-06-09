@@ -50,7 +50,7 @@ $Dirs = @(
   "$SharedIdeRoot\maintenance\user-data",
   "$SharedRoot\dev\git\2.54.0",
   "$SharedRoot\dev\node\26.2.0",
-  "$SharedRoot\dev\node\20.19.6",
+  "$SharedRoot\dev\node\20.9.0",
   "$SharedRoot\dev\pnpm\11.2.2",
   "$SharedRoot\dev\pnpm\11.5.0",
   "$SharedRoot\dev\python\3.14.5",
@@ -159,7 +159,7 @@ Target content:
   },
   "terminal.integrated.inheritEnv": true,
   "[windows]": {
-    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.19.6\\node-v20.19.6-win-x64\\node.exe"
+    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.9.0\node-v220.9.0in-x64\\node.exe"
   }
 }
 ```

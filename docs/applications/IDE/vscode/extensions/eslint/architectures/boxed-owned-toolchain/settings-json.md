@@ -15,7 +15,7 @@ The current canonical Windows setting is:
 ```json
 {
   "[windows]": {
-    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.19.6\\node-v20.19.6-win-x64\\node.exe"
+    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.9.0\\node-v20.9.0-win-x64\\node.exe"
   }
 }
 ```
@@ -45,7 +45,7 @@ The boxed-owned-toolchain method must not point ESLint back to host-managed path
 Instead, the extension is pinned to the governed shared Node binary:
 
 ```text
-C:\shared\sandbox-toolchains\dev\node\20.19.6\node-v20.19.6-win-x64\node.exe
+C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\node.exe
 ```
 
 This keeps the setting:

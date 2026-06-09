@@ -13,7 +13,7 @@ The Node runtime needs its own domain entrypoint instead of living only as a VS 
 The boxed-owned-toolchain method uses governed shared Node binaries under:
 
 - `C:\shared\sandbox-toolchains\dev\node\26.2.0\...`
-- `C:\shared\sandbox-toolchains\dev\node\20.19.6\...`
+- `C:\shared\sandbox-toolchains\dev\node\20.9.0\...`
 
 Bootstrap selects and mirrors the required runtime into the local box execution tree.
 
@@ -32,7 +32,7 @@ In particular:
 ## Selected versions
 
 - `26.2.0` = primary control-plane / tooling runtime
-- `20.19.6` = secondary runtime domain used where the architecture intentionally requires Node 20
+- `20.9.0` = secondary runtime domain used where the architecture intentionally requires Node 20
 
 ## Canonical shared paths
 
@@ -45,7 +45,7 @@ C:\shared\sandbox-toolchains\dev\node\26.2.0\node-v26.2.0-win-x64\
 Secondary:
 
 ```text
-C:\shared\sandbox-toolchains\dev\node\20.19.6\node-v20.19.6-win-x64\
+C:\shared\sandbox-toolchains\dev\node\20.9.0\node-v20.9.0-win-x64\
 ```
 
 ## Provisioning
@@ -65,10 +65,10 @@ Remove-Item "$Node26Dest\*" -Recurse -Force -ErrorAction SilentlyContinue
 Expand-Archive -LiteralPath $Node26Zip -DestinationPath $Node26Dest -Force
 ```
 
-### Node `20.19.6`
+### Node `20.9.0`
 
 ```powershell
-$Node20Version = "20.19.6"
+$Node20Version = "20.9.0"
 $Node20Zip = Join-Path $env:TEMP "node-v$Node20Version-win-x64.zip"
 $Node20Dest = "C:\shared\sandbox-toolchains\dev\node\$Node20Version"
 
