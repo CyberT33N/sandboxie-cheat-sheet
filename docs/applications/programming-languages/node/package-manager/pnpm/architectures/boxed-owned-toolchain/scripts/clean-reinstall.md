@@ -30,7 +30,7 @@ The current scope does **not** include:
 ## Current real script path
 
 ```text
-C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoPnpmCleanReinstall.ps1
+C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1
 ```
 
 ## Current real script body
@@ -60,7 +60,7 @@ else {
   $RepoPath
 }
 
-$launcher = Join-Path $PSScriptRoot 'Start-PrivadentMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-testMonoVSCode.ps1'
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
@@ -140,13 +140,13 @@ exit $LASTEXITCODE
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_PRIVADENT_MONO `
+  /box:VS_CODE_test_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoPnpmCleanReinstall.ps1" `
-  -RepoPath "C:\Users\denni\source\privadent-mono"
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1" `
+  -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
 ## Expected next validation step
@@ -154,7 +154,7 @@ exit $LASTEXITCODE
 After the clean reinstall finishes, the next direct PNPM-domain validation step is the relevant runtime probe or dependency consumer, for example:
 
 ```bash
-( cd apps/privyou-tooling && node scripts/smoke-electron-runtime.mjs )
+( cd apps/test-tooling && node scripts/smoke-electron-runtime.mjs )
 ```
 
 ## Related

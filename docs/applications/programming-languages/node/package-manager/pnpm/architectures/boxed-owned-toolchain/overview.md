@@ -84,7 +84,7 @@ Owns:
 
 - project-owned PNPM install scripts
 - project-owned PNPM clean-reinstall scripts
-- current real `privadent-mono` script paths and host launch commands
+- current real `test-mono` script paths and host launch commands
 
 ## Cross-domain references
 
