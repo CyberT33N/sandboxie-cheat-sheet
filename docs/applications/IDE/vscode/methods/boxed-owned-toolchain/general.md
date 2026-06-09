@@ -133,6 +133,10 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+      11.5.0\
+        package\
+          bin\
+            pnpm.cjs
     python\
     starship\
       1.25.1\

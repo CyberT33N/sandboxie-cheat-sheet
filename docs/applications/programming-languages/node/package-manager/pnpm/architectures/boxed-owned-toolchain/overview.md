@@ -17,19 +17,21 @@ The host-sync PNPM write-up remains only as a secondary reference here:
 
 ## Current runtime contract
 
-The governed PNPM runtime surface is:
+The governed PNPM runtime surface shape is:
 
 ```text
-C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\package\bin\pnpm.cjs
+C:\shared\sandbox-toolchains\dev\pnpm\<version>\package\bin\pnpm.cjs
 ```
 
 It is hosted by the governed shared Node runtime rather than by `@pnpm/exe`.
+
+The current project-specific example contract now points at `11.5.0`.
 
 ## Provisioning
 
 ```powershell
 $Node26Root = "C:\shared\sandbox-toolchains\dev\node\26.2.0\node-v26.2.0-win-x64"
-$PnpmVersion = "11.2.2"
+$PnpmVersion = "11.5.0"
 $PnpmRoot = "C:\shared\sandbox-toolchains\dev\pnpm\$PnpmVersion"
 
 New-Item -ItemType Directory -Force -Path $PnpmRoot | Out-Null
@@ -45,7 +47,7 @@ Pop-Location
 
 The shared `dev\pnpm\` area may keep multiple PNPM versions side by side.
 
-So if one project contract now requires `11.5.0`, provision it as an additional governed version instead of mutating the existing `11.2.2` subtree in place.
+If one project contract now requires `11.5.0`, provision it as an additional governed version instead of mutating older PNPM subtrees in place.
 
 Sanitized host-side example:
 
@@ -149,6 +151,43 @@ pnpm install
 
 That sequence validated successfully in the boxed project shell.
 
+## Additional integrated Git Bash command-surface fix
+
+After the project contract, lifecycle-shell setting, and boxed terminal startup were already working, one more shell-specific failure was validated:
+
+```text
+bash: pnpm: command not found
+```
+
+This appeared in the integrated Git Bash terminal even though:
+
+- the correct shared `PnpmCli` had been selected
+- the Node runtime was available
+- `pnpm.cmd` had been generated in `bootstrap-bin`
+
+The reason was:
+
+1. a `.cmd` wrapper alone is not a sufficient bare-command surface for Git Bash
+2. the Bash startup files also need the local `bootstrap-bin` directory on the shell `PATH`
+
+So the current boxed-owned-toolchain contract now requires both:
+
+- a Windows wrapper such as `pnpm.cmd`
+- a shell-native wrapper such as `pnpm`
+
+and the Bash RC files must prepend `bootstrap-bin` before interactive Git Bash commands are resolved.
+
+## Why this must be done
+
+Without this fix, the architecture becomes inconsistent:
+
+- PowerShell/CMD can resolve the bootstrap-generated command surface
+- but the integrated Git Bash shell, which is now the preferred boxed VS Code terminal, cannot
+
+That would make the boxed Git Bash terminal an incomplete toolchain surface even though the project contract itself is correct.
+
+So the fix is not cosmetic. It is required so that `pnpm` is actually available in the shell the architecture chose as the normal integrated terminal.
+
 ## Why `--location=project` matters
 
 The setting is written at project scope so that:
@@ -231,7 +270,7 @@ So the intended split is:
 - **exact version selection** = bootstrap/project contract
 - **broad PNPM visibility range** = Sandboxie box rule
 
-## What to change when a project must move from `11.2.2` to `11.5.0`
+## What to change when a project must move to a newer PNPM version
 
 The current boxed-owned-toolchain sequence is:
 
@@ -252,7 +291,7 @@ So commands such as:
 - `pnpm self-update 11.5.0`
 - `npm install -g pnpm@11.5.0`
 
-do not change the project-box contract by themselves when the project bootstrap still points at `11.2.2`.
+do not change the project-box contract by themselves when the project bootstrap still points at some other governed PNPM version.
 
 ## Architectural recommendation
 

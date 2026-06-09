@@ -12,14 +12,14 @@ That is incompatible with this method because the runtime truth must remain expl
 
 ## Selected form
 
-- `pnpm@11.2.2`
+- governed versioned `pnpm@<version>`
 - unpacked as CLI content
 - started through the selected shared Node runtime
 
 ## Canonical path
 
 ```text
-C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\package\bin\pnpm.cjs
+C:\shared\sandbox-toolchains\dev\pnpm\<version>\package\bin\pnpm.cjs
 ```
 
 ## Runtime relationship
@@ -27,9 +27,26 @@ C:\shared\sandbox-toolchains\dev\pnpm\11.2.2\package\bin\pnpm.cjs
 Bootstrap is responsible for ensuring that:
 
 - the correct shared Node runtime hosts pnpm
-- the project box gets a stable `pnpm` command surface
+- the project box gets a stable `pnpm` command surface across PowerShell, CMD, and Git Bash
 
 This keeps the package-manager runtime explicit and reviewable.
+
+## Why Git Bash needed an additional fix
+
+The boxed-owned-toolchain method now uses Git Bash as the integrated VS Code shell.
+
+That created one more shell-specific requirement:
+
+- a generated `pnpm.cmd` wrapper is enough for PowerShell/CMD
+- but Git Bash can still fail with `bash: pnpm: command not found` when only the `.cmd` wrapper exists
+
+The current fix is therefore:
+
+1. generate `pnpm.cmd` for Windows-shell compatibility
+2. generate a shell-native `pnpm` wrapper for Git Bash
+3. ensure the Bash RC files prepend `bootstrap-bin` to the shell `PATH`
+
+Without that combination, the integrated Git Bash terminal can have a valid PNPM project contract and still fail to resolve the `pnpm` command by name.
 
 ## Sandboxie visibility note
 

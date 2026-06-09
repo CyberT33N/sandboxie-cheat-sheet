@@ -43,6 +43,22 @@ For sanitized monorepo examples such as `test-mono`, the method allows:
 
 This keeps the runtime contract explicit and reviewable.
 
+## Bootstrap command-surface note
+
+The current bootstrap contract now has to support multiple shell families:
+
+- PowerShell / CMD
+- integrated Git Bash
+
+That means the Node stack does not only expose Windows `.cmd` wrappers.
+
+It also needs shell-native wrappers for Bash-oriented command resolution, for example:
+
+- `pnpm`
+- `node20`
+
+This is why the boxed-owned-toolchain bootstrap generates more than just `pnpm.cmd` and `node20.cmd`.
+
 ## `nvm` is not part of the final contract
 
 `nvm` is not part of the final architecture contract.

@@ -45,7 +45,13 @@ The current boxed-owned-toolchain bootstrap contract is:
 1. provision the governed shared Starship binary under `dev\starship\1.25.1\`
 2. mirror it locally into the box execution tree
 3. generate the Bash RC files that initialize it
-4. keep the prompt config file separate from the binary location
+4. have those Bash RC files prepend the local `bootstrap-bin` directory to the Bash `PATH`
+5. keep the prompt config file separate from the binary location
+
+That extra `bootstrap-bin` PATH step matters because the same Git Bash shell must also be able to resolve bootstrap-generated toolchain wrappers such as:
+
+- `pnpm`
+- `node20`
 
 The current runtime adapter lives in:
 

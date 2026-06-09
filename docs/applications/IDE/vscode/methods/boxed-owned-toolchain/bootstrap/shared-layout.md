@@ -60,6 +60,10 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+      11.5.0\
+        package\
+          bin\
+            pnpm.cjs
     starship\
       1.25.1\
         starship.exe
@@ -214,7 +218,9 @@ Provides the Node stack wiring:
 
 - validates the shared `Git`, `Node`, and `pnpm` surfaces
 - creates `pnpm.cmd`
+- creates a shell-native `pnpm` wrapper for Git Bash
 - creates additional node wrappers such as `node20.cmd`
+- creates shell-native additional wrappers such as `node20`
 - prepends `bootstrap-bin`, `git\cmd`, and the primary `Node` root to `PATH`
 
 ### `Bootstrap.Python.psm1`
@@ -234,6 +240,8 @@ Provides the Starship prompt/runtime wiring:
 - prepends the local Starship directory into `PATH`
 - generates `bash.minimal.rc`
 - generates `bash.starship.rc`
+
+Those RC files are also responsible for prepending the local `bootstrap-bin` directory into the Bash `PATH` so Git Bash can resolve bootstrap-generated shell wrappers such as `pnpm` and `node20`.
 
 ### `Bootstrap.VSCode.psm1`
 
@@ -320,6 +328,7 @@ The current runtime contract is:
 - shared settings are copied into the local `user-data`
 - `.roo` and `globalStorage` are initialized from seeds only when missing
 - prompt/runtime helper files such as Bash RC files are generated in `bootstrap-bin`
+- Git Bash command surfaces such as `pnpm` are exposed through shell-native wrappers in `bootstrap-bin`, not only through `.cmd` files
 
 This preserves the architecture contract:
 

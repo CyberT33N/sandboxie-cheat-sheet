@@ -166,6 +166,8 @@ What happens:
 
 This intentionally avoids project-specific shell copies and shared terminal binaries.
 
+In the Git Bash terminal path, `pnpm` is expected to resolve through the bootstrap-generated shell wrapper in `bootstrap-bin`, not only through a Windows `.cmd` shim.
+
 ## Step 4 - verify the project toolchain in the open boxed terminal
 
 Run these commands inside the open project terminal:

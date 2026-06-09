@@ -73,7 +73,13 @@ In particular:
 
 - the terminal profile resolves its shell path via `${env:BOXED_GIT_ROOT}`
 - the terminal profile resolves its Bash RC file via `${env:BOXED_BASH_MINIMAL_RC}` / `${env:BOXED_BASH_STARSHIP_RC}`
+- the RC file prepends the local `bootstrap-bin` directory into the Bash `PATH`
 - the RC file performs the shell-specific Starship initialization
+
+That `bootstrap-bin` export matters because the integrated Git Bash terminal must be able to resolve bootstrap-generated shell wrappers such as:
+
+- `pnpm`
+- `node20`
 
 This keeps the canonical settings file generic while still letting each box receive the correct local mirrored shell/runtime surfaces from bootstrap.
 

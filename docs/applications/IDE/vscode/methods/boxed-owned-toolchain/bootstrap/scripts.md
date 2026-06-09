@@ -104,7 +104,9 @@ Current responsibilities:
 - validate the shared Git / Node / PNPM surfaces
 - mirror them locally into the box execution tree
 - generate wrapper commands such as `pnpm.cmd`
+- generate shell-native wrappers such as `pnpm`
 - generate additional node aliases such as `node20.cmd`
+- generate shell-native additional aliases such as `node20`
 - prepend the correct local runtime paths into `PATH`
 
 Representative current contract:
@@ -175,6 +177,13 @@ Current responsibilities:
 - prepend the local Starship directory into `PATH`
 - generate `bash.minimal.rc`
 - generate `bash.starship.rc`
+
+The current Bash RC contract is important because Git Bash terminals rely on it to expose bootstrap-generated wrappers such as:
+
+- `pnpm`
+- `node20`
+
+inside the shell `PATH`.
 
 Representative current contract:
 
@@ -299,6 +308,25 @@ Current behavior:
 - initializes Node, optional Python, and Starship layers
 - sets local temp/Nx environment state
 
+## Why this changed
+
+The current integrated Git Bash path exposed one more shell-specific problem:
+
+- the bootstrap already generated `pnpm.cmd`
+- PowerShell/CMD could use that command surface
+- but Git Bash still reported `bash: pnpm: command not found`
+
+The reason was:
+
+1. a `.cmd` wrapper alone is not a sufficient command surface for bare `pnpm` resolution in Git Bash
+2. the Bash RC startup path also needs the local `bootstrap-bin` directory on `PATH`
+
+So the current boxed-owned-toolchain contract is now:
+
+- `Bootstrap.Node.psm1` generates both Windows wrapper commands and shell-native wrappers
+- `Bootstrap.Starship.psm1` writes Bash RC files that prepend `bootstrap-bin` to `PATH`
+- the integrated Git Bash terminal resolves `pnpm` through the shell-native wrapper rather than depending on `.cmd` lookup behavior
+
 Representative current initialization:
 
 ```powershell
@@ -366,7 +394,7 @@ return @{
   Toolchain = @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
-    PnpmCli = Join-Path $devRoot 'pnpm\11.2.2\package\bin\pnpm.cjs'
+    PnpmCli = Join-Path $devRoot 'pnpm\11.5.0\package\bin\pnpm.cjs'
     PythonRoot = Join-Path $devRoot 'python'
     StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
     StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'

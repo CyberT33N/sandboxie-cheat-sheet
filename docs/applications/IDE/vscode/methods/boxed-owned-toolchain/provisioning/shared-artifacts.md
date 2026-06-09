@@ -52,6 +52,7 @@ $Dirs = @(
   "$SharedRoot\dev\node\26.2.0",
   "$SharedRoot\dev\node\20.19.6",
   "$SharedRoot\dev\pnpm\11.2.2",
+  "$SharedRoot\dev\pnpm\11.5.0",
   "$SharedRoot\dev\python\3.14.5",
   "$SharedRoot\dev\starship\1.25.1",
   "$SharedBootstrapRoot\core",

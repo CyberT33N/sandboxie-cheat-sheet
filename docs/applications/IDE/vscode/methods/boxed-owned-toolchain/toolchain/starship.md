@@ -54,14 +54,26 @@ starship 1.25.1
 The preferred bootstrap consumption shape is:
 
 1. mirror `C:\shared\sandbox-toolchains\dev\starship\1.25.1\` into the box-local toolchain tree
-2. expose the local mirrored Starship binary through bootstrap-generated shell startup files
-3. let VS Code terminal profiles choose the shell and its startup file explicitly
+2. prepend the local `bootstrap-bin` directory to the Bash `PATH` through bootstrap-generated shell startup files
+3. expose the local mirrored Starship binary through the same shell startup files
+4. let VS Code terminal profiles choose the shell and its startup file explicitly
 
 This keeps the roles separated correctly:
 
 - shared provisioning decides which Starship binary version is canonical
-- bootstrap decides which local mirrored executable the shell should use
+- bootstrap decides which local mirrored executable the shell should use and which helper command directory Bash should see
 - VS Code terminal settings decide which shell/profile should start by default
+
+## Why the Bash RC files matter beyond Starship
+
+The current Bash RC files are not only prompt-initialization files.
+
+They also have to export the local `bootstrap-bin` path so Git Bash can resolve bootstrap-generated shell wrappers such as:
+
+- `pnpm`
+- `node20`
+
+Without that PATH step, the integrated Git Bash shell can start successfully and still fail to find toolchain commands that are available in PowerShell/CMD.
 
 ## Config file note
 

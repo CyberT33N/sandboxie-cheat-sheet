@@ -141,10 +141,16 @@ In validated boxed-owned-toolchain testing, there was an important split:
 - setting PNPM `scriptShell` to a box-local Bash `.exe` fixed lifecycle execution during `pnpm install`
 - but `pnpm exec ...` still remained a separate failure surface
 
+There was also a second shell-surface nuance in the integrated Git Bash terminal:
+
+- a generated `pnpm.cmd` wrapper was not by itself enough to make bare `pnpm` resolution work in Git Bash
+- the bootstrap also needed to expose a shell-native `pnpm` wrapper and ensure the local `bootstrap-bin` directory was exported into the Bash `PATH`
+
 So when troubleshooting PNPM on Windows under Sandboxie, distinguish between:
 
 1. lifecycle script execution during install / rebuild
-2. `pnpm exec` command execution
+2. integrated Git Bash command-name resolution for `pnpm`
+3. `pnpm exec` command execution
 
 They are related, but they are not necessarily fixed by the same configuration change.
 

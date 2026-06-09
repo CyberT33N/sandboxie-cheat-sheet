@@ -91,7 +91,16 @@ That layer:
 - validates the shared Node roots
 - mirrors the selected runtime locally
 - creates wrapper commands such as `pnpm.cmd`
+- creates shell-native wrappers such as `pnpm`
 - exposes secondary commands such as `node20`
+- creates shell-native secondary wrappers such as `node20`
+
+This matters because the current boxed-owned-toolchain VS Code path uses integrated Git Bash.
+
+So a Windows `.cmd` wrapper alone is not sufficient for every shell surface. The runtime layer now needs to expose both:
+
+- Windows-shell command surfaces
+- Git-Bash-native command surfaces
 
 ## Why `nvm` is not the final contract
 

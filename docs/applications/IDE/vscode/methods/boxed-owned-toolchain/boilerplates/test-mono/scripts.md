@@ -152,6 +152,11 @@ It encodes the governance-approved boxed-owned-toolchain contract:
 - the script does **not** choose the PNPM version through host arguments
 - the effective PNPM version comes from `Project.Config.ps1`
 
+The current shell-specific requirement is also part of this contract:
+
+- Git Bash must be able to resolve bare `pnpm`
+- so the bootstrap provides a shell-native wrapper in `bootstrap-bin`, not only `pnpm.cmd`
+
 ```powershell
 param(
   [string]$RepoPath = 'C:\Users\yourusername\source\test-mono'

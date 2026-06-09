@@ -73,7 +73,7 @@ as the architecture center.
 
 - Git: `PortableGit` under `dev\git\2.54.0\`
 - Node: versioned runtimes under `dev\node\...`
-- pnpm: unpacked CLI content under `dev\pnpm\11.2.2\package\bin\pnpm.cjs`
+- pnpm: unpacked CLI content under `dev\pnpm\<version>\package\bin\pnpm.cjs`
 - Python: optional bootstrap hook under `dev\python\` exists in the shared scripts, but Python-domain boxed-owned runtime guidance is not yet validated
 - Starship: optional shared prompt runtime under `dev\starship\1.25.1\`
 
