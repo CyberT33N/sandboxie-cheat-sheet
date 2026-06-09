@@ -149,6 +149,15 @@ $nxCmdContent = @(
 
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.cmd') -Content $nxCmdContent
 
+$nxPs1Content = @(
+  ('$nodeExe = ''{0}''' -f $primaryNodeExe)
+  ('$nxLauncher = ''{0}''' -f $nxLauncherPath)
+  '& $nodeExe $nxLauncher @args'
+  'exit $LASTEXITCODE'
+) -join [Environment]::NewLine
+
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.ps1') -Content $nxPs1Content
+
 $nxShellContent = (@(
   '#!/bin/sh'
   ('NODE_EXE_WIN=''{0}''' -f $primaryNodeExe)
@@ -175,9 +184,16 @@ $env:BOXED_NX_LAUNCHER = $nxLauncherPath
 This implementation is correct for the current architecture because it:
 
 1. resolves the local workspace Nx CLI dynamically instead of pinning one hardcoded path
-2. keeps the plain `nx` command surface available in both PowerShell/CMD and Git Bash
+2. keeps the plain `nx` command surface available in PowerShell, CMD, and Git Bash
 3. keeps Nx hosted by the already-governed local mirrored Node runtime
 4. avoids dependence on a global host Nx install
+
+The current wrapper set now explicitly includes:
+
+- `nx`
+- `nx.cmd`
+- `nx.ps1`
+- `nx-cli.cjs`
 
 ## Exact current project environment contract
 
@@ -197,6 +213,8 @@ $env:TMP = $localTempRoot
 $env:TMPDIR = $localTempRoot
 $env:PUPPETEER_CACHE_DIR = $localPuppeteerCacheRoot
 $env:PLAYWRIGHT_BROWSERS_PATH = $localPlaywrightBrowsersRoot
+$env:ComSpec = $boxedComSpec
+$env:COMSPEC = $boxedComSpec
 
 $env:BOXED_VSCODE_MODE = 'Project'
 $env:BOXED_PROJECT_NAME = $ProjectName
@@ -213,6 +231,7 @@ $env:BOXED_LOCAL_TEMP_ROOT = $localTempRoot
 $env:BOXED_PUPPETEER_CACHE_DIR = $localPuppeteerCacheRoot
 $env:BOXED_PLAYWRIGHT_BROWSERS_PATH = $localPlaywrightBrowsersRoot
 $env:BOXED_NX_SOCKET_DIR = $localNxSocketRoot
+$env:BOXED_COMSPEC = $boxedComSpec
 $env:BOXED_NODE_ROOT = $nodeRuntime.NodeRoot
 $env:BOXED_PNPM_CLI = $nodeRuntime.PnpmCli
 $env:BOXED_NODE_EXTRA_COMMANDS = (($AdditionalNodeCommands.Keys | Sort-Object) -join ',')
@@ -232,6 +251,8 @@ This is the exact reason the Nx contract belongs to bootstrap:
 - and local mirrored command surface
 
 all come into existence before the developer types the first Nx command.
+
+The current shell-selection contract belongs here as well, because `nx:run-commands` is sensitive to the Windows command-interpreter environment.
 
 ## Maintenance integration
 
@@ -296,18 +317,21 @@ Latest validated boxed output showed:
 - `nx`
 - `nx-cli.cjs`
 - `nx.cmd`
+- `nx.ps1`
 
 under:
 
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin`
 
-And:
+And `Get-Command nx -All` showed:
 
-- `Get-Command nx`
+- `nx.ps1`
+- `nx.cmd`
+- `nx`
 
-resolved to:
+with PowerShell resolving `nx` from:
 
-- `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin\nx.cmd`
+- `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin\nx.ps1`
 
 And:
 
@@ -324,25 +348,24 @@ returned:
 - `backend`
 - `privyou`
 
-## Important current limitation
-
-At the same latest validated point:
+The latest validated boxed environment also showed:
 
 ```powershell
 $env:COMSPEC
 $env:ComSpec
 ```
 
-still returned:
+returning:
 
 ```text
-C:\WINDOWS\system32\cmd.exe
+C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\toolchain\git\2.54.0\bin\bash.exe
 ```
 
-So the plain `nx` command surface is fixed, but the default Windows shell surface used by `nx:run-commands` is not yet redirected by bootstrap.
+That means the default Windows shell surface used by `nx:run-commands` is now redirected by bootstrap for the currently validated command set.
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\runtime-contract.md`

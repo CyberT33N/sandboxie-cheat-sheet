@@ -105,11 +105,15 @@ Current responsibilities:
 - mirror them locally into the box execution tree
 - generate wrapper commands such as `pnpm.cmd`
 - generate wrapper commands such as `nx.cmd`
+- generate wrapper commands such as `pnpm.ps1`
+- generate wrapper commands such as `nx.ps1`
 - generate shell-native wrappers such as `pnpm`
 - generate shell-native wrappers such as `nx`
 - generate additional node aliases such as `node20.cmd`
+- generate additional node aliases such as `node20.ps1`
 - generate shell-native additional aliases such as `node20`
 - prepend the correct local runtime paths into `PATH`
+- publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
 
 Representative current contract:
 
@@ -139,6 +143,30 @@ function Initialize-NodeToolchainRuntime {
   # generates wrapper commands and exposes the local mirrored toolchain
 }
 ```
+
+Representative wrapper publication now includes all three relevant shell families:
+
+```powershell
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.cmd') -Content $pnpmCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.ps1') -Content $pnpmPs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm') -Content $pnpmShellContent
+
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.cmd') -Content $nxCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.ps1') -Content $nxPs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx') -Content $nxShellContent
+
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20.cmd') -Content $nodeCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20.ps1') -Content $nodePs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20') -Content $nodeShellContent
+```
+
+This matters because the current contract must support:
+
+- PowerShell command resolution
+- CMD command resolution
+- Git Bash command resolution
+
+at the same time.
 
 ## `Bootstrap.Python.psm1`
 
@@ -292,6 +320,9 @@ Current env contract highlights:
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
+$env:ComSpec = $boxedComSpec
+$env:COMSPEC = $boxedComSpec
+$env:BOXED_COMSPEC = $boxedComSpec
 $env:BOXED_NX_LAUNCHER = $nodeRuntime.NxLauncher
 $env:BOXED_PROMOTION_SCRIPT = $promotionScript
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
@@ -354,6 +385,9 @@ Current env contract highlights:
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
+$env:ComSpec = $boxedComSpec
+$env:COMSPEC = $boxedComSpec
+$env:BOXED_COMSPEC = $boxedComSpec
 $env:BOXED_NX_SOCKET_DIR = $localNxSocketRoot
 $env:BOXED_CODE_EXE = $localRuntime.CodeExe
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
@@ -426,6 +460,7 @@ It is now:
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`

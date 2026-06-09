@@ -88,6 +88,15 @@ ComSpec=bash COMSPEC=bash node "$nxCli" run frontend:port-guard --output-style=s
 
 So the current evidence points to the Windows shell path, not to the target logic itself.
 
+That later manual shell-selection validation has now been superseded by the bootstrap-level solution:
+
+- bootstrap now sets `ComSpec` / `COMSPEC` to the box-local Git Bash executable
+- bootstrap now publishes PowerShell-native wrappers such as `nx.ps1` and `pnpm.ps1`
+- the boxed project terminal now validates:
+  - `nx run backend:port-guard`
+  - `nx run frontend:port-guard`
+  - `nx run privyou:smoke-electron-runtime`
+
 ## Current command-surface split
 
 ### Plain `nx`
@@ -118,9 +127,9 @@ Current status:
 
 Current status:
 
-- still sensitive to the Windows shell-selection path
-- currently proven to succeed when the shell is forced away from `cmd.exe`
-- not yet fully repaired at bootstrap baseline level
+- sensitive to the Windows shell-selection path by nature
+- now validated with the bootstrap-owned `ComSpec` / `COMSPEC` override to box-local Bash
+- no longer dependent on manually typing `ComSpec=bash ...` in the shell for the currently tested target set
 
 ## Why this matters architecturally
 
@@ -150,17 +159,30 @@ The first-class answer is **not**:
 
 That boundary is explicitly part of the current accepted architecture direction.
 
-## Current unresolved point
+## Current prioritized solution
 
-At the latest validated state:
+The current prioritized repository solution is:
 
-- the bootstrap-generated `nx` command works
-- `COMSPEC` / `ComSpec` still points to `C:\WINDOWS\system32\cmd.exe`
+1. keep the box strict
+2. keep plain `nx` bootstrap-owned
+3. set `ComSpec` / `COMSPEC` in bootstrap to the box-local Git Bash executable
+4. keep PowerShell-native wrappers and shell-native wrappers side by side
+5. validate individual Nx `run-commands` targets against that shell contract
 
-So the current plain `nx` command surface is healthy, but the default Windows shell surface used by `run-commands` is still not yet redirected by bootstrap.
+Latest validated boxed result:
+
+- `COMSPEC` points to:
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\toolchain\git\2.54.0\bin\bash.exe`
+- `nx` resolves from:
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\privadent-mono\execution\bootstrap-bin\nx.ps1`
+- individual Nx targets succeed:
+  - `backend:port-guard`
+  - `frontend:port-guard`
+  - `privyou:smoke-electron-runtime`
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\runtime-contract.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`

@@ -170,6 +170,7 @@ For the boxed-owned-toolchain architecture in this repository, the current Nx ta
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\cache-boundary.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`

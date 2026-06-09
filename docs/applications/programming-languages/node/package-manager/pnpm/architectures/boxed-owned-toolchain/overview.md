@@ -90,6 +90,8 @@ Owns:
 
 - Sandboxie shell-spawn troubleshooting:
   `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- Central shell-selection contract:
+  `docs\cli\shell\general.md`
 - Boxed-owned-toolchain Nx execution contract:
   `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - Boxed-owned-toolchain Nx execution-surface split:

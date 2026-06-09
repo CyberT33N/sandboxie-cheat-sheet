@@ -18,6 +18,7 @@ A boxed terminal is still started through `Start.exe`, but terminal usage is tre
 
 Read first:
 
+- `docs\cli\shell\general.md`
 - `docs\cli\start\general.md`
 
 ## Core rule
@@ -120,3 +121,8 @@ Keep these two concerns separate on purpose:
 Do not overload a single generic passthrough mechanism for both.
 
 Application-specific areas should reference this document and then add only their workload-specific inner commands.
+
+## Related
+
+- `docs\cli\shell\general.md`
+- `docs\cli\start\general.md`

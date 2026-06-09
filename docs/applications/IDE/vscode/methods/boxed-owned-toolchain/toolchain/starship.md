@@ -89,6 +89,7 @@ This keeps prompt configuration separate from binary/runtime placement.
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\host-state.md`

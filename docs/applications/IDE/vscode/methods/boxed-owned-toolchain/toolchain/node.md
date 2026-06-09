@@ -82,6 +82,7 @@ The method uses fixed versioned binaries selected by bootstrap.
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\pnpm.md`

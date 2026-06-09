@@ -41,11 +41,24 @@ The recommended high-level split is:
 docs\
   cli\
     general.md
+    shell\
+      general.md
     start\
       general.md
     terminal\
       general.md
 ```
+
+### `shell\`
+
+The `shell` area documents shell-selection and command-interpreter behavior that is cross-cutting across:
+
+- interactive terminals
+- child-process execution
+- wrapper command surfaces
+- Windows command-interpreter resolution
+
+This is where the cross-domain `ComSpec` / `COMSPEC` contract belongs.
 
 ### `start\`
 
@@ -86,5 +99,6 @@ That means:
 
 Start here:
 
+- `docs\cli\shell\general.md`
 - `docs\cli\start\general.md`
 - `docs\cli\terminal\general.md`

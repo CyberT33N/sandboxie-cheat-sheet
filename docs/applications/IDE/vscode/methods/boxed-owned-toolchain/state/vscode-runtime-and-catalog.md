@@ -184,6 +184,7 @@ The prompt config file may still remain user-owned, for example:
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\extensions-seeds-and-local-state.md`

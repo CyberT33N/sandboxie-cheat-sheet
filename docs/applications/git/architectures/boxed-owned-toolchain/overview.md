@@ -283,6 +283,7 @@ Those flows remain documented in the VS Code method area and should reference th
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\git\general.md`
 - `docs\applications\git\architectures\host-sync\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`

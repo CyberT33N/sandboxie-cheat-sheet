@@ -59,6 +59,7 @@ The current runtime adapter lives in:
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\terminal\starship\general.md`
 - `docs\applications\terminal\starship\architectures\host-sync\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`

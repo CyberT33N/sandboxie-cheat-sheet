@@ -41,7 +41,8 @@ The current boxed-owned-toolchain Nx reference truth is:
 4. the plain `nx` command surface is validated in the boxed project terminal
 5. `pnpm exec nx ...` remains a separate failure surface
 6. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
-7. manual `ComSpec=bash` validation has already shown that the current `run-commands` blocker is on the Windows shell path, not in Nx business logic itself
+7. the bootstrap now sets `ComSpec` / `COMSPEC` to the box-local Git Bash executable as the prioritized no-loosening shell-selection solution
+8. the currently validated boxed target set now succeeds without manual per-command `ComSpec=bash ...` overrides
 
 ## Current architectural boundary
 
@@ -119,6 +120,7 @@ Owns:
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\version-control\monorepo\nx\general.md`
 - `docs\applications\version-control\monorepo\nx\architectures\host-sync\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`

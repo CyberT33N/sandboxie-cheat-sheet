@@ -55,6 +55,10 @@ This is the primary programmatic mechanism for binding:
 
 That boundary is important for automation design.
 
+For cross-cutting shell-selection behavior such as `ComSpec` / `COMSPEC`, read:
+
+- `docs\cli\shell\general.md`
+
 ## Minimal examples
 
 ### Start a program in a named box
@@ -143,4 +147,9 @@ If the goal is specifically:
 
 then continue with:
 
+- `docs\cli\terminal\general.md`
+
+## Related
+
+- `docs\cli\shell\general.md`
 - `docs\cli\terminal\general.md`

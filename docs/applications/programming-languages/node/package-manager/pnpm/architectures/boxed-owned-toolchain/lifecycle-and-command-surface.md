@@ -24,6 +24,7 @@ That means the root problem was:
 The cross-cutting Sandboxie write-up for that issue lives here:
 
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- `docs\cli\shell\general.md`
 
 ## Validated working lifecycle fix
 
@@ -124,6 +125,7 @@ For the current Nx proof-path and environment contract, read:
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`

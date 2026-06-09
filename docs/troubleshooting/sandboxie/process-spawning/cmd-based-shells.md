@@ -107,6 +107,15 @@ Prefer, in this order:
 2. use a box-local shell executable if a script shell is required
 3. keep the configuration explicit and as narrow as possible
 
+The current repository-wide control-plane source of truth for the shell-selection answer now lives here:
+
+- `docs\cli\shell\general.md`
+
+That central shell document owns the current prioritized solution:
+
+- bootstrap-level `ComSpec` / `COMSPEC` override to the box-local Git Bash executable
+- plus explicit wrapper publication for PowerShell, CMD, and Git Bash command surfaces
+
 Typical example:
 
 - use a box-local mirrored Git Bash `.exe`
@@ -156,5 +165,6 @@ They are related, but they are not necessarily fixed by the same configuration c
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\troubleshooting\sandboxie\privacy-mode\host-user-space-vs-box-root.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`

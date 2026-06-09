@@ -98,6 +98,7 @@ For PNPM specifically, the architecture entrypoint above is now a TOC that split
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\git.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\node.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\pnpm.md`

@@ -4,6 +4,7 @@
 
 The generic boxed-terminal guidance is centralized here:
 
+- `docs\cli\shell\general.md`
 - `docs\cli\terminal\general.md`
 
 This document keeps only the VS Code-specific inner commands and validation steps for the boxed-owned-toolchain method.
@@ -99,6 +100,7 @@ These checks confirm that the project box inherited the intended bootstrap-provi
 
 ## Related
 
+- `docs\cli\shell\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\cli\start\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
