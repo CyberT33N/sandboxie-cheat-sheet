@@ -142,12 +142,12 @@ nx show projects
 
 Latest validated boxed output:
 
-- `privyou-tooling`
+- `test-tooling`
 - `installer`
 - `frontend`
 - `webpages`
 - `backend`
-- `privyou`
+- `test`
 
 The lower-level resolved entrypoint also remains valid for diagnosis:
 

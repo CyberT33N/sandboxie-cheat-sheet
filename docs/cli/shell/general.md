@@ -154,7 +154,7 @@ After the bootstrap-level `ComSpec` override and PowerShell-native wrappers were
 nx --version
 nx run backend:port-guard --output-style=stream
 nx run frontend:port-guard --output-style=stream
-nx run privyou:smoke-electron-runtime --output-style=stream
+nx run test:smoke-electron-runtime --output-style=stream
 ```
 
 All of those commands succeeded.

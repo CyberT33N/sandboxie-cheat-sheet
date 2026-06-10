@@ -239,7 +239,7 @@ Example deeper fallback:
 
 ```powershell
 Set-Location "C:\git\test\test-mono\apps\desktop-app"
-$node = "C:\Users\yourusername\AppData\Local\nvm\v20.19.6\node.exe"
+$node = "C:\Users\yourusername\AppData\Local\nvm\v20.9.0\node.exe"
 $env:PVS = "z1"
 $env:ELECTRON_EXEC_PATH = "C:\shared\sandbox-toolchains\node-monorepo-general\tools\electron\29.4.6\electron.exe"
 & $node ".\node_modules\electron-vite\bin\electron-vite.js" dev --watch -- --server

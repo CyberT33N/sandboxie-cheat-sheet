@@ -56,7 +56,7 @@ return @{
     StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
     StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
     AdditionalNodeCommands = [ordered]@{
-      node20 = Join-Path $devRoot 'node\20.19.6\node-v20.19.6-win-x64\node.exe'
+      node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
   }
 }
