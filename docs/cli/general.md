@@ -43,6 +43,7 @@ docs\
     general.md
     shell\
       general.md
+      clink.md
     start\
       general.md
     terminal\
@@ -100,5 +101,6 @@ That means:
 Start here:
 
 - `docs\cli\shell\general.md`
+- `docs\cli\shell\clink.md`
 - `docs\cli\start\general.md`
 - `docs\cli\terminal\general.md`

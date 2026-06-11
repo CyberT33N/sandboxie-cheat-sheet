@@ -53,11 +53,13 @@ $Dirs = @(
   "$SharedRoot\dev\node\20.9.0",
   "$SharedRoot\dev\pnpm\11.2.2",
   "$SharedRoot\dev\pnpm\11.5.0",
+  "$SharedRoot\dev\clink\1.9.26",
   "$SharedRoot\dev\python\3.14.5",
   "$SharedRoot\dev\starship\1.25.1",
   "$SharedBootstrapRoot\core",
   "$SharedBootstrapRoot\platforms\vscode",
   "$SharedBootstrapRoot\stacks\node",
+  "$SharedBootstrapRoot\stacks\shells",
   "$SharedBootstrapRoot\stacks\python",
   "$SharedBootstrapRoot\stacks\starship",
   "$SharedProjectRoot\bootstrap",
@@ -101,6 +103,7 @@ Binary-specific provisioning is now owned by the application domains and is re-r
 - Git: `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 - Node runtime: `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\versioning-and-provisioning.md`
+- Clink: `docs\cli\shell\clink.md`
 - Python: `docs\applications\programming-languages\python\general.md`
 - Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
 
@@ -155,6 +158,48 @@ Target content:
       "env": {
         "CHERE_INVOKING": "1"
       }
+    },
+    "Boxed CMD": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_MINIMAL_INIT}"
+      ]
+    },
+    "Boxed CMD (Starship Test)": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_STARSHIP_INIT}"
+      ]
+    },
+    "Boxed PowerShell": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
+      ]
+    },
+    "Boxed PowerShell (Starship Test)": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_STARSHIP_INIT}"
+      ]
     }
   },
   "terminal.integrated.inheritEnv": true,

@@ -74,9 +74,13 @@ So if the boxed environment leaves `ComSpec` pointing at a Windows shell that ca
 The validated boxed result is:
 
 - direct script execution can work
-- `node -> spawn(cmd.exe)` can still fail with `spawn EPERM`
+- `node -> spawn(host cmd.exe)` can fail with `spawn EPERM`
+- `node -> spawn(host powershell.exe)` can fail with `spawn EPERM`
+- `node -> spawn(box-local mirrored cmd.exe)` can succeed
+- `node -> spawn(box-local mirrored powershell.exe)` can succeed
 - `node -> spawn(bash)` can still work
 - `ComSpec=bash` can make shell-based Nx targets succeed
+- boxed `CMD + Starship` requires `Clink`
 
 That means the current first-class fix is **not** “loosen the sandbox”.
 
@@ -95,6 +99,8 @@ The current prioritized repository solution is:
    - `COMSPEC`
    to the box-local Git Bash executable during bootstrap
 4. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
+5. treat locally mirrored `cmd.exe` and `powershell.exe` as explicit interactive shell lanes
+6. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
 
 Current bootstrap rule:
 
@@ -119,6 +125,16 @@ This keeps the command-interpreter selection:
 - bootstrap-owned
 - independent from host fallback
 
+At the same time, the repository now distinguishes between:
+
+- the **default shell-oriented child-process contract**
+  - still governed through box-local Git Bash via `ComSpec`
+- the **explicit interactive Windows shell lanes**
+  - box-local mirrored `cmd.exe`
+  - box-local mirrored `powershell.exe`
+- the **CMD + Starship adapter**
+  - `Clink`
+
 ## Why wrappers are still required
 
 The `ComSpec` override is necessary, but not sufficient on its own.
@@ -141,6 +157,10 @@ Current examples:
 - `node20.cmd`
 - `node20.ps1`
 
+For the CMD + Starship lane, there is one additional governed dependency:
+
+- `Clink`
+
 Why this matters:
 
 - once `COMSPEC` points to Git Bash, PowerShell must not be forced to rely only on `.cmd` wrappers
@@ -148,7 +168,7 @@ Why this matters:
 
 ## Current validated result
 
-After the bootstrap-level `ComSpec` override and PowerShell-native wrappers were added, the following were validated in the boxed project shell:
+After the bootstrap-level `ComSpec` override, the Windows-shell mirroring, and the PowerShell-native wrappers were added, the following were validated in the boxed project shell:
 
 ```powershell
 nx --version
@@ -158,6 +178,15 @@ nx run test:smoke-electron-runtime --output-style=stream
 ```
 
 All of those commands succeeded.
+
+In addition, the explicit local Windows shell lanes were validated through the bootstrap-provided shell paths:
+
+```powershell
+node -e "require('child_process').spawn(process.env.BOXED_CMD_EXE,['/d','/c','echo CMD_CHILD_OK'],{stdio:'inherit'})"
+node -e "require('child_process').spawn(process.env.BOXED_POWERSHELL_EXE,['-NoLogo','-NoProfile','-Command','Write-Host PS_CHILD_OK'],{stdio:'inherit'})"
+```
+
+Those commands also succeeded.
 
 That is why this is now the **prioritized documented solution**.
 
@@ -223,9 +252,14 @@ But the **current preferred repository answer** now lives here in `docs\cli\shel
 
 It is now a governed control-plane rule.
 
+For the CMD-specific prompt adapter, read:
+
+- `docs\cli\shell\clink.md`
+
 ## Related
 
 - `docs\cli\general.md`
+- `docs\cli\shell\clink.md`
 - `docs\cli\terminal\general.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`

@@ -12,6 +12,8 @@ For the boxed-owned-toolchain method:
 - the canonical shared binary lives under `C:\shared\sandbox-toolchains\dev\starship\1.25.1\`
 - bootstrap mirrors it locally into the box execution tree
 - bootstrap-generated Bash RC files initialize it for the integrated shell
+- bootstrap-generated PowerShell init files initialize it for explicit boxed PowerShell profiles
+- boxed CMD can use it only through the separate `Clink` runtime adapter
 
 ## Provisioning
 
@@ -47,6 +49,7 @@ The current boxed-owned-toolchain bootstrap contract is:
 3. generate the Bash RC files that initialize it
 4. have those Bash RC files prepend the local `bootstrap-bin` directory to the Bash `PATH`
 5. keep the prompt config file separate from the binary location
+6. for CMD, pair the local Starship binary with the local Clink profile directory instead of trying to initialize Starship directly from plain `cmd.exe`
 
 That extra `bootstrap-bin` PATH step matters because the same Git Bash shell must also be able to resolve bootstrap-generated toolchain wrappers such as:
 
@@ -60,6 +63,7 @@ The current runtime adapter lives in:
 ## Related
 
 - `docs\cli\shell\general.md`
+- `docs\cli\shell\clink.md`
 - `docs\applications\terminal\starship\general.md`
 - `docs\applications\terminal\starship\architectures\host-sync\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`

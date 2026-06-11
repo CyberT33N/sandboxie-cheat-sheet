@@ -29,6 +29,7 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 ### Toolchain stacks
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\starship\Bootstrap.Starship.psm1`
 
@@ -230,6 +231,41 @@ function Initialize-StarshipRuntime {
 }
 ```
 
+## `Bootstrap.WindowsShells.psm1`
+
+This is the Windows shell runtime adapter.
+
+Current responsibilities:
+
+- mirror host `cmd.exe` locally
+- mirror host Windows PowerShell locally
+- mirror governed shared `Clink` locally when provisioned
+- prepend the local mirrored `Clink` root into `PATH`
+- generate:
+  - `cmd.minimal.init.cmd`
+  - `cmd.starship.init.cmd`
+  - `powershell.minimal.init.ps1`
+  - `powershell.starship.init.ps1`
+- keep mutable Clink state box-local under:
+  - `state\shells\cmd\clink\profile\`
+
+Representative current contract:
+
+```powershell
+function Initialize-WindowsShellRuntime {
+  param(
+    [string]$LocalToolchainRoot,
+    [string]$BootstrapBin,
+    [string]$StateRoot,
+    [string]$StarshipExe,
+    [string]$StarshipConfigPath,
+    [string]$ClinkRoot
+  )
+
+  # mirrors the local Windows shell surfaces and prepares CMD/PowerShell init files
+}
+```
+
 ## `Bootstrap.VSCode.psm1`
 
 This is the VS Code platform adapter.
@@ -339,7 +375,7 @@ Current behavior:
 - mirrors the VS Code runtime locally
 - mirrors the shared extension store locally
 - initializes seeds
-- initializes Node, optional Python, and Starship layers
+- initializes Node, Windows-shell, optional Python, and Starship layers
 - sets local temp/Nx environment state
 
 ## Why this changed
@@ -360,6 +396,12 @@ So the current boxed-owned-toolchain contract is now:
 - `Bootstrap.Node.psm1` generates both Windows wrapper commands and shell-native wrappers
 - `Bootstrap.Starship.psm1` writes Bash RC files that prepend `bootstrap-bin` to `PATH`
 - the integrated Git Bash terminal resolves `pnpm` through the shell-native wrapper rather than depending on `.cmd` lookup behavior
+
+The current Windows-shell contract adds another lane:
+
+- `Bootstrap.WindowsShells.psm1` mirrors local `cmd.exe` and local Windows PowerShell into the box execution tree
+- it provisions a box-local Clink profile directory for the `CMD + Starship` lane
+- it keeps CMD plain usable without requiring Clink
 
 Representative current initialization:
 
@@ -461,6 +503,7 @@ It is now:
 ## Related
 
 - `docs\cli\shell\general.md`
+- `docs\cli\shell\clink.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`

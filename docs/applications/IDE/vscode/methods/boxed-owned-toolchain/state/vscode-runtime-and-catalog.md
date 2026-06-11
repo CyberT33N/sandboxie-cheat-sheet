@@ -75,6 +75,8 @@ In particular:
 - the terminal profile resolves its Bash RC file via `${env:BOXED_BASH_MINIMAL_RC}` / `${env:BOXED_BASH_STARSHIP_RC}`
 - the RC file prepends the local `bootstrap-bin` directory into the Bash `PATH`
 - the RC file performs the shell-specific Starship initialization
+- the explicit CMD and PowerShell profiles resolve their shell paths via `${env:BOXED_CMD_EXE}` and `${env:BOXED_POWERSHELL_EXE}`
+- the CMD + Starship lane resolves its Clink profile via `${env:BOXED_CMD_STARSHIP_PROFILE}`
 
 That `bootstrap-bin` export matters because the integrated Git Bash terminal must be able to resolve bootstrap-generated shell wrappers such as:
 
@@ -82,6 +84,8 @@ That `bootstrap-bin` export matters because the integrated Git Bash terminal mus
 - `node20`
 
 This keeps the canonical settings file generic while still letting each box receive the correct local mirrored shell/runtime surfaces from bootstrap.
+
+For the CMD + Starship lane, `Clink` is the CMD-specific runtime adapter. If `Clink` is not provisioned, the profile intentionally falls back to plain CMD instead of trying to fake Starship support.
 
 ## Canonical settings content
 
@@ -124,6 +128,48 @@ This keeps the canonical settings file generic while still letting each box rece
       "env": {
         "CHERE_INVOKING": "1"
       }
+    },
+    "Boxed CMD": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_MINIMAL_INIT}"
+      ]
+    },
+    "Boxed CMD (Starship Test)": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_STARSHIP_INIT}"
+      ]
+    },
+    "Boxed PowerShell": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
+      ]
+    },
+    "Boxed PowerShell (Starship Test)": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_STARSHIP_INIT}"
+      ]
     }
   },
   "terminal.integrated.inheritEnv": true,

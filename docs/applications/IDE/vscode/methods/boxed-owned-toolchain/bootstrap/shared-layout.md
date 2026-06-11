@@ -13,6 +13,7 @@ From a domain-driven and 12-factor perspective, this location and split are inte
 - reusable bootstrap primitives belong in shared infrastructure
 - VS Code-specific orchestration belongs in a VS Code platform layer
 - Node-specific runtime wiring belongs in a Node stack layer
+- shell-specific runtime wiring belongs in a shell stack layer
 - prompt/runtime wiring can live in a dedicated stack layer when it must be mirrored and initialized explicitly
 - project-specific launchers belong under the specific project subtree
 
@@ -64,6 +65,10 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    clink\
+      1.9.26\
+        clink_x64.exe
+        clink.bat
     starship\
       1.25.1\
         starship.exe
@@ -78,6 +83,8 @@ C:\shared\sandbox-toolchains\
       stacks\
         node\
           Bootstrap.Node.psm1
+        shells\
+          Bootstrap.WindowsShells.psm1
         python\
           Bootstrap.Python.psm1
         starship\
@@ -148,6 +155,27 @@ It contains Node / pnpm / Git runtime wiring that is reusable across multiple No
 The current file is:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
+
+### `dev\bootstrap\stacks\shells\`
+
+This is the shell runtime adapter layer.
+
+It contains shell-specific runtime support that is not owned by the generic Node, Python, or Starship stacks:
+
+- mirror host `cmd.exe` locally into the boxed runtime
+- mirror host Windows PowerShell locally into the boxed runtime
+- mirror governed shared `Clink` locally when it is provisioned
+- generate PowerShell init files for minimal and Starship-enabled sessions
+- generate CMD init files for minimal and Starship-enabled sessions
+- publish shell-specific environment surfaces such as:
+  - `BOXED_CMD_EXE`
+  - `BOXED_POWERSHELL_EXE`
+  - `BOXED_CLINK_EXE`
+  - `BOXED_CMD_STARSHIP_PROFILE`
+
+The current file is:
+
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 
 ### `dev\bootstrap\stacks\python\`
 
@@ -223,6 +251,21 @@ Provides the Node stack wiring:
 - creates shell-native additional wrappers such as `node20`
 - prepends `bootstrap-bin`, `git\cmd`, and the primary `Node` root to `PATH`
 
+### `Bootstrap.WindowsShells.psm1`
+
+Provides the Windows shell runtime wiring:
+
+- mirrors host `cmd.exe` locally
+- mirrors host Windows PowerShell locally
+- mirrors governed shared `Clink` locally when provisioned
+- prepends the local `Clink` root into `PATH`
+- writes:
+  - `cmd.minimal.init.cmd`
+  - `cmd.starship.init.cmd`
+  - `powershell.minimal.init.ps1`
+  - `powershell.starship.init.ps1`
+- keeps mutable Clink state in a box-local profile path instead of under `execution\bootstrap-bin`
+
 ### `Bootstrap.Python.psm1`
 
 Provides the Python stack wiring:
@@ -279,6 +322,7 @@ Provides the reusable project-box orchestration:
 - synchronizes shared extensions into a box-local extension runtime copy
 - initializes seeds
 - initializes the Node toolchain layer
+- initializes the Windows shell layer
 - initializes the Python toolchain layer when configured
 - initializes the Starship prompt/runtime layer
 - supports:
@@ -297,6 +341,7 @@ Provides the example `test-mono` project contract:
 - shared Git root
 - primary `Node 26.2.0`
 - optional shared Python root
+- optional shared `Clink` root
 - optional shared Starship root
 - shared `pnpm.cjs`
 - additional `node20` command
@@ -329,6 +374,10 @@ The current runtime contract is:
 - `.roo` and `globalStorage` are initialized from seeds only when missing
 - prompt/runtime helper files such as Bash RC files are generated in `bootstrap-bin`
 - Git Bash command surfaces such as `pnpm` are exposed through shell-native wrappers in `bootstrap-bin`, not only through `.cmd` files
+- CMD-specific prompt injection state lives box-locally under:
+  - `state\shells\cmd\clink\profile\`
+- governed shared `Clink` artifacts remain provisioned under:
+  - `dev\clink\...`
 
 This preserves the architecture contract:
 
