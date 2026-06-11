@@ -11,8 +11,8 @@ For the boxed-owned-toolchain method:
 - `Starship` is a versioned shared runtime
 - the canonical shared binary lives under `C:\shared\sandbox-toolchains\dev\starship\1.25.1\`
 - bootstrap mirrors it locally into the box execution tree
-- bootstrap-generated Bash RC files initialize it for the integrated shell
-- bootstrap-generated PowerShell init files initialize it for explicit boxed PowerShell profiles
+- bootstrap-generated PowerShell init files initialize it for the preferred default boxed PowerShell profile
+- bootstrap-generated Bash RC files initialize it for explicit boxed Git Bash profiles
 - boxed CMD can use it only through the separate `Clink` runtime adapter
 
 This does **not** mean:
@@ -55,10 +55,11 @@ The current boxed-owned-toolchain bootstrap contract is:
 
 1. provision the governed shared Starship binary under `dev\starship\1.25.1\`
 2. mirror it locally into the box execution tree
-3. generate the Bash RC files that initialize it
-4. have those Bash RC files prepend the local `bootstrap-bin` directory to the Bash `PATH`
-5. keep the prompt config file separate from the binary location
-6. for CMD, pair the local Starship binary with the local Clink profile directory instead of trying to initialize Starship directly from plain `cmd.exe`
+3. generate the PowerShell init files and Bash RC files that initialize it per shell lane
+4. keep PowerShell as the preferred default VS Code profile while still exposing CMD and Git Bash as explicit alternatives
+5. have the Bash RC files prepend the local `bootstrap-bin` directory to the Bash `PATH`
+6. keep the prompt config file separate from the binary location
+7. for CMD, pair the local Starship binary with the local Clink profile directory instead of trying to initialize Starship directly from plain `cmd.exe`
 
 That extra `bootstrap-bin` PATH step matters because the same Git Bash shell must also be able to resolve bootstrap-generated toolchain wrappers such as:
 

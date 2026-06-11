@@ -162,19 +162,61 @@ Target content:
 ```json
 {
   "terminal.integrated.automationProfile.windows": {
-    "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
+    "path": "${env:BOXED_POWERSHELL_EXE}",
     "args": [
-      "--noprofile",
-      "--rcfile",
-      "${env:BOXED_BASH_MINIMAL_RC}",
-      "-i"
-    ],
-    "env": {
-      "CHERE_INVOKING": "1"
-    }
+      "-NoLogo",
+      "-NoExit",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
+    ]
   },
-  "terminal.integrated.defaultProfile.windows": "Boxed Git Bash (Starship)",
+  "terminal.integrated.defaultProfile.windows": "Boxed PowerShell (Starship)",
   "terminal.integrated.profiles.windows": {
+    "Boxed PowerShell (Starship)": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_STARSHIP_INIT}"
+      ]
+    },
+    "Boxed PowerShell": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
+      ]
+    },
+    "Boxed CMD (Starship)": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_STARSHIP_INIT}"
+      ]
+    },
+    "Boxed CMD": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_MINIMAL_INIT}"
+      ]
+    },
     "Boxed Git Bash (Starship)": {
       "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
       "args": [
@@ -198,61 +240,20 @@ Target content:
       "env": {
         "CHERE_INVOKING": "1"
       }
-    },
-    "Boxed CMD": {
-      "path": "${env:BOXED_CMD_EXE}",
-      "args": [
-        "/d",
-        "/k",
-        "call",
-        "${env:BOXED_CMD_MINIMAL_INIT}"
-      ]
-    },
-    "Boxed CMD (Starship Test)": {
-      "path": "${env:BOXED_CMD_EXE}",
-      "args": [
-        "/d",
-        "/k",
-        "call",
-        "${env:BOXED_CMD_STARSHIP_INIT}"
-      ]
-    },
-    "Boxed PowerShell": {
-      "path": "${env:BOXED_POWERSHELL_EXE}",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
-      ]
-    },
-    "Boxed PowerShell (Starship Test)": {
-      "path": "${env:BOXED_POWERSHELL_EXE}",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${env:BOXED_POWERSHELL_STARSHIP_INIT}"
-      ]
     }
   },
   "terminal.integrated.inheritEnv": true,
   "[windows]": {
-    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.9.0\node-v220.9.0in-x64\\node.exe"
+    "eslint.runtime": "C:\\shared\\sandbox-toolchains\\dev\\node\\20.9.0\\node-v20.9.0-win-x64\\node.exe"
   }
 }
 ```
 
 This current recovery state intentionally:
 
-- keeps the automation profile on a minimal Bash RC
-- keeps the default interactive profile on a Starship-enabled Bash RC
+- keeps the automation profile on minimal boxed PowerShell
+- keeps the default interactive profile on Starship-enabled boxed PowerShell
+- keeps boxed CMD and boxed Git Bash available as explicit alternative shell lanes
 - resolves the shell and RC paths through bootstrap-provided `${env:...}` variables
 
 This allows the canonical settings file to remain shared while bootstrap still injects the correct box-local runtime paths at launch time.

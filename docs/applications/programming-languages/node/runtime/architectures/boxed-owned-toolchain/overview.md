@@ -95,7 +95,7 @@ That layer:
 - exposes secondary commands such as `node20`
 - creates shell-native secondary wrappers such as `node20`
 
-This matters because the current boxed-owned-toolchain VS Code path uses integrated Git Bash.
+This matters because the current boxed-owned-toolchain VS Code path can expose PowerShell, CMD, and Git Bash side by side, while Git Bash still needs shell-native wrappers when that lane is selected.
 
 So a Windows `.cmd` wrapper alone is not sufficient for every shell surface. The runtime layer now needs to expose both:
 

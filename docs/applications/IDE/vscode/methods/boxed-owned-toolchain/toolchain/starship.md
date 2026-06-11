@@ -61,13 +61,13 @@ The preferred bootstrap consumption shape is:
 1. mirror `C:\shared\sandbox-toolchains\dev\starship\1.25.1\` into the box-local toolchain tree
 2. prepend the local `bootstrap-bin` directory to the Bash `PATH` through bootstrap-generated shell startup files
 3. expose the local mirrored Starship binary through the same shell startup files
-4. let VS Code terminal profiles choose the shell and its startup file explicitly
+4. let VS Code terminal profiles choose the shell and its startup file explicitly, with PowerShell as the preferred default profile
 
 Current lane split:
 
-- Git Bash uses bootstrap-generated Bash RC files
-- PowerShell uses bootstrap-generated PowerShell init files
+- PowerShell uses bootstrap-generated PowerShell init files and is the preferred default interactive lane
 - CMD uses `Clink` as the CMD-specific Starship adapter
+- Git Bash uses bootstrap-generated Bash RC files and remains an explicit supported shell lane
 
 This keeps the roles separated correctly:
 

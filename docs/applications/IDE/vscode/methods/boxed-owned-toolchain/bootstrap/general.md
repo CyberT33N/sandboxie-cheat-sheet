@@ -50,9 +50,9 @@ The final design prefers:
 
 That now includes three different shell lanes:
 
-- a Git Bash lane for the default shell-oriented child-process contract
-- an explicit box-local mirrored PowerShell lane
+- a preferred box-local mirrored PowerShell lane for the default VS Code profile
 - an explicit box-local mirrored `cmd.exe` lane
+- an explicit Git Bash lane for shell-oriented child-process and compatibility flows
 
 In the current validated architecture, those explicit Windows shell lanes are provisioned from governed shared shell artifacts under:
 

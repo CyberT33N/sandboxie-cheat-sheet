@@ -67,20 +67,22 @@ The deliberate exception is an extension-specific runtime binding that must poin
 
 In the current boxed-owned-toolchain contract, `eslint.runtime` is such an exception and is documented in the VS Code extension domain instead of being treated as generic terminal/toolchain selection.
 
-The current recovery state keeps the terminal profile wiring minimal and lets bootstrap provide the dynamic shell/runtime details.
+The current recovery state keeps the terminal profile wiring explicit and lets bootstrap provide the dynamic shell/runtime details.
 
 In particular:
 
-- the terminal profile resolves its shell path via `${env:BOXED_GIT_ROOT}`
-- the terminal profile resolves its Bash RC file via `${env:BOXED_BASH_MINIMAL_RC}` / `${env:BOXED_BASH_STARSHIP_RC}`
-- the RC file prepends the local `bootstrap-bin` directory into the Bash `PATH`
-- the RC file performs the shell-specific Starship initialization
+- `Boxed PowerShell (Starship)` is the preferred interactive default profile
+- `Boxed PowerShell` is the preferred minimal automation profile
 - the explicit CMD and PowerShell profiles resolve their shell paths via `${env:BOXED_CMD_EXE}` and `${env:BOXED_POWERSHELL_EXE}`
 - the CMD + Starship lane resolves its Clink profile via `${env:BOXED_CMD_STARSHIP_PROFILE}`
+- the explicit Git Bash profiles resolve their shell path via `${env:BOXED_GIT_ROOT}`
+- the explicit Git Bash profiles resolve their Bash RC files via `${env:BOXED_BASH_MINIMAL_RC}` / `${env:BOXED_BASH_STARSHIP_RC}`
+- the Bash RC files prepend the local `bootstrap-bin` directory into the Bash `PATH`
+- the Bash RC files perform the Git-Bash-specific Starship initialization
 
 Those explicit CMD/PowerShell shell paths are now expected to come from governed shared shell artifacts under `dev\shells\...`, mirrored locally by bootstrap into the box execution tree.
 
-That `bootstrap-bin` export matters because the integrated Git Bash terminal must be able to resolve bootstrap-generated shell wrappers such as:
+That `bootstrap-bin` export still matters because the available Git Bash profile must be able to resolve bootstrap-generated shell wrappers such as:
 
 - `pnpm`
 - `node20`
@@ -94,19 +96,61 @@ For the CMD + Starship lane, `Clink` is the CMD-specific runtime adapter. If `Cl
 ```json
 {
   "terminal.integrated.automationProfile.windows": {
-    "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
+    "path": "${env:BOXED_POWERSHELL_EXE}",
     "args": [
-      "--noprofile",
-      "--rcfile",
-      "${env:BOXED_BASH_MINIMAL_RC}",
-      "-i"
-    ],
-    "env": {
-      "CHERE_INVOKING": "1"
-    }
+      "-NoLogo",
+      "-NoExit",
+      "-NoProfile",
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
+    ]
   },
-  "terminal.integrated.defaultProfile.windows": "Boxed Git Bash (Starship)",
+  "terminal.integrated.defaultProfile.windows": "Boxed PowerShell (Starship)",
   "terminal.integrated.profiles.windows": {
+    "Boxed PowerShell (Starship)": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_STARSHIP_INIT}"
+      ]
+    },
+    "Boxed PowerShell": {
+      "path": "${env:BOXED_POWERSHELL_EXE}",
+      "args": [
+        "-NoLogo",
+        "-NoExit",
+        "-NoProfile",
+        "-ExecutionPolicy",
+        "Bypass",
+        "-File",
+        "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
+      ]
+    },
+    "Boxed CMD (Starship)": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_STARSHIP_INIT}"
+      ]
+    },
+    "Boxed CMD": {
+      "path": "${env:BOXED_CMD_EXE}",
+      "args": [
+        "/d",
+        "/k",
+        "call",
+        "${env:BOXED_CMD_MINIMAL_INIT}"
+      ]
+    },
     "Boxed Git Bash (Starship)": {
       "path": "${env:BOXED_GIT_ROOT}\\bin\\bash.exe",
       "args": [
@@ -130,48 +174,6 @@ For the CMD + Starship lane, `Clink` is the CMD-specific runtime adapter. If `Cl
       "env": {
         "CHERE_INVOKING": "1"
       }
-    },
-    "Boxed CMD": {
-      "path": "${env:BOXED_CMD_EXE}",
-      "args": [
-        "/d",
-        "/k",
-        "call",
-        "${env:BOXED_CMD_MINIMAL_INIT}"
-      ]
-    },
-    "Boxed CMD (Starship Test)": {
-      "path": "${env:BOXED_CMD_EXE}",
-      "args": [
-        "/d",
-        "/k",
-        "call",
-        "${env:BOXED_CMD_STARSHIP_INIT}"
-      ]
-    },
-    "Boxed PowerShell": {
-      "path": "${env:BOXED_POWERSHELL_EXE}",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${env:BOXED_POWERSHELL_MINIMAL_INIT}"
-      ]
-    },
-    "Boxed PowerShell (Starship Test)": {
-      "path": "${env:BOXED_POWERSHELL_EXE}",
-      "args": [
-        "-NoLogo",
-        "-NoExit",
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        "${env:BOXED_POWERSHELL_STARSHIP_INIT}"
-      ]
     }
   },
   "terminal.integrated.inheritEnv": true,
@@ -181,11 +183,17 @@ For the CMD + Starship lane, `Clink` is the CMD-specific runtime adapter. If `Cl
 }
 ```
 
+This is the corrected declaration for the current preferred profile order:
+
+- PowerShell is the preferred VS Code default
+- CMD remains an explicit supported Windows shell lane
+- Git Bash remains an explicit supported shell lane instead of being treated as the only valid option
+
 ## ESLint runtime exception
 
 `eslint.runtime` is intentionally bound to an explicit Node binary:
 
-- `C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\node.exe`
+- `C:\shared\sandbox-toolchains\dev\node\20.9.0\node-v20.9.0-win-x64\node.exe`
 
 Why:
 

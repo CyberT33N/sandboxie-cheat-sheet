@@ -230,12 +230,12 @@ This confirms that the bootstrap-provided environment also reached the integrate
 
 The current validated integrated-terminal profile set can include:
 
+- `Boxed PowerShell (Starship)` as the preferred default
+- `Boxed PowerShell`
+- `Boxed CMD (Starship)`
+- `Boxed CMD`
 - `Boxed Git Bash (Starship)`
 - `Boxed Git Bash (Minimal)`
-- `Boxed PowerShell`
-- `Boxed PowerShell (Starship Test)`
-- `Boxed CMD`
-- `Boxed CMD (Starship Test)`
 
 ## Maintenance prerequisite commands
 

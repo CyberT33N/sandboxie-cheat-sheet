@@ -33,13 +33,14 @@ This keeps the package-manager runtime explicit and reviewable.
 
 ## Why Git Bash needed an additional fix
 
-The boxed-owned-toolchain method currently uses Git Bash as the **default** integrated VS Code shell-oriented lane.
+The historical shell-oriented execution path first proved itself through Git Bash.
 
 That must not be misunderstood as:
 
 - PowerShell is impossible
 - CMD is impossible
-- or Git Bash being the only valid shell option
+- Git Bash being the only valid shell option
+- or Git Bash being the preferred user-facing default profile
 
 That created one more shell-specific requirement:
 
@@ -56,8 +57,8 @@ Without that combination, the integrated Git Bash terminal can have a valid PNPM
 
 The architectural reason for documenting this remains:
 
-- Git Bash is still the default shell-oriented execution lane used by the current boxed VS Code task model
-- so that lane still needs a complete command surface
+- PowerShell is the preferred integrated VS Code default profile
+- Git Bash remains an explicitly supported shell-oriented lane, so that lane still needs a complete command surface
 - but PowerShell/CMD remain valid when they are explicitly mirrored and selected as boxed shell lanes
 
 ## Sandboxie visibility note

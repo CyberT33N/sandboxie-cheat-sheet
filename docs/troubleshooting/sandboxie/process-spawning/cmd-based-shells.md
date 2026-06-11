@@ -141,10 +141,13 @@ The current repository-wide control-plane source of truth for the shell-selectio
 
 That central shell document owns the current prioritized solution:
 
-- bootstrap-level `ComSpec` / `COMSPEC` override to the box-local Git Bash executable
+- bootstrap-level `ComSpec` / `COMSPEC` override to the box-local Git Bash executable for the historical/current child-process fix
 - plus explicit wrapper publication for PowerShell, CMD, and Git Bash command surfaces
 - plus explicit box-local mirrored `cmd.exe` / PowerShell shell lanes
 - plus `Clink` for the `CMD + Starship` adapter lane
+
+That child-process fix must not be misread as a statement that Git Bash is the only valid shell.
+The preferred user-facing default profile can still be boxed PowerShell while the bootstrap-owned child-process contract is revalidated separately.
 
 Typical example:
 

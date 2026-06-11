@@ -129,6 +129,7 @@ Current status:
 
 - sensitive to the Windows shell-selection path by nature
 - now validated with the bootstrap-owned `ComSpec` / `COMSPEC` override to box-local Bash
+- that historical/current child-process fix does **not** redefine the preferred interactive default shell, which is boxed PowerShell
 - no longer dependent on manually typing `ComSpec=bash ...` in the shell for the currently tested target set
 
 ## Why this matters architecturally
@@ -165,9 +166,11 @@ The current prioritized repository solution is:
 
 1. keep the box strict
 2. keep plain `nx` bootstrap-owned
-3. set `ComSpec` / `COMSPEC` in bootstrap to the box-local Git Bash executable
-4. keep PowerShell-native wrappers and shell-native wrappers side by side
-5. validate individual Nx `run-commands` targets against that shell contract
+3. keep the child-process shell contract explicit and bootstrap-owned
+4. for the historical/current validated `run-commands` fix, keep `ComSpec` / `COMSPEC` mapped to the box-local Git Bash executable
+5. keep PowerShell-native wrappers, CMD wrappers, and shell-native wrappers side by side
+6. treat boxed PowerShell as the preferred interactive default shell
+7. keep the currently validated individual Nx `run-commands` target set aligned with that shell contract
 
 Latest validated boxed result:
 

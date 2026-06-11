@@ -10,6 +10,7 @@ It applies across:
 
 - VS Code integrated terminals
 - boxed PowerShell terminals
+- boxed `cmd.exe` terminals
 - boxed Git Bash terminals
 - child-process execution from Node
 - Nx `run-commands`
@@ -177,19 +178,30 @@ The runtime contract is:
 The current prioritized repository solution is:
 
 1. keep the sandbox strict
-2. keep using box-local mirrored Git Bash as the trusted **default shell-oriented child-process runtime**
-3. set **both**:
+2. expose three explicit box-local shell lanes:
+   - PowerShell
+   - `cmd.exe`
+   - Git Bash
+3. prefer box-local mirrored PowerShell as the default interactive VS Code shell lane
+4. keep child-process shell selection explicit and bootstrap-owned
+5. set **both**:
    - `ComSpec`
    - `COMSPEC`
-   to the box-local Git Bash executable during bootstrap
-4. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
-5. treat locally mirrored `cmd.exe` and `powershell.exe` as explicit interactive shell lanes
-6. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
+   to the box-local interpreter required by the validated shell-oriented child-process surface
+6. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
+7. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
 
 This is intentionally **not** the same as saying:
 
 - Git Bash is the only shell that can work
 - or PowerShell/CMD are impossible in the method
+
+Important distinction:
+
+- the preferred user-facing default shell can be PowerShell
+- while the bootstrap-owned child-process contract can still use another explicit shell lane where historical `Nx` / lifecycle verification proved that path first
+
+In the current historically validated child-process implementation, that bootstrap-owned `ComSpec` contract still points to box-local Git Bash.
 
 Current bootstrap rule:
 
@@ -216,18 +228,21 @@ This keeps the command-interpreter selection:
 
 At the same time, the repository now distinguishes between:
 
-- the **default shell-oriented child-process contract**
-  - still governed through box-local Git Bash via `ComSpec`
-- the **explicit interactive Windows shell lanes**
+- the **preferred interactive default shell lane**
+  - box-local mirrored PowerShell
+- the **explicit alternative Windows shell lane**
   - box-local mirrored `cmd.exe`
-  - box-local mirrored `powershell.exe`
+- the **explicit Git Bash lane**
+  - available for shell-native wrappers and shell-oriented child-process flows
+- the **bootstrap-owned child-process contract**
+  - currently governed through box-local Git Bash via `ComSpec`
 - the **CMD + Starship adapter**
   - `Clink`
 
 This split is the key architectural correction:
 
-- PowerShell/CMD are valid shell lanes
-- but they are **not** the same lane as the shell-oriented child-process contract used by Nx / shell-based exec paths
+- PowerShell, CMD, and Git Bash are all valid shell lanes
+- but the preferred interactive default shell is **not** automatically the same thing as the shell-oriented child-process contract used by Nx / shell-based exec paths
 
 ## Why wrappers are still required
 

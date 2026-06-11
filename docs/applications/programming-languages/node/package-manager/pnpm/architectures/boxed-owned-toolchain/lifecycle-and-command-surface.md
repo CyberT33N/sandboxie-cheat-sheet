@@ -66,6 +66,11 @@ That sequence validated successfully in the boxed project shell.
 
 ## Additional integrated Git Bash command-surface fix
 
+This Git-Bash-specific fix must not be confused with the preferred VS Code default shell.
+
+The preferred integrated VS Code default is boxed PowerShell.
+Git Bash remains a separate explicitly supported lane that still needs a complete command surface when selected directly or when shell-oriented flows use that lane.
+
 After the project contract, lifecycle-shell setting, and boxed terminal startup were already working, one more shell-specific failure was validated:
 
 ```text
@@ -95,11 +100,11 @@ and the Bash RC files must prepend `bootstrap-bin` before interactive Git Bash c
 Without this fix, the architecture becomes inconsistent:
 
 - PowerShell/CMD can resolve the bootstrap-generated command surface
-- but the integrated Git Bash shell, which remains the default boxed VS Code shell-oriented lane, cannot
+- but the explicitly selected Git Bash shell lane cannot
 
 That would make the boxed Git Bash terminal an incomplete toolchain surface even though the project contract itself is correct.
 
-So the fix is not cosmetic. It is required so that `pnpm` is actually available in the default integrated Git Bash lane the architecture currently uses for shell-oriented task execution.
+So the fix is not cosmetic. It is required so that `pnpm` is actually available in the supported Git Bash lane instead of falsely making that lane look technically impossible.
 
 ## Why `--location=project` matters
 
