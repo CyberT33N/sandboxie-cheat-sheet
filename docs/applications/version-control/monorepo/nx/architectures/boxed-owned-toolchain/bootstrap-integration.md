@@ -49,8 +49,11 @@ $parameters = @{
   NodeRoot = $config.Toolchain.NodeRoot
   PnpmCli = $config.Toolchain.PnpmCli
   PythonRoot = $config.Toolchain.PythonRoot
-  StarshipRoot = $config.Toolchain.StarshipRoot
-  StarshipConfigPath = $config.Toolchain.StarshipConfigPath
+  CmdRoot = $config.Shells.CmdRoot
+  PowerShellRoot = $config.Shells.PowerShellRoot
+  StarshipRoot = $config.Shells.StarshipRoot
+  ClinkRoot = $config.Shells.ClinkRoot
+  StarshipConfigPath = $config.Shells.StarshipConfigPath
   AdditionalNodeCommands = $config.Toolchain.AdditionalNodeCommands
 }
 

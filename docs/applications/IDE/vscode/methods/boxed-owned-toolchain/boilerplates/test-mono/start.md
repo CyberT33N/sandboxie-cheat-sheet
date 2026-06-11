@@ -162,7 +162,8 @@ What happens:
 - the shared extension store is mirrored into the local project runtime copy
 - the canonical VS Code user catalog is copied into local `user-data`
 - the Node stack is wired into `PATH`
-- optional Python and Starship runtime layers can also be initialized by the project config
+- the explicit local CMD/PowerShell shell lanes are prepared
+- optional Python, Starship, and Clink runtime layers can also be initialized by the project config
 
 This intentionally avoids project-specific shell copies and shared terminal binaries.
 
@@ -226,6 +227,15 @@ python --version
 ```
 
 This confirms that the bootstrap-provided environment also reached the integrated terminal.
+
+The current validated integrated-terminal profile set can include:
+
+- `Boxed Git Bash (Starship)`
+- `Boxed Git Bash (Minimal)`
+- `Boxed PowerShell`
+- `Boxed PowerShell (Starship Test)`
+- `Boxed CMD`
+- `Boxed CMD (Starship Test)`
 
 ## Maintenance prerequisite commands
 

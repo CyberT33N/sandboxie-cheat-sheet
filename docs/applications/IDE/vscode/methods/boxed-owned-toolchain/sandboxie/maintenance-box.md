@@ -97,8 +97,8 @@ ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\20.9.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\python\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\shells\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
-ReadFilePath=C:\shared\sandbox-toolchains\dev\clink\
 
 OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\vscode-user\
 OpenFilePath=C:\shared\sandbox-toolchains\ide\vscode\catalog\seed\globalStorage\
@@ -152,10 +152,10 @@ So the correct split is:
 - **project or maintenance contract** = exact selected PNPM version
 - **Sandboxie box rule** = broad `dev\pnpm\` visibility
 
-The same governance principle applies to `Clink`:
+The same governance principle applies to shell-specific runtime artifacts:
 
-- **project or maintenance contract** = exact selected `ClinkRoot`
-- **Sandboxie box rule** = broad `dev\clink\` visibility
+- **project or maintenance contract** = exact selected shell runtime roots such as `CmdRoot`, `PowerShellRoot`, and `ClinkRoot`
+- **Sandboxie box rule** = broad `dev\shells\` visibility
 
 The wildcard trace lines are intentionally shown commented out above because they are a debug surface, not part of the normal day-to-day box configuration.
 

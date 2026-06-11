@@ -13,6 +13,31 @@ The final target state for this method is:
 
 The host must not remain the accidental fallback execution surface for the development toolchain.
 
+## Windows shell nuance
+
+This must not be misread as:
+
+- remove Windows `cmd.exe`
+- remove Windows PowerShell
+- or pretend the operating system has no shell binaries
+
+The current validated method now provisions governed shared shell artifacts for:
+
+- `cmd.exe`
+- Windows PowerShell
+- `Clink`
+
+under:
+
+- `C:\shared\sandbox-toolchains\dev\shells\...`
+
+Those governed shared shell artifacts are then mirrored locally into the box execution tree.
+
+The architectural rule is:
+
+- do not rely on the host/system shell path as the accidental execution fallback inside boxed workflows
+- do rely on governed shared shell artifacts plus explicit box-local mirrors when `cmd.exe` or PowerShell are needed inside integrated or child-process-controlled flows
+
 ## Why this matters
 
 If host-side developer toolchains remain installed, the architecture becomes vulnerable to:

@@ -14,6 +14,12 @@ Validated behavior in the boxed project shell:
 4. `node -> spawn(powershell.exe)` failed with `spawn EPERM`
 5. `node -> spawn(box-local bash.exe)` worked
 
+Current refined understanding:
+
+- the failing entries above were the problematic **host/system-shell spawn surfaces**
+- this must not be generalized into "PowerShell/CMD are impossible"
+- the later validated box-local mirrored `cmd.exe` / PowerShell lanes prove that those shells can work when they are projected explicitly into the boxed runtime
+
 That means the root problem was:
 
 - not a general Node child-process failure
@@ -89,11 +95,11 @@ and the Bash RC files must prepend `bootstrap-bin` before interactive Git Bash c
 Without this fix, the architecture becomes inconsistent:
 
 - PowerShell/CMD can resolve the bootstrap-generated command surface
-- but the integrated Git Bash shell, which is now the preferred boxed VS Code terminal, cannot
+- but the integrated Git Bash shell, which remains the default boxed VS Code shell-oriented lane, cannot
 
 That would make the boxed Git Bash terminal an incomplete toolchain surface even though the project contract itself is correct.
 
-So the fix is not cosmetic. It is required so that `pnpm` is actually available in the shell the architecture chose as the normal integrated terminal.
+So the fix is not cosmetic. It is required so that `pnpm` is actually available in the default integrated Git Bash lane the architecture currently uses for shell-oriented task execution.
 
 ## Why `--location=project` matters
 

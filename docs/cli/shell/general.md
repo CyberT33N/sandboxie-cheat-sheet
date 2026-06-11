@@ -74,6 +74,8 @@ So if the boxed environment leaves `ComSpec` pointing at a Windows shell that ca
 The validated boxed result is:
 
 - direct script execution can work
+- manually opened boxed `cmd.exe` can work
+- manually opened boxed PowerShell can work
 - `node -> spawn(host cmd.exe)` can fail with `spawn EPERM`
 - `node -> spawn(host powershell.exe)` can fail with `spawn EPERM`
 - `node -> spawn(box-local mirrored cmd.exe)` can succeed
@@ -82,18 +84,100 @@ The validated boxed result is:
 - `ComSpec=bash` can make shell-based Nx targets succeed
 - boxed `CMD + Starship` requires `Clink`
 
+That means the old broad statement:
+
+- "PowerShell/CMD do not work in the boxed-owned-toolchain method"
+
+is not accurate.
+
+The accurate statement is:
+
+- host/system Windows shell spawn surfaces can fail under strict boxed child-process execution
+- explicitly mirrored box-local Windows shell lanes can work
+- the bootstrap must decide which lane is used for which purpose
+
 That means the current first-class fix is **not** “loosen the sandbox”.
 
 It is:
 
 - make the boxed shell-selection contract explicit
 
+In the current validated repository state, the explicit shell artifacts are governed under:
+
+- `C:\shared\sandbox-toolchains\dev\shells\cmd\...`
+- `C:\shared\sandbox-toolchains\dev\shells\powershell\...`
+- `C:\shared\sandbox-toolchains\dev\shells\clink\...`
+
+## Shared shell artifact model
+
+The current repository model now treats the Windows shell lanes as governed shared shell artifacts.
+
+Canonical shared shape:
+
+```text
+C:\shared\sandbox-toolchains\dev\shells\
+  cmd\
+    10.0.26100.8457\
+      cmd.exe
+  powershell\
+    10.0.26100.8457\
+      powershell.exe
+      ...
+  clink\
+    1.9.26\
+      clink_x64.exe
+      clink.bat
+      ...
+```
+
+That means:
+
+- `cmd.exe` is no longer treated as a runtime that bootstrap should source directly from `C:\Windows\System32\...`
+- Windows PowerShell is no longer treated as a runtime that bootstrap should source directly from `C:\Windows\System32\WindowsPowerShell\v1.0\...`
+- bootstrap now consumes governed shared shell artifacts and mirrors them locally into the box execution tree
+
+## Host-side provisioning of shared Windows shell artifacts
+
+The initial shared provisioning source for the Windows-bundled shell binaries is still the local OS installation, but the **runtime source of truth** becomes the shared shell artifact tree once provisioned.
+
+Representative host-side provisioning:
+
+```powershell
+$ShellsRoot = 'C:\shared\sandbox-toolchains\dev\shells'
+
+$CmdVersion = ((Get-Item "$env:SystemRoot\System32\cmd.exe").VersionInfo.FileVersion -split ' ')[0]
+$PowerShellVersion = ((Get-Item "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe").VersionInfo.FileVersion -split ' ')[0]
+
+$CmdDest = Join-Path $ShellsRoot "cmd\$CmdVersion"
+$PowerShellDest = Join-Path $ShellsRoot "powershell\$PowerShellVersion"
+
+New-Item -ItemType Directory -Force -Path $CmdDest, $PowerShellDest | Out-Null
+
+Copy-Item `
+  -LiteralPath "$env:SystemRoot\System32\cmd.exe" `
+  -Destination (Join-Path $CmdDest 'cmd.exe') `
+  -Force
+
+robocopy `
+  "$env:SystemRoot\System32\WindowsPowerShell\v1.0" `
+  $PowerShellDest `
+  /E /R:1 /W:1
+```
+
+This is a provisioning step, not the runtime contract itself.
+
+The runtime contract is:
+
+- bootstrap reads from `C:\shared\sandbox-toolchains\dev\shells\...`
+- bootstrap mirrors into the local box execution tree
+- integrated terminals use the local mirrored shell lanes
+
 ## Current prioritized solution
 
 The current prioritized repository solution is:
 
 1. keep the sandbox strict
-2. keep using box-local mirrored Git Bash as the trusted shell runtime
+2. keep using box-local mirrored Git Bash as the trusted **default shell-oriented child-process runtime**
 3. set **both**:
    - `ComSpec`
    - `COMSPEC`
@@ -101,6 +185,11 @@ The current prioritized repository solution is:
 4. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
 5. treat locally mirrored `cmd.exe` and `powershell.exe` as explicit interactive shell lanes
 6. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
+
+This is intentionally **not** the same as saying:
+
+- Git Bash is the only shell that can work
+- or PowerShell/CMD are impossible in the method
 
 Current bootstrap rule:
 
@@ -134,6 +223,11 @@ At the same time, the repository now distinguishes between:
   - box-local mirrored `powershell.exe`
 - the **CMD + Starship adapter**
   - `Clink`
+
+This split is the key architectural correction:
+
+- PowerShell/CMD are valid shell lanes
+- but they are **not** the same lane as the shell-oriented child-process contract used by Nx / shell-based exec paths
 
 ## Why wrappers are still required
 
@@ -187,6 +281,14 @@ node -e "require('child_process').spawn(process.env.BOXED_POWERSHELL_EXE,['-NoLo
 ```
 
 Those commands also succeeded.
+
+So the current repository view is:
+
+- boxed `cmd.exe` works
+- boxed PowerShell works
+- integrated VS Code profiles can work when those binaries are mirrored locally and selected explicitly
+- the original blocker was not the shell type itself
+- the original blocker was the wrong shell-execution surface
 
 That is why this is now the **prioritized documented solution**.
 

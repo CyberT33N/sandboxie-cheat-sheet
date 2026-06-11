@@ -27,24 +27,42 @@ This currently contains:
 - `git\`
 - `node\`
 - `pnpm\`
+- `shells\`
 - `python\`
+- `starship\`
 - `bootstrap\`
 
-## Optional prompt/runtime addition
+## Shell and prompt/runtime additions
 
-When a boxed shell needs to execute a prompt binary locally, the same shared toolchain root may additionally contain:
+When a boxed shell needs additional shell- or prompt-specific runtimes, the same shared toolchain root may additionally contain:
 
+- `shells\cmd\...`
+- `shells\powershell\...`
+- `shells\clink\...`
 - `starship\`
 
-This is not because `Starship` becomes project dependency governance.
+This is not because `Starship`, `Clink`, `cmd.exe`, or PowerShell become project dependency governance.
 
-It remains shell/prompt infrastructure.
+They remain shell/runtime infrastructure.
 
-However, it can still be modeled as a versioned shared runtime when:
+However, they can still be modeled as governed shared runtime surfaces when:
 
 - a boxed shell must avoid direct execution of host `Program Files` prompt binaries
 - the prompt binary should be mirrored locally into the box execution tree
 - shell startup should remain explicit and bootstrap-driven rather than profile-driven
+
+## Current Windows-shell refinement
+
+The current validated shell model now distinguishes between:
+
+- versioned shared shell runtimes and adapters under:
+  - `dev\shells\cmd\...`
+  - `dev\shells\powershell\...`
+  - `dev\shells\clink\...`
+- prompt runtime support under:
+  - `dev\starship\...`
+
+Bootstrap mirrors those governed shared shell surfaces locally into the box execution tree.
 
 ## Current refinement
 
@@ -52,7 +70,8 @@ The current method therefore distinguishes between:
 
 - governed boxed-owned toolchain/runtime surfaces such as `Git`, `Node`, and `pnpm`
 - optional method-level hooks such as the current Python bootstrap hook
-- shell/prompt runtime support such as `Starship`
+- shell runtime surfaces such as `cmd.exe`, PowerShell, and `Clink`
+- prompt/runtime support such as `Starship`
 
 These surfaces can live under `C:\shared\sandbox-toolchains\dev\` when local boxed execution requires a mirrored runtime surface.
 
@@ -74,6 +93,9 @@ as the architecture center.
 - Git: `PortableGit` under `dev\git\2.54.0\`
 - Node: versioned runtimes under `dev\node\...`
 - pnpm: unpacked CLI content under `dev\pnpm\<version>\package\bin\pnpm.cjs`
+- CMD: governed shared shell artifact under `dev\shells\cmd\10.0.26100.8457\`
+- PowerShell: governed shared shell artifact under `dev\shells\powershell\10.0.26100.8457\`
+- Clink: governed shared CMD runtime adapter under `dev\shells\clink\1.9.26\`
 - Python: optional bootstrap hook under `dev\python\` exists in the shared scripts, but Python-domain boxed-owned runtime guidance is not yet validated
 - Starship: optional shared prompt runtime under `dev\starship\1.25.1\`
 

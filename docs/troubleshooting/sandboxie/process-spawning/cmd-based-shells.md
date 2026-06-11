@@ -26,6 +26,16 @@ That means a setup can show this combination:
 - but `node -> spawn(cmd.exe)` fails with `spawn EPERM`
 - and `node -> spawn(powershell.exe)` also fails with `spawn EPERM`
 
+This pattern does **not** mean that PowerShell or CMD are generally unusable in the box.
+
+It means the failing surface is:
+
+- the shell as a **spawned child-process target**
+
+and not necessarily:
+
+- the shell as a top-level interactive program
+
 ## Why this matters
 
 Many tools on Windows do not execute their lifecycle or helper commands directly.
@@ -75,8 +85,26 @@ The same setup may still allow:
 
 - `node -> spawn(local node.exe)`
 - `node -> spawn(local git bash.exe)`
+- `node -> spawn(local mirrored cmd.exe)`
+- `node -> spawn(local mirrored powershell.exe)`
 
 That distinction is the key architectural signal.
+
+## Current refined interpretation
+
+The validated current refinement is:
+
+- host/system Windows shell binaries can remain problematic on child-process spawn surfaces
+- but locally mirrored boxed shell binaries can work
+
+Therefore the correct conclusion is **not**:
+
+- "PowerShell/CMD do not work"
+
+The correct conclusion is:
+
+- PowerShell/CMD can work
+- but they must be treated as explicitly provisioned boxed shell lanes when they are needed inside integrated or child-process-controlled flows
 
 ## Architectural interpretation
 
@@ -115,12 +143,20 @@ That central shell document owns the current prioritized solution:
 
 - bootstrap-level `ComSpec` / `COMSPEC` override to the box-local Git Bash executable
 - plus explicit wrapper publication for PowerShell, CMD, and Git Bash command surfaces
+- plus explicit box-local mirrored `cmd.exe` / PowerShell shell lanes
+- plus `Clink` for the `CMD + Starship` adapter lane
 
 Typical example:
 
 - use a box-local mirrored Git Bash `.exe`
 - configure the tool to use that shell explicitly
 - avoid depending on spawned host `cmd.exe` or host `powershell.exe` when the strict box policy blocks them
+
+Another valid current example:
+
+- use a box-local mirrored `cmd.exe` or box-local mirrored PowerShell executable
+- let VS Code open that mirrored shell profile explicitly
+- avoid assuming that the host/system shell path is equivalent to the boxed shell lane
 
 ## What this is *not*
 

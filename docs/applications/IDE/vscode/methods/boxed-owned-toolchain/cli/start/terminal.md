@@ -85,6 +85,11 @@ This keeps the launch path on:
 
 and avoids project-specific shell copies.
 
+The current validated integrated terminal profile set is broader than only Git Bash:
+
+- Git Bash remains the default shell-oriented lane used by the current command-interpreter contract
+- explicit boxed PowerShell and explicit boxed `cmd.exe` profiles are also valid when they are mirrored locally and selected through bootstrap-provided profile variables
+
 ### Verify the project toolchain
 
 ```powershell

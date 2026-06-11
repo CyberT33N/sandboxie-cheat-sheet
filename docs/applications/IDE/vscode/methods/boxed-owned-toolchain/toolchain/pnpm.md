@@ -33,7 +33,13 @@ This keeps the package-manager runtime explicit and reviewable.
 
 ## Why Git Bash needed an additional fix
 
-The boxed-owned-toolchain method now uses Git Bash as the integrated VS Code shell.
+The boxed-owned-toolchain method currently uses Git Bash as the **default** integrated VS Code shell-oriented lane.
+
+That must not be misunderstood as:
+
+- PowerShell is impossible
+- CMD is impossible
+- or Git Bash being the only valid shell option
 
 That created one more shell-specific requirement:
 
@@ -47,6 +53,12 @@ The current fix is therefore:
 3. ensure the Bash RC files prepend `bootstrap-bin` to the shell `PATH`
 
 Without that combination, the integrated Git Bash terminal can have a valid PNPM project contract and still fail to resolve the `pnpm` command by name.
+
+The architectural reason for documenting this remains:
+
+- Git Bash is still the default shell-oriented execution lane used by the current boxed VS Code task model
+- so that lane still needs a complete command surface
+- but PowerShell/CMD remain valid when they are explicitly mirrored and selected as boxed shell lanes
 
 ## Sandboxie visibility note
 

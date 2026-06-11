@@ -6,6 +6,11 @@
 
 The boxed-owned-toolchain method provisions it as a versioned shared runtime and mirrors it locally into the box execution tree during bootstrap.
 
+This must not be read as:
+
+- Starship can only be used with Git Bash
+- or PowerShell/CMD are impossible in the method
+
 ## Selected form
 
 - official GitHub release archive
@@ -57,6 +62,12 @@ The preferred bootstrap consumption shape is:
 2. prepend the local `bootstrap-bin` directory to the Bash `PATH` through bootstrap-generated shell startup files
 3. expose the local mirrored Starship binary through the same shell startup files
 4. let VS Code terminal profiles choose the shell and its startup file explicitly
+
+Current lane split:
+
+- Git Bash uses bootstrap-generated Bash RC files
+- PowerShell uses bootstrap-generated PowerShell init files
+- CMD uses `Clink` as the CMD-specific Starship adapter
 
 This keeps the roles separated correctly:
 

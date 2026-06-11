@@ -78,6 +78,8 @@ In particular:
 - the explicit CMD and PowerShell profiles resolve their shell paths via `${env:BOXED_CMD_EXE}` and `${env:BOXED_POWERSHELL_EXE}`
 - the CMD + Starship lane resolves its Clink profile via `${env:BOXED_CMD_STARSHIP_PROFILE}`
 
+Those explicit CMD/PowerShell shell paths are now expected to come from governed shared shell artifacts under `dev\shells\...`, mirrored locally by bootstrap into the box execution tree.
+
 That `bootstrap-bin` export matters because the integrated Git Bash terminal must be able to resolve bootstrap-generated shell wrappers such as:
 
 - `pnpm`

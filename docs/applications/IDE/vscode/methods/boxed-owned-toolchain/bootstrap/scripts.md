@@ -237,8 +237,8 @@ This is the Windows shell runtime adapter.
 
 Current responsibilities:
 
-- mirror host `cmd.exe` locally
-- mirror host Windows PowerShell locally
+- mirror governed shared `cmd.exe` locally
+- mirror governed shared Windows PowerShell locally
 - mirror governed shared `Clink` locally when provisioned
 - prepend the local mirrored `Clink` root into `PATH`
 - generate:
@@ -249,20 +249,28 @@ Current responsibilities:
 - keep mutable Clink state box-local under:
   - `state\shells\cmd\clink\profile\`
 
+Important current nuance:
+
+- `cmd.exe`, Windows PowerShell, and `Clink` are all governed shared shell artifacts under `dev\shells\...`
+- bootstrap mirrors them locally into the box execution tree
+- mutable `Clink` state still remains box-local
+
 Representative current contract:
 
 ```powershell
 function Initialize-WindowsShellRuntime {
   param(
+    [string]$CmdRoot,
+    [string]$PowerShellRoot,
+    [string]$ClinkRoot,
     [string]$LocalToolchainRoot,
     [string]$BootstrapBin,
     [string]$StateRoot,
     [string]$StarshipExe,
-    [string]$StarshipConfigPath,
-    [string]$ClinkRoot
+    [string]$StarshipConfigPath
   )
 
-  # mirrors the local Windows shell surfaces and prepares CMD/PowerShell init files
+  # mirrors the governed shared Windows shell artifacts and prepares CMD/PowerShell init files
 }
 ```
 
@@ -476,11 +484,16 @@ return @{
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
     PnpmCli = Join-Path $devRoot 'pnpm\11.5.0\package\bin\pnpm.cjs'
     PythonRoot = Join-Path $devRoot 'python'
-    StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
-    StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
     AdditionalNodeCommands = [ordered]@{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
+  }
+  Shells = @{
+    CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'
+    PowerShellRoot = Join-Path $devRoot 'shells\powershell\10.0.26100.8457'
+    ClinkRoot = Join-Path $devRoot 'shells\clink\1.9.26'
+    StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
+    StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
   }
 }
 ```

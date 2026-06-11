@@ -37,12 +37,12 @@ That means:
 
 ## DDD placement decision
 
-### Why the shared artifact belongs under `dev\clink\...`
+### Why the shared artifact belongs under `dev\shells\clink\...`
 
 The correct shared artifact location is:
 
 ```text
-C:\shared\sandbox-toolchains\dev\clink\<version>\
+C:\shared\sandbox-toolchains\dev\shells\clink\<version>\
 ```
 
 Why this is correct:
@@ -56,7 +56,7 @@ Why this is correct:
 - `Clink` is also a versioned runtime dependency used by bootstrap
 - it is provisioned and mirrored like the other governed developer runtimes
 
-### Why not a new top-level shared folder like `shells\` or `terminals\`
+### Why a `shells\` overarea is now correct inside `dev\`
 
 The repository already separates:
 
@@ -64,14 +64,18 @@ The repository already separates:
 - **domain ownership** in the documentation tree
 - **runtime orchestration ownership** in bootstrap stacks
 
-That means the clean split is:
+The clean split is now:
 
 - shared artifact tree:
-  - `dev\clink\...`
+  - `dev\shells\cmd\...`
+  - `dev\shells\powershell\...`
+  - `dev\shells\clink\...`
 - documentation domain:
   - `docs\cli\shell\...`
 - bootstrap implementation:
   - `dev\bootstrap\stacks\shells\...`
+
+This is a subdomain under `dev\`, not a new top-level shared root.
 
 Creating a new top-level shared root such as:
 
@@ -83,7 +87,7 @@ would fragment the shared artifact taxonomy without solving a real ownership pro
 So the current repository decision is:
 
 - **no new top-level shared `shells` or `terminals` root**
-- **keep versioned shell-adjacent artifacts under `dev\...`**
+- **use `dev\shells\...` as the shell-runtime overarea inside the existing `dev\` shared toolchain tree**
 
 ## Runtime mirror and state split
 
@@ -92,7 +96,7 @@ The local mirrored binary and the local mutable state intentionally live in diff
 ### Shared canonical source
 
 ```text
-C:\shared\sandbox-toolchains\dev\clink\1.9.26\
+C:\shared\sandbox-toolchains\dev\shells\clink\1.9.26\
 ```
 
 ### Local mirrored runtime
@@ -144,7 +148,7 @@ https://github.com/chrisant996/clink/releases/download/v1.9.26/clink.1.9.26.ac0b
 ```powershell
 $ClinkVersion = '1.9.26'
 $ClinkZip = Join-Path $env:TEMP "clink-$ClinkVersion.zip"
-$ClinkDest = "C:\shared\sandbox-toolchains\dev\clink\$ClinkVersion"
+$ClinkDest = "C:\shared\sandbox-toolchains\dev\shells\clink\$ClinkVersion"
 
 Invoke-WebRequest `
   -Uri 'https://github.com/chrisant996/clink/releases/download/v1.9.26/clink.1.9.26.ac0bbf.zip' `
@@ -168,7 +172,7 @@ Clink v1.9.26
 
 The current bootstrap contract is:
 
-1. consume `Clink` from `dev\clink\<version>\`
+1. consume `Clink` from `dev\shells\clink\<version>\`
 2. mirror it locally into:
    - `execution\toolchain\shells\clink\<version>\`
 3. prepend the local Clink root into `PATH`

@@ -65,10 +65,17 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
-    clink\
-      1.9.26\
-        clink_x64.exe
-        clink.bat
+    shells\
+      cmd\
+        10.0.26100.8457\
+          cmd.exe
+      powershell\
+        10.0.26100.8457\
+          powershell.exe
+      clink\
+        1.9.26\
+          clink_x64.exe
+          clink.bat
     starship\
       1.25.1\
         starship.exe
@@ -162,8 +169,8 @@ This is the shell runtime adapter layer.
 
 It contains shell-specific runtime support that is not owned by the generic Node, Python, or Starship stacks:
 
-- mirror host `cmd.exe` locally into the boxed runtime
-- mirror host Windows PowerShell locally into the boxed runtime
+- mirror governed shared `cmd.exe` locally into the boxed runtime
+- mirror governed shared Windows PowerShell locally into the boxed runtime
 - mirror governed shared `Clink` locally when it is provisioned
 - generate PowerShell init files for minimal and Starship-enabled sessions
 - generate CMD init files for minimal and Starship-enabled sessions
@@ -176,6 +183,12 @@ It contains shell-specific runtime support that is not owned by the generic Node
 The current file is:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
+
+Important current nuance:
+
+- `cmd.exe`, Windows PowerShell, and `Clink` are all now governed shared shell artifacts under `dev\shells\...`
+- bootstrap still mirrors them locally into the boxed execution tree
+- mutable `Clink` profile/state still remains box-local under `state\shells\cmd\clink\profile\`
 
 ### `dev\bootstrap\stacks\python\`
 
@@ -255,8 +268,8 @@ Provides the Node stack wiring:
 
 Provides the Windows shell runtime wiring:
 
-- mirrors host `cmd.exe` locally
-- mirrors host Windows PowerShell locally
+- mirrors governed shared `cmd.exe` locally
+- mirrors governed shared Windows PowerShell locally
 - mirrors governed shared `Clink` locally when provisioned
 - prepends the local `Clink` root into `PATH`
 - writes:
@@ -341,8 +354,11 @@ Provides the example `test-mono` project contract:
 - shared Git root
 - primary `Node 26.2.0`
 - optional shared Python root
-- optional shared `Clink` root
-- optional shared Starship root
+- shell roots for:
+  - `cmd.exe`
+  - Windows PowerShell
+  - `Clink`
+  - `Starship`
 - shared `pnpm.cjs`
 - additional `node20` command
 
@@ -376,8 +392,10 @@ The current runtime contract is:
 - Git Bash command surfaces such as `pnpm` are exposed through shell-native wrappers in `bootstrap-bin`, not only through `.cmd` files
 - CMD-specific prompt injection state lives box-locally under:
   - `state\shells\cmd\clink\profile\`
-- governed shared `Clink` artifacts remain provisioned under:
-  - `dev\clink\...`
+- governed shared shell artifacts remain provisioned under:
+  - `dev\shells\cmd\...`
+  - `dev\shells\powershell\...`
+  - `dev\shells\clink\...`
 
 This preserves the architecture contract:
 

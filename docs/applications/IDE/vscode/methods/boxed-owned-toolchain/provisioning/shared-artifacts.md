@@ -53,7 +53,9 @@ $Dirs = @(
   "$SharedRoot\dev\node\20.9.0",
   "$SharedRoot\dev\pnpm\11.2.2",
   "$SharedRoot\dev\pnpm\11.5.0",
-  "$SharedRoot\dev\clink\1.9.26",
+  "$SharedRoot\dev\shells\cmd\10.0.26100.8457",
+  "$SharedRoot\dev\shells\powershell\10.0.26100.8457",
+  "$SharedRoot\dev\shells\clink\1.9.26",
   "$SharedRoot\dev\python\3.14.5",
   "$SharedRoot\dev\starship\1.25.1",
   "$SharedBootstrapRoot\core",
@@ -96,6 +98,43 @@ Expand-Archive -LiteralPath $ZipPath -DestinationPath $RuntimePath -Force
 Test-Path "$RuntimePath\Code.exe"
 ```
 
+## Provision shared Windows shell artifacts
+
+The current boxed-owned-toolchain method now also provisions governed shared shell artifacts under:
+
+```text
+C:\shared\sandbox-toolchains\dev\shells\
+```
+
+Representative host-side provisioning:
+
+```powershell
+$SharedRoot = 'C:\shared\sandbox-toolchains'
+$ShellsRoot = Join-Path $SharedRoot 'dev\shells'
+
+$CmdVersion = ((Get-Item "$env:SystemRoot\System32\cmd.exe").VersionInfo.FileVersion -split ' ')[0]
+$PowerShellVersion = ((Get-Item "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe").VersionInfo.FileVersion -split ' ')[0]
+
+$CmdDest = Join-Path $ShellsRoot "cmd\$CmdVersion"
+$PowerShellDest = Join-Path $ShellsRoot "powershell\$PowerShellVersion"
+
+New-Item -ItemType Directory -Force -Path $CmdDest, $PowerShellDest | Out-Null
+
+Copy-Item `
+  -LiteralPath "$env:SystemRoot\System32\cmd.exe" `
+  -Destination (Join-Path $CmdDest 'cmd.exe') `
+  -Force
+
+robocopy `
+  "$env:SystemRoot\System32\WindowsPowerShell\v1.0" `
+  $PowerShellDest `
+  /E /R:1 /W:1
+```
+
+This is a provisioning step for the shared shell artifact tree.
+
+At runtime, bootstrap consumes the governed shared shell artifacts from `dev\shells\...` and mirrors them into the box execution tree.
+
 ## Toolchain-specific provisioning ownership
 
 Binary-specific provisioning is now owned by the application domains and is re-referenced here instead of duplicated in full:
@@ -103,6 +142,7 @@ Binary-specific provisioning is now owned by the application domains and is re-r
 - Git: `docs\applications\git\architectures\boxed-owned-toolchain\overview.md`
 - Node runtime: `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\versioning-and-provisioning.md`
+- Shell control plane: `docs\cli\shell\general.md`
 - Clink: `docs\cli\shell\clink.md`
 - Python: `docs\applications\programming-languages\python\general.md`
 - Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`

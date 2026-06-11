@@ -53,11 +53,16 @@ return @{
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
     PnpmCli = Join-Path $devRoot 'pnpm\11.5.0\package\bin\pnpm.cjs'
     PythonRoot = Join-Path $devRoot 'python'
-    StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
-    StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
     AdditionalNodeCommands = [ordered]@{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
+  }
+  Shells = @{
+    CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'
+    PowerShellRoot = Join-Path $devRoot 'shells\powershell\10.0.26100.8457'
+    ClinkRoot = Join-Path $devRoot 'shells\clink\1.9.26'
+    StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
+    StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
   }
 }
 ```
@@ -108,8 +113,11 @@ $parameters = @{
   NodeRoot = $config.Toolchain.NodeRoot
   PnpmCli = $config.Toolchain.PnpmCli
   PythonRoot = $config.Toolchain.PythonRoot
-  StarshipRoot = $config.Toolchain.StarshipRoot
-  StarshipConfigPath = $config.Toolchain.StarshipConfigPath
+  CmdRoot = $config.Shells.CmdRoot
+  PowerShellRoot = $config.Shells.PowerShellRoot
+  StarshipRoot = $config.Shells.StarshipRoot
+  ClinkRoot = $config.Shells.ClinkRoot
+  StarshipConfigPath = $config.Shells.StarshipConfigPath
   AdditionalNodeCommands = $config.Toolchain.AdditionalNodeCommands
 }
 
@@ -225,7 +233,14 @@ The version-provisioning SSOT for moving the project contract to a newer PNPM ve
 
 This boilerplate intentionally keeps `node20` as an additional command because it reflects the validated monorepo example currently used for the architecture.
 
-The optional `PythonRoot`, `StarshipRoot`, and `StarshipConfigPath` entries reflect the current boxed-owned-toolchain runtime shape where the project bootstrap can initialize Python and Starship in addition to the core Git/Node/pnpm surfaces.
+The optional `PythonRoot`, `StarshipRoot`, `ClinkRoot`, and `StarshipConfigPath` entries reflect the current boxed-owned-toolchain runtime shape where the project bootstrap can initialize:
+
+- Python
+- Starship
+- the CMD-specific `Clink` adapter
+- explicit local PowerShell/CMD shell lanes
+
+in addition to the core Git/Node/pnpm surfaces.
 
 If a project does not need a secondary runtime, remove the `AdditionalNodeCommands` entry entirely.
 

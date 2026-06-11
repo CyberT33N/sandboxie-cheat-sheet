@@ -36,6 +36,7 @@ This layer contains:
 - the canonical extension store
 - seed material for path-hardcoded extension state
 - shared Git / Node / pnpm runtimes
+- shared shell runtimes under `dev\shells\...`
 - shared Starship runtime
 - bootstrap and runner helpers
 
@@ -47,6 +48,7 @@ This layer contains per project:
 - the boxed repo
 - box-local `user-data`
 - a box-local mirrored extension runtime copy
+- box-local mirrored `cmd.exe` and PowerShell shell lanes
 - box-local `globalStorage`
 - box-local `.roo`
 - box-local caches, logs, sessions, and workspace state
@@ -141,6 +143,16 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    shells\
+      cmd\
+        10.0.26100.8457\
+          cmd.exe
+      powershell\
+        10.0.26100.8457\
+          powershell.exe
+      clink\
+        1.9.26\
+          clink_x64.exe
     python\
     starship\
       1.25.1\
@@ -157,6 +169,8 @@ C:\shared\sandbox-toolchains\
       stacks\
         node\
           Bootstrap.Node.psm1
+        shells\
+          Bootstrap.WindowsShells.psm1
         python\
           Bootstrap.Python.psm1
         starship\

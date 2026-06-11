@@ -15,6 +15,15 @@ For the boxed-owned-toolchain method:
 - bootstrap-generated PowerShell init files initialize it for explicit boxed PowerShell profiles
 - boxed CMD can use it only through the separate `Clink` runtime adapter
 
+This does **not** mean:
+
+- Git Bash is the only shell that can work
+- or PowerShell/CMD are impossible in the boxed-owned-toolchain method
+
+It means:
+
+- different shell lanes need different bootstrap-owned initialization shapes
+
 ## Provisioning
 
 ```powershell

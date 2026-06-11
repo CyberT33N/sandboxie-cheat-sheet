@@ -118,8 +118,8 @@ ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\20.9.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\python\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\shells\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\starship\
-ReadFilePath=C:\shared\sandbox-toolchains\dev\clink\
 
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\bin\code-tunnel.exe
 ClosedFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\tools\inno_updater.exe
@@ -170,10 +170,10 @@ So the correct split is:
 - **project contract** = exact selected PNPM version
 - **Sandboxie box rule** = broad `dev\pnpm\` visibility
 
-The same governance principle applies to `Clink`:
+The same governance principle applies to shell-specific runtime artifacts:
 
-- **project contract** = exact selected `ClinkRoot`
-- **Sandboxie box rule** = broad `dev\clink\` visibility
+- **project contract** = exact selected shell runtime roots such as `CmdRoot`, `PowerShellRoot`, and `ClinkRoot`
+- **Sandboxie box rule** = broad `dev\shells\` visibility
 
 ## Related
 

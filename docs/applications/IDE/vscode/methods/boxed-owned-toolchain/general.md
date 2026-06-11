@@ -52,6 +52,11 @@ Core model:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\python.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\host-state.md`
 
+### 4.1 Shell Control Plane
+
+- `docs\cli\shell\general.md`
+- `docs\cli\shell\clink.md`
+
 ### 5. Bootstrap
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`
@@ -137,6 +142,16 @@ C:\shared\sandbox-toolchains\
         package\
           bin\
             pnpm.cjs
+    shells\
+      cmd\
+        10.0.26100.8457\
+          cmd.exe
+      powershell\
+        10.0.26100.8457\
+          powershell.exe
+      clink\
+        1.9.26\
+          clink_x64.exe
     python\
     starship\
       1.25.1\
@@ -153,6 +168,8 @@ C:\shared\sandbox-toolchains\
       stacks\
         node\
           Bootstrap.Node.psm1
+        shells\
+          Bootstrap.WindowsShells.psm1
         python\
           Bootstrap.Python.psm1
         starship\

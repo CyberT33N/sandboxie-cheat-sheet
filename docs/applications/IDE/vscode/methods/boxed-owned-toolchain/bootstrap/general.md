@@ -48,6 +48,18 @@ The final design prefers:
 - canonical VS Code terminal settings
 - explicit bootstrap-provided environment
 
+That now includes three different shell lanes:
+
+- a Git Bash lane for the default shell-oriented child-process contract
+- an explicit box-local mirrored PowerShell lane
+- an explicit box-local mirrored `cmd.exe` lane
+
+In the current validated architecture, those explicit Windows shell lanes are provisioned from governed shared shell artifacts under:
+
+- `C:\shared\sandbox-toolchains\dev\shells\cmd\...`
+- `C:\shared\sandbox-toolchains\dev\shells\powershell\...`
+- `C:\shared\sandbox-toolchains\dev\shells\clink\...`
+
 ## Bootstrap layer split
 
 The current bootstrap split is:
@@ -55,6 +67,7 @@ The current bootstrap split is:
 - `core\`
 - `platforms\vscode\`
 - `stacks\node\`
+- `stacks\shells\`
 - `stacks\python\`
 - `stacks\starship\`
 - `projects\test-mono\bootstrap\`
@@ -64,6 +77,7 @@ This separates:
 - generic primitives
 - VS Code platform orchestration
 - Node stack wiring
+- shell runtime wiring
 - project adapter logic
 
 ## Related
