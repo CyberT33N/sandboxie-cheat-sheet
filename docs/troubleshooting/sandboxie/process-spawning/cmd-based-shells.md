@@ -141,13 +141,13 @@ The current repository-wide control-plane source of truth for the shell-selectio
 
 That central shell document owns the current prioritized solution:
 
-- bootstrap-level `ComSpec` / `COMSPEC` override to the box-local Git Bash executable for the historical/current child-process fix
+- bootstrap-level `ComSpec` / `COMSPEC` override to the box-local boxed-CMD executable for the current productive child-process fix
 - plus explicit wrapper publication for PowerShell, CMD, and Git Bash command surfaces
 - plus explicit box-local mirrored `cmd.exe` / PowerShell shell lanes
 - plus `Clink` for the `CMD + Starship` adapter lane
 
-That child-process fix must not be misread as a statement that Git Bash is the only valid shell.
-The preferred user-facing default profile can still be boxed PowerShell while the bootstrap-owned child-process contract is revalidated separately.
+That child-process fix must not be misread as a statement that CMD is the only valid shell.
+The preferred user-facing default profile can still be boxed PowerShell while the bootstrap-owned child-process contract is kept separately on boxed CMD.
 
 Typical example:
 
@@ -186,8 +186,9 @@ Any application, framework, or runtime can be affected if it:
 
 In validated boxed-owned-toolchain testing, there was an important split:
 
-- setting PNPM `scriptShell` to a box-local Bash `.exe` fixed lifecycle execution during `pnpm install`
-- but `pnpm exec ...` still remained a separate failure surface
+- the historical Git-Bash-based `scriptShell` path was one intermediate workaround
+- the preferred productive contract later moved to boxed `cmd.exe` for both `COMSPEC` and project-owned PNPM `scriptShell`
+- `pnpm exec ...` remained a separate proof surface that had to be revalidated after that change
 
 There was also a second shell-surface nuance in the integrated Git Bash terminal:
 

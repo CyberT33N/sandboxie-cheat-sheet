@@ -16,14 +16,14 @@ It explains the split between:
 The current boxed project workflow exposed multiple distinct layers of failure:
 
 1. `pnpm install` first failed because PNPM lifecycle execution on Windows tried to use spawned host shell surfaces such as `cmd.exe`
-2. switching PNPM lifecycle execution to a box-local Bash `.exe` fixed that install-time shell problem
+2. the first historical workaround switched PNPM lifecycle execution to a box-local Bash `.exe`
 3. `pnpm exec nx ...` still failed with `spawn EPERM`
 4. direct Nx execution via the resolved Node entrypoint worked, but `nx report` / `nx show projects` then needed the boxed Nx environment contract
 5. direct guard scripts succeeded without Nx orchestration
 6. `node -> spawn(cmd.exe)` failed with `spawn EPERM`
 7. `node -> spawn(bash)` succeeded
 8. `node -> spawn(bash -> node scripts/port-guard.mjs)` succeeded
-9. manually setting `ComSpec=bash` made `nx run backend:port-guard` and `nx run frontend:port-guard` succeed
+9. manually setting `ComSpec=bash` made `nx run backend:port-guard` and `nx run frontend:port-guard` succeed as a historical intermediate workaround
 
 That means the current blocker is not “Nx is broken”.
 
@@ -88,14 +88,16 @@ ComSpec=bash COMSPEC=bash node "$nxCli" run frontend:port-guard --output-style=s
 
 So the current evidence points to the Windows shell path, not to the target logic itself.
 
-That later manual shell-selection validation has now been superseded by the bootstrap-level solution:
+That later manual shell-selection validation has now been superseded by the current productive bootstrap-level solution:
 
-- bootstrap now sets `ComSpec` / `COMSPEC` to the box-local Git Bash executable
+- bootstrap now sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
 - bootstrap now publishes PowerShell-native wrappers such as `nx.ps1` and `pnpm.ps1`
+- bootstrap keeps Git Bash as an explicit alternative compatibility lane
 - the boxed project terminal now validates:
   - `nx run backend:port-guard`
   - `nx run frontend:port-guard`
   - `nx run test:smoke-electron-runtime`
+  - `pnpm exec nx --version`
 
 ## Current command-surface split
 
@@ -119,16 +121,18 @@ Current status:
 
 Current status:
 
-- still a separate failure surface
+- still a separate proof surface from plain `nx`
+- currently validated as green under the boxed-CMD `COMSPEC` contract
 - must not be confused with plain `nx`
-- must not be treated as the primary proof path
+- must still be verified separately whenever the shell-selection contract changes
 
 ### `nx:run-commands` / `command`
 
 Current status:
 
 - sensitive to the Windows shell-selection path by nature
-- now validated with the bootstrap-owned `ComSpec` / `COMSPEC` override to box-local Bash
+- historically unblocked by a box-local Git-Bash `ComSpec` workaround
+- now validated with the bootstrap-owned `ComSpec` / `COMSPEC` override to boxed `cmd.exe`
 - that historical/current child-process fix does **not** redefine the preferred interactive default shell, which is boxed PowerShell
 - no longer dependent on manually typing `ComSpec=bash ...` in the shell for the currently tested target set
 
@@ -167,21 +171,23 @@ The current prioritized repository solution is:
 1. keep the box strict
 2. keep plain `nx` bootstrap-owned
 3. keep the child-process shell contract explicit and bootstrap-owned
-4. for the historical/current validated `run-commands` fix, keep `ComSpec` / `COMSPEC` mapped to the box-local Git Bash executable
+4. for the current productive `run-commands` fix, keep `ComSpec` / `COMSPEC` mapped to the box-local boxed-CMD executable
 5. keep PowerShell-native wrappers, CMD wrappers, and shell-native wrappers side by side
 6. treat boxed PowerShell as the preferred interactive default shell
-7. keep the currently validated individual Nx `run-commands` target set aligned with that shell contract
+7. keep Git Bash available as an explicit alternative compatibility lane
+8. keep the currently validated individual Nx `run-commands` target set aligned with that shell contract
 
 Latest validated boxed result:
 
 - `COMSPEC` points to:
-  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\git\2.54.0\bin\bash.exe`
+  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\shells\cmd\10.0.26100.8457\cmd.exe`
 - `nx` resolves from:
   - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin\nx.ps1`
 - individual Nx targets succeed:
   - `backend:port-guard`
   - `frontend:port-guard`
   - `test:smoke-electron-runtime`
+- `pnpm exec nx --version` succeeds
 
 ## Related
 

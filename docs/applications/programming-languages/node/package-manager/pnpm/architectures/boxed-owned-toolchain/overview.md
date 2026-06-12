@@ -35,9 +35,10 @@ The current boxed-owned-toolchain PNPM reference truth is:
 2. project-selected PNPM version via the project bootstrap contract
 3. local mirrored command surface from bootstrap
 4. default per-box PNPM store
-5. box-local Bash as the validated lifecycle shell path
-6. project-owned host-triggered install / clean-reinstall scripts
-7. no shared PNPM store as the default baseline
+5. boxed `cmd.exe` as the preferred productive lifecycle and child-process shell lane
+6. boxed Git Bash as an explicit alternative compatibility lane
+7. project-owned host-triggered install / clean-reinstall scripts
+8. no shared PNPM store as the default baseline
 
 ## Domain map
 
@@ -60,7 +61,8 @@ Owns:
 Owns:
 
 - the validated Sandboxie lifecycle-shell failure class
-- the box-local Bash fix
+- the preferred boxed-CMD bootstrap contract
+- the historical Git-Bash fallback
 - Git Bash command-name resolution requirements
 - `pnpm exec` as a separate failure surface
 
@@ -84,7 +86,7 @@ Owns:
 
 - project-owned PNPM install scripts
 - project-owned PNPM clean-reinstall scripts
-- current real `test-mono` script paths and host launch commands
+- full sanitized `test-mono` script paths and host launch commands
 
 ## Cross-domain references
 

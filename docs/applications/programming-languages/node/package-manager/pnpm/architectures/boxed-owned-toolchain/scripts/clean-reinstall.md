@@ -38,13 +38,13 @@ The current scope does **not** include:
 - deleting the whole box / sandbox contents
 - deleting the PNPM store as a baseline step
 
-## Current real script path
+## Sanitized script path
 
 ```text
-C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1
+C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1
 ```
 
-## Current real script body
+## Sanitized script body
 
 ```powershell
 param(
@@ -71,7 +71,7 @@ else {
   $RepoPath
 }
 
-$launcher = Join-Path $PSScriptRoot 'Start-testMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
@@ -133,25 +133,21 @@ ForEach-Object {
   Remove-Item -LiteralPath $_ -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-if ([string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
-  throw 'BOXED_LOCAL_TOOLCHAIN_ROOT was not initialized by project bootstrap.'
+if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
+  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\bin\bash.exe'
-if (-not (Test-Path -LiteralPath $bashExe)) {
-  $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\usr\bin\bash.exe'
-}
-
-if (-not (Test-Path -LiteralPath $bashExe)) {
-  throw 'Local boxed Bash executable not found.'
+$cmdExe = $env:BOXED_CMD_EXE
+if (-not (Test-Path -LiteralPath $cmdExe)) {
+  throw 'Local boxed CMD executable not found.'
 }
 
 Set-Location $resolvedRepoPath
 
 Write-Host "RepoPath: $resolvedRepoPath"
-Write-Host "ScriptShell: $bashExe"
-Write-Host 'Configuring PNPM lifecycle shell for boxed Git Bash...'
-pnpm config set --location=project scriptShell "$bashExe"
+Write-Host "ScriptShell: $cmdExe"
+Write-Host 'Configuring PNPM lifecycle shell for boxed CMD...'
+pnpm config set --location=project scriptShell "$cmdExe"
 
 Write-Host 'Running clean pnpm install...'
 pnpm install
@@ -159,18 +155,28 @@ pnpm install
 exit $LASTEXITCODE
 ```
 
-## Current real host command
+## Sanitized host command
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_test_MONO `
+  /box:VS_CODE_TEST_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1" `
-  -RepoPath "C:\Users\denni\source\test-mono"
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
+
+## Architectural interpretation
+
+The clean-reinstall path now matches the productive boxed-owned-toolchain PNPM contract:
+
+- bootstrap owns the boxed-CMD `COMSPEC` / `ComSpec` lane
+- the project-owned script sets `scriptShell` to boxed `cmd.exe`
+- the reinstall happens inside the normal project bootstrap context
+
+Git Bash remains an available alternative shell lane, but it is not the preferred productive clean-reinstall contract anymore.
 
 ## Expected next validation step
 

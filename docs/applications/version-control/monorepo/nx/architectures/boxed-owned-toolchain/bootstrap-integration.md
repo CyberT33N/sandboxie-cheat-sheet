@@ -21,7 +21,7 @@ The current live shared implementation surfaces are:
 
 The current live project adapter chain used in the active project context includes:
 
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
 
 The sanitized documentation-safe boilerplate equivalent remains:
 
@@ -207,6 +207,10 @@ $localNxSocketRoot = 'C:\nxs'
 if (-not (Test-Path -LiteralPath $localNxSocketRoot)) {
   New-Item -ItemType Directory -Force -Path $localNxSocketRoot | Out-Null
 }
+$boxedComSpec = $windowsShellRuntime.CmdExe
+if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
+  throw 'Local boxed CMD executable not found for ComSpec override.'
+}
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = $localNxSocketRoot
 $env:NX_ISOLATE_PLUGINS = 'false'
@@ -282,14 +286,14 @@ The current live project-terminal launch shape is:
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_test_MONO `
+  /box:VS_CODE_TEST_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1" `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
   -Action OpenTerminal `
-  -RepoPath "C:\Users\denni\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 ### Plain boxed Nx command surface
@@ -361,10 +365,10 @@ $env:ComSpec
 returning:
 
 ```text
-C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\git\2.54.0\bin\bash.exe
+C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\shells\cmd\10.0.26100.8457\cmd.exe
 ```
 
-That means the default Windows shell surface used by `nx:run-commands` is now redirected by bootstrap for the currently validated command set.
+That means the default Windows shell surface used by `nx:run-commands` is now redirected by bootstrap to the boxed-CMD lane for the currently validated command set.
 
 ## Related
 

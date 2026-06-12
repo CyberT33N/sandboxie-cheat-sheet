@@ -170,8 +170,9 @@ It encodes the governance-approved boxed-owned-toolchain contract:
 
 The current shell-specific requirement is also part of this contract:
 
-- Git Bash must be able to resolve bare `pnpm`
-- so the bootstrap provides a shell-native wrapper in `bootstrap-bin`, not only `pnpm.cmd`
+- boxed `cmd.exe` is the preferred productive lifecycle `scriptShell`
+- boxed PowerShell remains the preferred interactive default shell
+- Git Bash remains an alternative shell lane and still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
 
 ```powershell
 param(
@@ -189,20 +190,16 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 & $launcher -Action OpenTerminal -RepoPath $RepoPath
 
-if ([string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
-  throw 'BOXED_LOCAL_TOOLCHAIN_ROOT was not initialized by project bootstrap.'
+if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
+  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\bin\bash.exe'
-if (-not (Test-Path -LiteralPath $bashExe)) {
-  $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\usr\bin\bash.exe'
+$cmdExe = $env:BOXED_CMD_EXE
+if (-not (Test-Path -LiteralPath $cmdExe)) {
+  throw 'Local boxed CMD executable not found.'
 }
 
-if (-not (Test-Path -LiteralPath $bashExe)) {
-  throw 'Local boxed Bash executable not found.'
-}
-
-pnpm config set --location=project scriptShell "$bashExe"
+pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install
 
 exit $LASTEXITCODE

@@ -115,6 +115,7 @@ Current responsibilities:
 - generate shell-native additional aliases such as `node20`
 - prepend the correct local runtime paths into `PATH`
 - publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
+- keep that productive child-process contract aligned to the preferred boxed `cmd.exe` lane
 
 Representative current contract:
 
@@ -335,6 +336,7 @@ Current behavior:
 - initializes local Node/Python/Starship toolchain layers
 - sets the Nx environment contract
 - sets local temp/cache paths
+- sets the productive boxed-CMD child-process contract
 - exposes the promotion script path
 
 Representative current initialization:
@@ -361,6 +363,11 @@ Initialize-VSCodeMaintenanceAuthoringState `
 Current env contract highlights:
 
 ```powershell
+$boxedComSpec = $windowsShellRuntime.CmdExe
+if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
+  throw 'Local boxed CMD executable not found for ComSpec override.'
+}
+
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
@@ -385,6 +392,7 @@ Current behavior:
 - initializes seeds
 - initializes Node, Windows-shell, optional Python, and Starship layers
 - sets local temp/Nx environment state
+- sets the productive boxed-CMD child-process contract
 
 ## Why this changed
 
@@ -410,6 +418,7 @@ The current Windows-shell contract adds another lane:
 - `Bootstrap.WindowsShells.psm1` mirrors local `cmd.exe` and local Windows PowerShell into the box execution tree
 - it provisions a box-local Clink profile directory for the `CMD + Starship` lane
 - it keeps CMD plain usable without requiring Clink
+- it lets bootstrap use boxed `cmd.exe` as the productive `ComSpec` / `COMSPEC` lane while boxed PowerShell stays the preferred interactive default
 
 Representative current initialization:
 
@@ -432,6 +441,11 @@ $starshipRuntime = Initialize-StarshipRuntime `
 Current env contract highlights:
 
 ```powershell
+$boxedComSpec = $windowsShellRuntime.CmdExe
+if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
+  throw 'Local boxed CMD executable not found for ComSpec override.'
+}
+
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
@@ -478,7 +492,7 @@ Representative contract:
 ```powershell
 return @{
   ProjectName = 'test-mono'
-  BoxName = 'VS_CODE_test_MONO'
+  BoxName = 'VS_CODE_TEST_MONO'
   Toolchain = @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'

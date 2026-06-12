@@ -1,114 +1,182 @@
 # PNPM Lifecycle And Command Surface
 
+## Scope
+
+This document owns the current boxed-owned-toolchain PNPM execution contract for:
+
+- lifecycle execution during `pnpm install`
+- lifecycle execution during clean reinstall
+- `pnpm exec ...`
+- the relationship between PNPM and the bootstrap-owned Windows shell contract
+
 ## The actual boxed failure class
 
 The main validated blocker was **not** PNPM package resolution itself.
 
-The blocked surface was the Windows lifecycle shell path under Sandboxie.
+The blocked surface was the Windows shell-selection boundary under strict Sandboxie policy.
 
-Validated behavior in the boxed project shell:
+Validated historical behavior in the boxed project shell:
 
 1. `cmd.exe` worked when launched manually
 2. `node -> spawn(local node.exe)` worked
-3. `node -> spawn(cmd.exe)` failed with `spawn EPERM`
-4. `node -> spawn(powershell.exe)` failed with `spawn EPERM`
+3. `node -> spawn(host/system cmd.exe)` failed with `spawn EPERM`
+4. `node -> spawn(host/system powershell.exe)` failed with `spawn EPERM`
 5. `node -> spawn(box-local bash.exe)` worked
-
-Current refined understanding:
-
-- the failing entries above were the problematic **host/system-shell spawn surfaces**
-- this must not be generalized into "PowerShell/CMD are impossible"
-- the later validated box-local mirrored `cmd.exe` / PowerShell lanes prove that those shells can work when they are projected explicitly into the boxed runtime
 
 That means the root problem was:
 
 - not a general Node child-process failure
 - not a broken local toolchain mirror
 - not a generic PNPM command failure
-- but a shell-spawn problem for host system shells during Windows lifecycle execution
+- but a shell-spawn problem for the command-interpreter surface used by PNPM and related tooling
 
-The cross-cutting Sandboxie write-up for that issue lives here:
+The cross-cutting shell-selection write-ups live here:
 
-- `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - `docs\cli\shell\general.md`
+- `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 
-## Validated working lifecycle fix
+## Historical fallback: Git Bash
 
-The validated project-shell sequence was:
+Git Bash was the earlier validated workaround for parts of the boxed PNPM lifecycle problem.
 
-### 1. Resolve the box-local Bash executable
+That historical sequence was:
 
 ```powershell
 $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\bin\bash.exe'
-if (-not (Test-Path $bashExe)) {
+if (-not (Test-Path -LiteralPath $bashExe)) {
   $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\usr\bin\bash.exe'
 }
 
-$bashExe
-Test-Path $bashExe
-& $bashExe -lc 'echo BASH_OK'
-```
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Bash executable not found.'
+}
 
-### 2. Configure PNPM to use the box-local shell for project scripts
-
-```powershell
 pnpm config set --location=project scriptShell "$bashExe"
-pnpm config get scriptShell
-```
-
-### 3. Run the install
-
-```powershell
 pnpm install
 ```
 
-That sequence validated successfully in the boxed project shell.
+That path is still important historically and Git Bash remains an explicit alternative shell lane.
 
-## Additional integrated Git Bash command-surface fix
+However, it is **no longer** the preferred productive PNPM contract for the boxed-owned-toolchain architecture.
 
-This Git-Bash-specific fix must not be confused with the preferred VS Code default shell.
+## Current preferred productive contract
 
-The preferred integrated VS Code default is boxed PowerShell.
-Git Bash remains a separate explicitly supported lane that still needs a complete command surface when selected directly or when shell-oriented flows use that lane.
+The current preferred productive path is:
 
-After the project contract, lifecycle-shell setting, and boxed terminal startup were already working, one more shell-specific failure was validated:
+1. boxed PowerShell stays the preferred interactive VS Code shell
+2. boxed `cmd.exe` becomes the productive PNPM lifecycle and child-process lane
+3. bootstrap projects that lane explicitly through `ComSpec` / `COMSPEC`
+4. project-owned install scripts set PNPM `scriptShell` to the boxed CMD binary
+
+### Bootstrap-owned `COMSPEC` / `ComSpec` contract
+
+The current productive bootstrap contract is:
+
+```powershell
+$boxedComSpec = $windowsShellRuntime.CmdExe
+if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
+  throw 'Local boxed CMD executable not found for ComSpec override.'
+}
+
+$env:ComSpec = $boxedComSpec
+$env:COMSPEC = $boxedComSpec
+$env:BOXED_COMSPEC = $boxedComSpec
+```
+
+This code belongs in the shared bootstrap entrypoints, not in ad hoc terminal overrides.
+
+### Project-owned install-script contract
+
+The current productive install-script contract is:
+
+```powershell
+if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
+  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
+}
+
+$cmdExe = $env:BOXED_CMD_EXE
+if (-not (Test-Path -LiteralPath $cmdExe)) {
+  throw 'Local boxed CMD executable not found.'
+}
+
+pnpm config set --location=project scriptShell "$cmdExe"
+pnpm install
+```
+
+The clean-reinstall flow uses the same `scriptShell` contract before it runs the reinstall.
+
+### Why boxed CMD is the preferred productive lane
+
+The current architectural preference is boxed CMD because it is the only lane that was fully validated across the productive PNPM command surfaces:
+
+- `COMSPEC` / `ComSpec` pointing to boxed CMD succeeded
+- `pnpm exec nx --version` succeeded in a fresh boxed session
+- `pnpm exec tsx --version` succeeded from the actual target working directory
+- `pnpm exec tsx tooling/run/cli.ts --help` reached the application runner and returned only the expected CLI-schema validation output
+
+By contrast, a fresh boxed session with:
+
+- `COMSPEC` / `ComSpec` pointing to boxed PowerShell
+
+failed immediately on `pnpm exec` with a PowerShell command-resolution / module-loading error.
+
+That means:
+
+- boxed PowerShell remains the preferred **interactive** shell
+- boxed CMD is the preferred **productive PNPM lifecycle and child-process** lane
+
+## Current validated fresh-session proof
+
+After the shared bootstrap and project install scripts were aligned to boxed CMD, a fresh boxed project terminal validated:
+
+```powershell
+$env:COMSPEC
+$env:ComSpec
+pnpm config get scriptShell
+pnpm exec nx --version
+
+Set-Location .\apps\test-tooling
+pnpm exec tsx --version
+pnpm exec tsx tooling/run/cli.ts --help
+```
+
+Validated interpretation:
+
+- `COMSPEC` and `ComSpec` both resolved to the boxed CMD executable
+- `scriptShell` resolved to the boxed CMD executable
+- `pnpm exec nx --version` was green
+- `pnpm exec tsx --version` was green in the target working directory
+- `pnpm exec tsx tooling/run/cli.ts --help` reached the runner and failed only with the expected command-schema validation message
+
+That is the current proof that the Git-Bash-based productive contract is no longer the active PNPM blocker.
+
+## Git Bash still remains available
+
+Git Bash is still a supported alternative shell lane.
+
+That matters for:
+
+- explicit Git Bash profiles in VS Code
+- shell-native wrapper testing
+- compatibility experiments that specifically need Bash semantics
+
+If Git Bash is selected directly, the boxed-owned-toolchain contract still requires:
+
+- a Windows wrapper such as `pnpm.cmd`
+- a shell-native wrapper such as `pnpm`
+- Bash RC startup that prepends `bootstrap-bin` into the Git Bash `PATH`
+
+Without that, Git Bash can still show:
 
 ```text
 bash: pnpm: command not found
 ```
 
-This appeared in the integrated Git Bash terminal even though:
-
-- the correct shared `PnpmCli` had been selected
-- the Node runtime was available
-- `pnpm.cmd` had been generated in `bootstrap-bin`
-
-The reason was:
-
-1. a `.cmd` wrapper alone is not a sufficient bare-command surface for Git Bash
-2. the Bash startup files also need the local `bootstrap-bin` directory on the shell `PATH`
-
-So the current boxed-owned-toolchain contract now requires both:
-
-- a Windows wrapper such as `pnpm.cmd`
-- a shell-native wrapper such as `pnpm`
-
-and the Bash RC files must prepend `bootstrap-bin` before interactive Git Bash commands are resolved.
-
-## Why this must be done
-
-Without this fix, the architecture becomes inconsistent:
-
-- PowerShell/CMD can resolve the bootstrap-generated command surface
-- but the explicitly selected Git Bash shell lane cannot
-
-That would make the boxed Git Bash terminal an incomplete toolchain surface even though the project contract itself is correct.
-
-So the fix is not cosmetic. It is required so that `pnpm` is actually available in the supported Git Bash lane instead of falsely making that lane look technically impossible.
+So Git Bash remains available, but it is no longer the preferred productive PNPM lifecycle lane.
 
 ## Why `--location=project` matters
 
-The setting is written at project scope so that:
+The `scriptShell` setting is written at project scope so that:
 
 - the fix is explicit and reviewable
 - the project keeps its own lifecycle-shell contract
@@ -116,19 +184,22 @@ The setting is written at project scope so that:
 
 ## Important nuance: `pnpm exec`
 
-`pnpm exec` remains a separate execution surface from lifecycle shell execution.
+`pnpm exec` remains a separate proof surface from plain lifecycle execution.
 
-Observed boxed result:
+That is exactly why the current contract had to be proven with:
 
-- `pnpm exec nx --version` still failed with `spawn EPERM`
+- `pnpm exec nx --version`
+- target-cwd `pnpm exec tsx --version`
+- target-cwd `pnpm exec tsx tooling/run/cli.ts --help`
 
-Architectural interpretation:
+and not only with `pnpm install`.
 
-- the `scriptShell` fix resolved lifecycle execution during `pnpm install`
-- but `pnpm exec` still uses its own Windows exec path
-- so `pnpm exec` must not be treated as the primary proof surface for boxed-owned-toolchain validation
+Also note:
 
-For the current Nx proof-path and environment contract, read:
+- repo-root `pnpm exec ...` and target-cwd `pnpm exec ...` are not automatically equivalent
+- the productive proof must use the same working-directory shape that the real project target uses
+
+For the Nx-specific command-surface split, read:
 
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
@@ -139,5 +210,6 @@ For the current Nx proof-path and environment contract, read:
 - `docs\cli\shell\general.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+- `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`

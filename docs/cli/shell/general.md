@@ -82,7 +82,7 @@ The validated boxed result is:
 - `node -> spawn(box-local mirrored cmd.exe)` can succeed
 - `node -> spawn(box-local mirrored powershell.exe)` can succeed
 - `node -> spawn(bash)` can still work
-- `ComSpec=bash` can make shell-based Nx targets succeed
+- historically, `ComSpec=bash` could make shell-based Nx targets succeed
 - boxed `CMD + Starship` requires `Clink`
 
 That means the old broad statement:
@@ -199,19 +199,16 @@ This is intentionally **not** the same as saying:
 Important distinction:
 
 - the preferred user-facing default shell can be PowerShell
-- while the bootstrap-owned child-process contract can still use another explicit shell lane where historical `Nx` / lifecycle verification proved that path first
+- while the bootstrap-owned child-process contract can still use another explicit shell lane where PNPM / Nx verification proved that path first
 
-In the current historically validated child-process implementation, that bootstrap-owned `ComSpec` contract still points to box-local Git Bash.
+In the current preferred productive implementation, that bootstrap-owned `ComSpec` contract points to the box-local mirrored `cmd.exe` lane.
 
 Current bootstrap rule:
 
 ```powershell
-$boxedComSpec = Join-Path $nodeRuntime.GitRoot 'bin\bash.exe'
-if (-not (Test-Path -LiteralPath $boxedComSpec)) {
-  $boxedComSpec = Join-Path $nodeRuntime.GitRoot 'usr\bin\bash.exe'
-}
-if (-not (Test-Path -LiteralPath $boxedComSpec)) {
-  throw 'Local boxed Git Bash executable not found for ComSpec override.'
+$boxedComSpec = $windowsShellRuntime.CmdExe
+if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
+  throw 'Local boxed CMD executable not found for ComSpec override.'
 }
 
 $env:ComSpec = $boxedComSpec
@@ -235,7 +232,7 @@ At the same time, the repository now distinguishes between:
 - the **explicit Git Bash lane**
   - available for shell-native wrappers and shell-oriented child-process flows
 - the **bootstrap-owned child-process contract**
-  - currently governed through box-local Git Bash via `ComSpec`
+  - currently governed through box-local mirrored `cmd.exe` via `ComSpec`
 - the **CMD + Starship adapter**
   - `Clink`
 
@@ -272,7 +269,7 @@ For the CMD + Starship lane, there is one additional governed dependency:
 
 Why this matters:
 
-- once `COMSPEC` points to Git Bash, PowerShell must not be forced to rely only on `.cmd` wrappers
+- once `COMSPEC` points to boxed `cmd.exe`, command resolution must still stay explicit across PowerShell, CMD, and Git Bash
 - command-surface behavior should stay explicit instead of depending on fragile host defaults
 
 ## Current validated result
@@ -284,6 +281,7 @@ nx --version
 nx run backend:port-guard --output-style=stream
 nx run frontend:port-guard --output-style=stream
 nx run test:smoke-electron-runtime --output-style=stream
+pnpm exec nx --version
 ```
 
 All of those commands succeeded.
@@ -297,6 +295,16 @@ node -e "require('child_process').spawn(process.env.BOXED_POWERSHELL_EXE,['-NoLo
 
 Those commands also succeeded.
 
+In the target working directory used by the application runner, the current productive CMD-based contract also validated:
+
+```powershell
+Set-Location .\apps\test-tooling
+pnpm exec tsx --version
+pnpm exec tsx tooling/run/cli.ts --help
+```
+
+The `--help` probe reached the runner and failed only with the expected command-schema validation output, which means the command surface was reached successfully.
+
 So the current repository view is:
 
 - boxed `cmd.exe` works
@@ -304,6 +312,8 @@ So the current repository view is:
 - integrated VS Code profiles can work when those binaries are mirrored locally and selected explicitly
 - the original blocker was not the shell type itself
 - the original blocker was the wrong shell-execution surface
+- the preferred productive child-process contract is boxed `cmd.exe`
+- Git Bash remains an explicit alternative lane, not the preferred productive `ComSpec` contract
 
 That is why this is now the **prioritized documented solution**.
 

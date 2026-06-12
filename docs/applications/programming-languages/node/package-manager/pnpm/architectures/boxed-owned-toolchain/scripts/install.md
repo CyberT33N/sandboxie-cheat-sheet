@@ -18,13 +18,21 @@ The preferred shape is:
 
 1. the project adapter selects `PnpmCli`
 2. a project-owned install PS1 enters the project box through the normal bootstrap
-3. that install PS1 sets the validated PNPM lifecycle `scriptShell`
-4. that install PS1 runs `pnpm install`
+3. bootstrap projects the productive `ComSpec` / `COMSPEC` lane
+4. that install PS1 sets the validated PNPM lifecycle `scriptShell`
+5. that install PS1 runs `pnpm install`
 
-The current shell-specific requirement is part of this contract:
+The current productive shell-specific requirement is:
 
-- Git Bash must be able to resolve bare `pnpm`
-- so the bootstrap provides a shell-native wrapper in `bootstrap-bin`, not only `pnpm.cmd`
+- boxed `cmd.exe` is the preferred lifecycle `scriptShell`
+- boxed `cmd.exe` is the preferred productive child-process lane for PNPM command execution
+
+The historical Git-Bash-based variant remains only as an alternative compatibility lane, not as the preferred productive path.
+
+If Git Bash is selected explicitly, the bootstrap still needs:
+
+- a shell-native `pnpm` wrapper in `bootstrap-bin`
+- not only `pnpm.cmd`
 
 The Puppeteer-specific browser-cache contract for boxed-owned-toolchain installs is owned here:
 
@@ -42,13 +50,13 @@ The architecture-specific troubleshooting interpretation of the Electron failure
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
 
-## Current real script path
+## Sanitized script path
 
 ```text
-C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmInstall.ps1
+C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1
 ```
 
-## Current real script body
+## Sanitized script body
 
 ```powershell
 param(
@@ -58,7 +66,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$launcher = Join-Path $PSScriptRoot 'Start-testMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
 
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
@@ -66,37 +74,43 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 & $launcher -Action OpenTerminal -RepoPath $RepoPath
 
-if ([string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
-  throw 'BOXED_LOCAL_TOOLCHAIN_ROOT was not initialized by project bootstrap.'
+if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
+  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\bin\bash.exe'
-if (-not (Test-Path -LiteralPath $bashExe)) {
-  $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\usr\bin\bash.exe'
+$cmdExe = $env:BOXED_CMD_EXE
+if (-not (Test-Path -LiteralPath $cmdExe)) {
+  throw 'Local boxed CMD executable not found.'
 }
 
-if (-not (Test-Path -LiteralPath $bashExe)) {
-  throw 'Local boxed Bash executable not found.'
-}
-
-pnpm config set --location=project scriptShell "$bashExe"
+pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install
 
 exit $LASTEXITCODE
 ```
 
-## Current real host command
+## Sanitized host command
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_test_MONO `
+  /box:VS_CODE_TEST_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmInstall.ps1" `
-  -RepoPath "C:\Users\denni\source\test-mono"
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
+
+## Architectural interpretation
+
+This script body is the PNPM-domain proof that the preferred productive path is now:
+
+- bootstrap-owned `COMSPEC` / `ComSpec` on boxed `cmd.exe`
+- project-owned `scriptShell` on boxed `cmd.exe`
+- project-owned `pnpm install` launched through one explicit PS1
+
+That means the install contract no longer depends on the historical Git-Bash-based lifecycle shell.
 
 ## Sanitized boilerplate note
 

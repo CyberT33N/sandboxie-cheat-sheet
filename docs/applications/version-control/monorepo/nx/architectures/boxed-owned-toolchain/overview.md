@@ -41,9 +41,10 @@ The current boxed-owned-toolchain Nx reference truth is:
 4. the plain `nx` command surface is validated in the boxed project terminal
 5. `pnpm exec nx ...` remains a separate failure surface
 6. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
-7. the historical/current validated child-process fix sets `ComSpec` / `COMSPEC` to the box-local Git Bash executable
+7. the current productive child-process fix sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
 8. that child-process fix must not be confused with the preferred interactive default shell, which is boxed PowerShell
 9. the currently validated boxed target set now succeeds without manual per-command `ComSpec=bash ...` overrides
+10. Git Bash remains an explicit alternative compatibility lane rather than the preferred productive contract
 
 ## Current architectural boundary
 

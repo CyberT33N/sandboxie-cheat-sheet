@@ -182,7 +182,7 @@ The following block is the current required Puppeteer-related code that must exi
 Current real file:
 
 ```text
-C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1
+C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1
 ```
 
 Required block:
@@ -245,13 +245,13 @@ The current real host-triggered clean-reinstall command is:
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_test_MONO `
+  /box:VS_CODE_TEST_MONO `
   "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1" `
-  -RepoPath "C:\Users\denni\source\test-mono"
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 ## Verification
