@@ -81,6 +81,7 @@ The validated boxed result is:
 - `node -> spawn(host powershell.exe)` can fail with `spawn EPERM`
 - `node -> spawn(box-local mirrored cmd.exe)` can succeed
 - `node -> spawn(box-local mirrored powershell.exe)` can succeed
+- `node -> spawn(box-local mirrored reg.exe)` can succeed
 - `node -> spawn(bash)` can still work
 - historically, `ComSpec=bash` could make shell-based Nx targets succeed
 - boxed `CMD + Starship` requires `Clink`
@@ -124,6 +125,9 @@ C:\shared\sandbox-toolchains\dev\shells\
     10.0.26100.8457\
       powershell.exe
       ...
+  reg\
+    10.0.26100.8457\
+      reg.exe
   clink\
     1.9.26\
       clink_x64.exe
@@ -182,14 +186,15 @@ The current prioritized repository solution is:
    - PowerShell
    - `cmd.exe`
    - Git Bash
-3. prefer box-local mirrored PowerShell as the default interactive VS Code shell lane
-4. keep child-process shell selection explicit and bootstrap-owned
-5. set **both**:
+3. expose boxed `reg.exe` as an explicit local helper lane for registry-facing command surfaces
+4. prefer box-local mirrored PowerShell as the default interactive VS Code shell lane
+5. keep child-process shell selection explicit and bootstrap-owned
+6. set **both**:
    - `ComSpec`
    - `COMSPEC`
    to the box-local interpreter required by the validated shell-oriented child-process surface
-6. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
-7. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
+7. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
+8. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
 
 This is intentionally **not** the same as saying:
 
@@ -229,6 +234,8 @@ At the same time, the repository now distinguishes between:
   - box-local mirrored PowerShell
 - the **explicit alternative Windows shell lane**
   - box-local mirrored `cmd.exe`
+- the **explicit local registry helper lane**
+  - box-local mirrored `reg.exe`
 - the **explicit Git Bash lane**
   - available for shell-native wrappers and shell-oriented child-process flows
 - the **bootstrap-owned child-process contract**

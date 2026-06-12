@@ -66,6 +66,7 @@ Current helper families include:
 - directory creation
 - file copy helpers
 - tree mirroring
+- PowerShell fallback tree mirroring when `robocopy.exe` is denied on the current child-process surface
 - tree-copy initialization with exclusion support
 - ASCII file generation
 - `PATH` prefix composition
@@ -92,6 +93,15 @@ function Initialize-TreeCopyIfMissing {
 
   # initializes a destination tree once from a source tree copy
 }
+
+function Sync-TreeMirrorWithPowerShell {
+  param(
+    [string]$Source,
+    [string]$Destination
+  )
+
+  # mirrors a tree through PowerShell-native file operations when robocopy is not usable
+}
 ```
 
 These helpers are what make local runtime mirroring practical without forcing every higher-level script to reimplement filesystem logic.
@@ -104,6 +114,7 @@ Current responsibilities:
 
 - validate the shared Git / Node / PNPM surfaces
 - mirror them locally into the box execution tree
+- prepare the boxed Windows native-build environment for direct `node-gyp` usage
 - generate wrapper commands such as `pnpm.cmd`
 - generate wrapper commands such as `nx.cmd`
 - generate wrapper commands such as `pnpm.ps1`
@@ -144,6 +155,18 @@ function Initialize-NodeToolchainRuntime {
 
   # generates wrapper commands and exposes the local mirrored toolchain
 }
+
+function Initialize-NodeGypWindowsBuildEnvironment {
+  param(
+    [string]$CmdExe,
+    [string]$RegExe,
+    [string]$PythonExe,
+    [string]$WindowsSdkRoot = 'C:\Program Files (x86)\Windows Kits\10'
+  )
+
+  # imports VsDevCmd.bat through boxed cmd.exe, binds the boxed Python helper,
+  # normalizes Windows SDK env values, and publishes boxed node-gyp helper metadata
+}
 ```
 
 Representative wrapper publication now includes all three relevant shell families:
@@ -167,6 +190,7 @@ This matters because the current contract must support:
 - PowerShell command resolution
 - CMD command resolution
 - Git Bash command resolution
+- direct native-build environment preparation for `node-gyp`-bearing install/reinstall flows
 
 at the same time.
 
@@ -240,8 +264,10 @@ Current responsibilities:
 
 - mirror governed shared `cmd.exe` locally
 - mirror governed shared Windows PowerShell locally
+- mirror governed shared `reg.exe` locally
 - mirror governed shared `Clink` locally when provisioned
 - prepend the local mirrored `Clink` root into `PATH`
+- prepend the local mirrored `reg.exe` root into `PATH` when provisioned
 - generate:
   - `cmd.minimal.init.cmd`
   - `cmd.starship.init.cmd`
@@ -252,7 +278,7 @@ Current responsibilities:
 
 Important current nuance:
 
-- `cmd.exe`, Windows PowerShell, and `Clink` are all governed shared shell artifacts under `dev\shells\...`
+- `cmd.exe`, Windows PowerShell, `reg.exe`, and `Clink` are all governed shared shell/helper artifacts under `dev\shells\...`
 - bootstrap mirrors them locally into the box execution tree
 - mutable `Clink` state still remains box-local
 
@@ -263,6 +289,7 @@ function Initialize-WindowsShellRuntime {
   param(
     [string]$CmdRoot,
     [string]$PowerShellRoot,
+    [string]$RegRoot,
     [string]$ClinkRoot,
     [string]$LocalToolchainRoot,
     [string]$BootstrapBin,
@@ -271,7 +298,7 @@ function Initialize-WindowsShellRuntime {
     [string]$StarshipConfigPath
   )
 
-  # mirrors the governed shared Windows shell artifacts and prepares CMD/PowerShell init files
+  # mirrors the governed shared Windows shell/helper artifacts and prepares CMD/PowerShell init files
 }
 ```
 
@@ -391,6 +418,7 @@ Current behavior:
 - mirrors the shared extension store locally
 - initializes seeds
 - initializes Node, Windows-shell, optional Python, and Starship layers
+- publishes explicit boxed helper lanes including `BOXED_REG_EXE`
 - sets local temp/Nx environment state
 - sets the productive boxed-CMD child-process contract
 
@@ -505,6 +533,7 @@ return @{
   Shells = @{
     CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'
     PowerShellRoot = Join-Path $devRoot 'shells\powershell\10.0.26100.8457'
+    RegRoot = Join-Path $devRoot 'shells\reg\10.0.26100.8457'
     ClinkRoot = Join-Path $devRoot 'shells\clink\1.9.26'
     StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
     StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'

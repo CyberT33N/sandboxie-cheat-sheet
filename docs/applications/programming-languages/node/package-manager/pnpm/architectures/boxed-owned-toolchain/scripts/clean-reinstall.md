@@ -142,10 +142,19 @@ if (-not (Test-Path -LiteralPath $cmdExe)) {
   throw 'Local boxed CMD executable not found.'
 }
 
+$nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
+  -CmdExe $env:BOXED_CMD_EXE `
+  -RegExe $env:BOXED_REG_EXE `
+  -PythonExe $env:BOXED_PYTHON_EXE
+
 Set-Location $resolvedRepoPath
 
 Write-Host "RepoPath: $resolvedRepoPath"
 Write-Host "ScriptShell: $cmdExe"
+Write-Host "VsRoot: $($nativeBuildRuntime.VSRoot)"
+Write-Host "VsDevCmd: $($nativeBuildRuntime.VsDevCmd)"
+Write-Host "WindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
+Write-Host "WindowsSdkVersion: $($nativeBuildRuntime.WindowsSdkVersion)"
 Write-Host 'Configuring PNPM lifecycle shell for boxed CMD...'
 pnpm config set --location=project scriptShell "$cmdExe"
 
@@ -173,6 +182,7 @@ exit $LASTEXITCODE
 The clean-reinstall path now matches the productive boxed-owned-toolchain PNPM contract:
 
 - bootstrap owns the boxed-CMD `COMSPEC` / `ComSpec` lane
+- the project-owned script initializes the boxed Windows native-build helper before the reinstall
 - the project-owned script sets `scriptShell` to boxed `cmd.exe`
 - the reinstall happens inside the normal project bootstrap context
 

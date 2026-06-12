@@ -16,7 +16,7 @@ It defines:
 
 - recommended host-sync overlay:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
-- exploratory boxed-owned-toolchain attempt:
+- current boxed-owned-toolchain runtime/bootstrap contract:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 
 ### Host-sync modules
@@ -51,7 +51,13 @@ The currently validated `node-gyp` posture for Node monorepos is:
 - consume Microsoft Visual Studio Build Tools and Windows SDK from the host system through explicit Sandboxie visibility rules
 - bootstrap the install-box session with both the Python path and the Visual Studio developer environment before running `node-gyp`
 
-The explored boxed-owned-toolchain attempt is currently **not validated** and remains secondary to the documented host-sync method for this `node-gyp` overlay.
+The repository-wide fully validated end-to-end `node-gyp` baseline remains the documented host-sync method.
+
+At the same time, the boxed-owned-toolchain architecture now has a documented **current-state runtime/bootstrap contract** for direct boxed `node-gyp` environment preparation. That current-state contract lives in the boxed-owned-toolchain folder and should be read as:
+
+- implemented current bootstrap/runtime behavior
+- not a replacement for the host-sync comparison baseline
+- and not a catch-all place for open package-specific failures
 
 ## Why `node-gyp` needs its own overlay
 

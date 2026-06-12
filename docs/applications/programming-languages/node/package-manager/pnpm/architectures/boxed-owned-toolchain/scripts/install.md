@@ -19,8 +19,9 @@ The preferred shape is:
 1. the project adapter selects `PnpmCli`
 2. a project-owned install PS1 enters the project box through the normal bootstrap
 3. bootstrap projects the productive `ComSpec` / `COMSPEC` lane
-4. that install PS1 sets the validated PNPM lifecycle `scriptShell`
-5. that install PS1 runs `pnpm install`
+4. that install PS1 initializes the boxed Windows native-build environment helper for `node-gyp`-bearing lifecycle paths
+5. that install PS1 sets the validated PNPM lifecycle `scriptShell`
+6. that install PS1 runs `pnpm install`
 
 The current productive shell-specific requirement is:
 
@@ -83,6 +84,11 @@ if (-not (Test-Path -LiteralPath $cmdExe)) {
   throw 'Local boxed CMD executable not found.'
 }
 
+$null = Initialize-NodeGypWindowsBuildEnvironment `
+  -CmdExe $env:BOXED_CMD_EXE `
+  -RegExe $env:BOXED_REG_EXE `
+  -PythonExe $env:BOXED_PYTHON_EXE
+
 pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install
 
@@ -107,6 +113,7 @@ exit $LASTEXITCODE
 This script body is the PNPM-domain proof that the preferred productive path is now:
 
 - bootstrap-owned `COMSPEC` / `ComSpec` on boxed `cmd.exe`
+- bootstrap-owned boxed helper lanes for Python / `reg.exe` / Windows native-build preparation
 - project-owned `scriptShell` on boxed `cmd.exe`
 - project-owned `pnpm install` launched through one explicit PS1
 

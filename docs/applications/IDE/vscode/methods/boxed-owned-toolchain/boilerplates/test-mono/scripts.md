@@ -60,6 +60,7 @@ return @{
   Shells = @{
     CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'
     PowerShellRoot = Join-Path $devRoot 'shells\powershell\10.0.26100.8457'
+    RegRoot = Join-Path $devRoot 'shells\reg\10.0.26100.8457'
     ClinkRoot = Join-Path $devRoot 'shells\clink\1.9.26'
     StarshipRoot = Join-Path $devRoot 'starship\1.25.1'
     StarshipConfigPath = Join-Path $env:USERPROFILE '.config\starship.toml'
@@ -115,6 +116,7 @@ $parameters = @{
   PythonRoot = $config.Toolchain.PythonRoot
   CmdRoot = $config.Shells.CmdRoot
   PowerShellRoot = $config.Shells.PowerShellRoot
+  RegRoot = $config.Shells.RegRoot
   StarshipRoot = $config.Shells.StarshipRoot
   ClinkRoot = $config.Shells.ClinkRoot
   StarshipConfigPath = $config.Shells.StarshipConfigPath
@@ -199,6 +201,11 @@ if (-not (Test-Path -LiteralPath $cmdExe)) {
   throw 'Local boxed CMD executable not found.'
 }
 
+$null = Initialize-NodeGypWindowsBuildEnvironment `
+  -CmdExe $env:BOXED_CMD_EXE `
+  -RegExe $env:BOXED_REG_EXE `
+  -PythonExe $env:BOXED_PYTHON_EXE
+
 pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install
 
@@ -234,6 +241,7 @@ The optional `PythonRoot`, `StarshipRoot`, `ClinkRoot`, and `StarshipConfigPath`
 
 - Python
 - Starship
+- `reg.exe` as an explicit boxed helper lane
 - the CMD-specific `Clink` adapter
 - explicit local PowerShell/CMD shell lanes
 
