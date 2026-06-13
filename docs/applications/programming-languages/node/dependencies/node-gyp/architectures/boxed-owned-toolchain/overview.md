@@ -68,6 +68,8 @@ The current boxed-owned-toolchain `node-gyp` reference truth is:
    - `csc.exe`
    - `cvtres.exe`
 10. the verified `.NET Framework` smoke surface now includes successful boxed PowerShell `Add-Type`
+11. the boxed-owned-toolchain bootstrap now publishes a dedicated `node-gyp` wrapper surface instead of requiring edits inside downloaded dependencies
+12. the currently validated direct proof surface is a green boxed `node-gyp rebuild --verbose` run through that wrapper
 
 ## Domain map
 
@@ -132,6 +134,18 @@ Owns:
 - the sanitized project-adapter contract
 - the current install/reinstall script integration points
 - the current common-bootstrap mirror fallback that keeps script execution resilient under strict boxed policy
+
+### MSBuild file-tracking wrapper
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
+
+Owns:
+
+- the `TrackFileAccess` problem class
+- the architectural decision against dependency patching
+- the documented upstream Sandboxie options that could influence the failure class
+- the reason those options are not preferred
+- the complete sanitized wrapper code example
 
 ## Cross-domain references
 

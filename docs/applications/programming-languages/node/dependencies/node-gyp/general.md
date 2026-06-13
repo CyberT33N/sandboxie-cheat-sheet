@@ -18,6 +18,8 @@ It defines:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
 - current boxed-owned-toolchain runtime/bootstrap contract:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
+- boxed-owned-toolchain Windows build-tracking wrapper:
+  `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 
 ### Host-sync modules
 
@@ -51,6 +53,7 @@ The currently validated `node-gyp` posture for Node monorepos is:
 - provide governed shared Microsoft build sources under `C:\shared\sandbox-toolchains\dev\shells\...`
 - project those shared Microsoft build sources into the expected Windows paths inside the box during bootstrap
 - bootstrap the install-box session with both the Python path and the projected Visual Studio developer environment before running `node-gyp`
+- keep the Windows build-phase tracking workaround in a bootstrap-owned wrapper outside dependency source
 
 The repository-wide fully validated end-to-end `node-gyp` baseline remains the documented host-sync method.
 
@@ -89,3 +92,4 @@ That is why the generic monorepo boilerplate is necessary but not sufficient on 
 - `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`

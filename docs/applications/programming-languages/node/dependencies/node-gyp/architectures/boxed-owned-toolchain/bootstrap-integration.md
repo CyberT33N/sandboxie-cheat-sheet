@@ -22,9 +22,10 @@ The current live shared implementation surfaces are:
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmInstall.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1`
 
 ## Sanitized project adapter contract
 
@@ -150,6 +151,25 @@ This helper is responsible for:
 - prepending the Windows SDK `bin\<version>\x64` path
 - publishing helper metadata back into the shell
 
+The same shared Node bootstrap now also owns the boxed `node-gyp` wrapper publication surface.
+
+Representative current publication:
+
+```powershell
+$nodeGypWrapperPath = Join-Path $BootstrapBin 'node-gyp-wrapper.cjs'
+
+Write-AsciiFile -Path $nodeGypWrapperPath -Content $nodeGypWrapperContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node-gyp.cmd') -Content $nodeGypCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node-gyp.ps1') -Content $nodeGypPs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node-gyp') -Content $nodeGypShellContent
+
+$env:BOXED_NODE_GYP_JS = $nodeGypWrapperPath
+$env:BOXED_NODE_GYP_REAL_JS = $nodeGypJs
+$env:npm_config_node_gyp = $nodeGypWrapperPath
+```
+
+That means the boxed project shell now exposes a bootstrap-owned `node-gyp` command surface without requiring any edits inside downloaded dependency sources.
+
 ## Project-owned install integration
 
 The current project-owned PNPM install script now explicitly opts into the `node-gyp` helper before it runs `pnpm install`:
@@ -182,11 +202,20 @@ pnpm install
 
 This is the current bootstrap-owned answer for package installs that may auto-trigger `node-gyp`.
 
+Architecturally important nuance:
+
+- the project script does **not** patch `node-gyp` in `node_modules`
+- the project script enters the normal boxed bootstrap
+- the bootstrap-published `node-gyp` command surface and `npm_config_node_gyp` metadata then carry the wrapper behavior into native build flows
+
 ## Project-owned clean-reinstall integration
 
 The current clean-reinstall script also opts into the same helper before the fresh install:
 
 ```powershell
+$uninstallScript = Join-Path $PSScriptRoot 'Start-TestMonoPnpmUninstall.ps1'
+& $uninstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
+
 $nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
   -CmdExe $env:BOXED_CMD_EXE `
   -RegExe $env:BOXED_REG_EXE `
@@ -203,6 +232,34 @@ pnpm install
 
 This keeps the native-build preparation explicit in the project-owned reinstall surface instead of mutating the generic project bootstrap path.
 
+## Project-owned uninstall integration
+
+The current uninstall surface now prefers PowerShell-native tree deletion and only falls back to the explicit boxed `cmd.exe` lane if needed.
+
+Representative current behavior:
+
+```powershell
+function Remove-BoxedPathTree {
+  param([string]$Path)
+
+  try {
+    Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+  }
+  catch {
+    $cmdExe = $env:BOXED_CMD_EXE
+    if (-not [string]::IsNullOrWhiteSpace($cmdExe) -and (Test-Path -LiteralPath $cmdExe)) {
+      & $cmdExe '/d' '/c' ('rmdir /s /q "{0}"' -f $Path)
+    }
+
+    if (Test-Path -LiteralPath $Path) {
+      Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+    }
+  }
+}
+```
+
+That keeps the cleanup path bootstrap-owned and box-lane-aware instead of depending on a bare `cmd /c rmdir` call.
+
 ## Verified runtime evidence
 
 The following integration points are already verified from the boxed project shell:
@@ -214,6 +271,7 @@ The following integration points are already verified from the boxed project she
 - `cl.exe`, `MSBuild.exe`, `rc.exe`, and `mt.exe` resolve after helper execution
 - `csc.exe` and `cvtres.exe` resolve after `.NET Framework` projection
 - boxed PowerShell `Add-Type` succeeds against the projected `.NET Framework` compiler chain
+- a direct boxed `node-gyp rebuild --verbose` succeeds through the bootstrap-published wrapper surface
 
 ## Common bootstrap fallback that now matters here
 
@@ -241,6 +299,7 @@ That change matters for `node-gyp` because the toolchain/bootstrap contract now 
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\runtime-contract.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`

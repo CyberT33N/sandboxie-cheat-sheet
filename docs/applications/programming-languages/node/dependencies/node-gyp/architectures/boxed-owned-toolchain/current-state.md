@@ -54,6 +54,16 @@ The current boxed-owned-toolchain implementation now includes:
    - `csc.exe`
    - `cvtres.exe`
 10. a verified boxed PowerShell `Add-Type` smoke-test result through the projected `.NET Framework` compiler path
+11. bootstrap-published `node-gyp` wrapper surfaces:
+   - `node-gyp-wrapper.cjs`
+   - `node-gyp.cmd`
+   - `node-gyp.ps1`
+   - `node-gyp`
+12. wrapper metadata exported back into the boxed shell through:
+   - `BOXED_NODE_GYP_JS`
+   - `BOXED_NODE_GYP_REAL_JS`
+   - `npm_config_node_gyp`
+13. a validated direct boxed `node-gyp rebuild --verbose` proof path that reaches the Windows MSBuild phase through the wrapper and succeeds with `TrackFileAccess=false`
 
 ## What the current helper contract already does
 
@@ -89,6 +99,25 @@ The current helper-driven boxed-owned-toolchain `node-gyp` contract already:
   - `BOXED_VSWHERE_EXE`
   - `BOXED_WINDOWS_SDK_ROOT`
   - `BOXED_WINDOWS_SDK_VERSION`
+- publishes wrapper metadata through:
+  - `BOXED_NODE_GYP_JS`
+  - `BOXED_NODE_GYP_REAL_JS`
+  - `npm_config_node_gyp`
+
+## Current wrapper contract
+
+The current boxed-owned-toolchain posture now includes a bootstrap-owned wrapper around the delivered `node-gyp` code.
+
+This wrapper:
+
+- leaves the dependency source under `node_modules` untouched
+- intercepts the Windows `build` phase only
+- injects `/p:TrackFileAccess=false` at the MSBuild layer
+- keeps the fix in the bootstrap/control-plane layer rather than in vendor source
+
+The wrapper is not a replacement implementation of `node-gyp`.
+
+It is a **boxed-owned command-surface adapter** around the delivered `node-gyp` entrypoint.
 
 ## Verified boxed outcomes
 
@@ -107,6 +136,7 @@ The following outcomes are already runtime-verified in the boxed project shell:
 - `Get-Command csc.exe` succeeds
 - `Get-Command cvtres.exe` succeeds
 - boxed PowerShell `Add-Type` succeeds through the projected `.NET Framework` compiler chain
+- a direct boxed `node-gyp rebuild --verbose` succeeds through the bootstrap-published wrapper surface
 
 ## What the current shell/helper lanes already provide
 
@@ -131,7 +161,14 @@ The currently implemented direct boxed-owned-toolchain posture is:
 1. start from the normal project bootstrap
 2. call `Initialize-NodeGypWindowsBuildEnvironment`
 3. enter the package directory that needs direct `node-gyp`
-4. run the direct `node-gyp` command against the boxed local Python executable
+4. run the direct `node-gyp` command through the bootstrap-published wrapper surface
+
+Representative current proof surface:
+
+```powershell
+Set-Location (Join-Path $env:BOXED_LOCAL_TEMP_ROOT 'msgpackr-extract-node-gyp-test\package')
+node-gyp rebuild --verbose
+```
 
 That means the boxed-owned-toolchain method now has a **real current-state `node-gyp` preparation contract**, not only a shell-lane experiment.
 
@@ -156,3 +193,4 @@ So the boxed-owned-toolchain `node-gyp` state is now:
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\runtime-contract.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\bootstrap-integration.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\toolchain-boundary.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`

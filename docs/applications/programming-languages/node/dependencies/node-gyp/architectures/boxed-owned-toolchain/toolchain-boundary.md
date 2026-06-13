@@ -67,6 +67,24 @@ This boundary is correct because it keeps each concern in the right domain:
 
 That means the boxed-owned-toolchain method no longer depends on direct host execution of Microsoft build-tool paths inside the project box.
 
+## Role of the `node-gyp` wrapper
+
+The current `node-gyp` wrapper belongs to the same bootstrap/control-plane boundary.
+
+It is not:
+
+- a dependency patch
+- a vendor-source customization
+- or a Sandboxie-isolation exception
+
+Instead it is:
+
+- a bootstrap-owned command-surface adapter
+- generated into `bootstrap-bin`
+- responsible only for the Windows build-phase tracking override
+
+That ownership split is important because the problem belongs to the **runtime execution boundary**, not to the dependency authoring boundary.
+
 ## Twelve-factor reading
 
 The current boundary is twelve-factor aligned:
@@ -112,5 +130,6 @@ This keeps the helper logic compatible with tools that hard-code Windows paths, 
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\runtime-contract.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`

@@ -175,6 +175,10 @@ The PNPM-domain source of truth for the clean-reinstall script contract now live
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 
+The complete node-gyp wrapper architecture and full wrapper code example now live here:
+
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
+
 It encodes the governance-approved boxed-owned-toolchain contract:
 
 - the host launches one explicit project-owned PS1
@@ -188,6 +192,7 @@ The current shell-specific requirement is also part of this contract:
 - boxed PowerShell remains the preferred interactive default shell
 - Git Bash remains an alternative shell lane and still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
 - native-build preparation projects the governed shared Microsoft build-source trees into their canonical Windows runtime paths before `pnpm install` runs
+- the boxed `node-gyp` wrapper is published by bootstrap so Windows build-tracking behavior is adapted without editing downloaded dependency source
 
 ```powershell
 param(
@@ -230,6 +235,189 @@ pnpm install
 exit $LASTEXITCODE
 ```
 
+## `Start-TestMonoPnpmUninstall.ps1`
+
+This is the sanitized project-box uninstall helper used by the clean-reinstall flow.
+
+```powershell
+param(
+  [string]$RepoPath,
+  [switch]$SkipBootstrap
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$config = & (Join-Path $PSScriptRoot 'Project.Config.ps1')
+$resolvedRepoPath = if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+  $config.DefaultRepoPath
+}
+else {
+  $RepoPath
+}
+
+if (-not $SkipBootstrap) {
+  $launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+  & $launcher -Action OpenTerminal -RepoPath $resolvedRepoPath
+}
+
+function Remove-BoxedPathTree {
+  param([string]$Path)
+
+  if (-not (Test-Path -LiteralPath $Path)) {
+    return
+  }
+
+  try {
+    Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+  }
+  catch {
+    $cmdExe = $env:BOXED_CMD_EXE
+    if (-not [string]::IsNullOrWhiteSpace($cmdExe) -and (Test-Path -LiteralPath $cmdExe)) {
+      & $cmdExe '/d' '/c' ('rmdir /s /q "{0}"' -f $Path)
+    }
+
+    if (Test-Path -LiteralPath $Path) {
+      Remove-Item -LiteralPath $Path -Recurse -Force -ErrorAction Stop
+    }
+  }
+}
+
+$dependencyPaths = New-Object 'System.Collections.Generic.List[string]'
+
+@(
+  (Join-Path $resolvedRepoPath '.pnpm'),
+  (Join-Path $resolvedRepoPath 'node_modules')
+) | ForEach-Object {
+  [void]$dependencyPaths.Add($_)
+}
+
+foreach ($segment in 'apps', 'libs', 'tools') {
+  $segmentRoot = Join-Path $resolvedRepoPath $segment
+  if (-not (Test-Path -LiteralPath $segmentRoot)) {
+    continue
+  }
+
+  Get-ChildItem -LiteralPath $segmentRoot -Directory -ErrorAction SilentlyContinue |
+    ForEach-Object {
+      [void]$dependencyPaths.Add((Join-Path $_.FullName 'node_modules'))
+    }
+}
+
+$dependencyPaths |
+  Sort-Object -Unique |
+  Where-Object { Test-Path -LiteralPath $_ } |
+  ForEach-Object {
+    Write-Host "Removing $_"
+    Remove-BoxedPathTree -Path $_
+  }
+
+$modulesYaml = Join-Path $resolvedRepoPath 'node_modules\.modules.yaml'
+if (Test-Path -LiteralPath $modulesYaml) {
+  Write-Host "Removing $modulesYaml"
+  Remove-Item -LiteralPath $modulesYaml -Force -ErrorAction SilentlyContinue
+}
+
+@(
+  $env:BOXED_PUPPETEER_CACHE_DIR,
+  $env:BOXED_PLAYWRIGHT_BROWSERS_PATH
+) |
+Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
+Sort-Object -Unique |
+Where-Object { Test-Path -LiteralPath $_ } |
+ForEach-Object {
+  Write-Host "Removing $_"
+  Remove-BoxedPathTree -Path $_
+}
+```
+
+## `Start-TestMonoPnpmCleanReinstall.ps1`
+
+This is the sanitized project-box clean-reinstall script.
+
+```powershell
+param(
+  [string]$RepoPath
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$configScript = Join-Path $PSScriptRoot 'Project.Config.ps1'
+if (-not (Test-Path -LiteralPath $configScript)) {
+  throw "Project config not found: $configScript"
+}
+
+$config = & $configScript
+if (-not $config) {
+  throw 'Project config did not return a configuration object.'
+}
+
+$resolvedRepoPath = if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+  $config.DefaultRepoPath
+}
+else {
+  $RepoPath
+}
+
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+if (-not (Test-Path -LiteralPath $launcher)) {
+  throw "Project launcher not found: $launcher"
+}
+
+& $launcher -Action OpenTerminal -RepoPath $resolvedRepoPath
+
+$uninstallScript = Join-Path $PSScriptRoot 'Start-TestMonoPnpmUninstall.ps1'
+if (-not (Test-Path -LiteralPath $uninstallScript)) {
+  throw "Project uninstall script not found: $uninstallScript"
+}
+
+& $uninstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
+
+if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
+  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
+}
+
+$cmdExe = $env:BOXED_CMD_EXE
+if (-not (Test-Path -LiteralPath $cmdExe)) {
+  throw 'Local boxed CMD executable not found.'
+}
+
+$nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
+  -CmdExe $env:BOXED_CMD_EXE `
+  -RegExe $env:BOXED_REG_EXE `
+  -PythonExe $env:BOXED_PYTHON_EXE
+
+Set-Location $resolvedRepoPath
+
+Write-Host "RepoPath: $resolvedRepoPath"
+Write-Host "ScriptShell: $cmdExe"
+Write-Host "VsRoot: $($nativeBuildRuntime.VSRoot)"
+Write-Host "VsDevCmd: $($nativeBuildRuntime.VsDevCmd)"
+Write-Host "WindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
+Write-Host "WindowsSdkVersion: $($nativeBuildRuntime.WindowsSdkVersion)"
+Write-Host 'Configuring PNPM lifecycle shell for boxed CMD...'
+pnpm config set --location=project scriptShell "$cmdExe"
+
+Write-Host 'Running clean pnpm install...'
+pnpm install
+
+exit $LASTEXITCODE
+```
+
+### Host command after materializing the clean-reinstall boilerplate above into the shared project bootstrap subtree
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
 ### Host command after materializing the boilerplate above into the shared project bootstrap subtree
 
 ```powershell
@@ -262,6 +450,7 @@ The optional `PythonRoot`, `StarshipRoot`, `ClinkRoot`, and `StarshipConfigPath`
 - `reg.exe` as an explicit boxed helper lane
 - the CMD-specific `Clink` adapter
 - explicit local PowerShell/CMD shell lanes
+- the bootstrap-owned `node-gyp` wrapper surface
 
 in addition to the core Git/Node/pnpm surfaces.
 
@@ -271,3 +460,4 @@ If a project does not need a secondary runtime, remove the `AdditionalNodeComman
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`

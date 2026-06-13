@@ -20,13 +20,24 @@ The preferred shape is:
 2. a project-owned install PS1 enters the project box through the normal bootstrap
 3. bootstrap projects the productive `ComSpec` / `COMSPEC` lane
 4. that install PS1 initializes the boxed Windows native-build environment helper for `node-gyp`-bearing lifecycle paths
-5. that install PS1 sets the validated PNPM lifecycle `scriptShell`
-6. that install PS1 runs `pnpm install`
+5. bootstrap publishes the boxed `node-gyp` wrapper surface before the install runs
+6. that install PS1 sets the validated PNPM lifecycle `scriptShell`
+7. that install PS1 runs `pnpm install`
 
 The current productive shell-specific requirement is:
 
 - boxed `cmd.exe` is the preferred lifecycle `scriptShell`
 - boxed `cmd.exe` is the preferred productive child-process lane for PNPM command execution
+- bootstrap publishes:
+  - `node-gyp-wrapper.cjs`
+  - `node-gyp`
+  - `node-gyp.cmd`
+  - `node-gyp.ps1`
+  - `BOXED_NODE_GYP_JS`
+  - `BOXED_NODE_GYP_REAL_JS`
+  - `npm_config_node_gyp`
+
+That keeps Windows native-build tracking control outside dependency source.
 
 The historical Git-Bash-based variant remains only as an alternative compatibility lane, not as the preferred productive path.
 
@@ -116,6 +127,7 @@ This script body is the PNPM-domain proof that the preferred productive path is 
 - bootstrap-owned boxed helper lanes for Python / `reg.exe` / Windows native-build preparation
 - project-owned `scriptShell` on boxed `cmd.exe`
 - project-owned `pnpm install` launched through one explicit PS1
+- bootstrap-owned `node-gyp` wrapper publication so Windows MSBuild tracking behavior is adapted without editing downloaded dependencies
 
 That means the install contract no longer depends on the historical Git-Bash-based lifecycle shell.
 
@@ -132,6 +144,7 @@ That boilerplate remains useful as a reusable example, but PNPM-specific install
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 - `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`

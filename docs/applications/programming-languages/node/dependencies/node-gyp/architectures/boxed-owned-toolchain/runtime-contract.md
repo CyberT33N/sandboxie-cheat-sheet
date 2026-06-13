@@ -222,6 +222,17 @@ And the broader boxed bootstrap already publishes:
 
 Together those variables form the current boxed-owned-toolchain `node-gyp` runtime contract.
 
+The current bootstrap also publishes the wrapper-specific command-surface metadata:
+
+- `BOXED_NODE_GYP_JS`
+- `BOXED_NODE_GYP_REAL_JS`
+- `npm_config_node_gyp`
+
+That means the boxed project shell now has both:
+
+- a direct `node-gyp` command on `PATH`
+- and explicit environment metadata describing the wrapper-vs-real-entrypoint split
+
 ## Verified helper result
 
 The following helper result is already runtime-verified in the boxed project shell:
@@ -246,6 +257,35 @@ The current direct-use posture is:
 2. call `Initialize-NodeGypWindowsBuildEnvironment`
 3. enter the package directory
 4. run direct `node-gyp` commands against the boxed Python executable
+5. let the bootstrap-published wrapper own the Windows MSBuild file-tracking override for direct boxed build flows
+
+Representative current direct-use proof surface:
+
+```powershell
+Set-Location (Join-Path $env:BOXED_LOCAL_TEMP_ROOT 'msgpackr-extract-node-gyp-test\package')
+node-gyp rebuild --verbose
+```
+
+## Wrapper-owned Windows build-phase behavior
+
+The current runtime contract now assumes that direct boxed `node-gyp` commands resolve to the bootstrap-owned wrapper surface rather than to the raw dependency entrypoint.
+
+The important current behavior is:
+
+- `clean` and `configure` remain dependency-owned
+- the Windows `build` phase is adapted at the wrapper layer
+- the wrapper injects:
+  - `/nologo`
+  - `/nodeReuse:false`
+  - `/p:TrackFileAccess=false`
+
+at the MSBuild invocation layer
+
+That keeps the fix:
+
+- outside dependency source
+- outside package-local vendor patches
+- and outside Sandboxie isolation weakening
 
 This keeps the native-build setup explicit and reusable without forcing every normal project-terminal startup to load the Microsoft build environment preemptively.
 
@@ -266,3 +306,4 @@ instead of registry mutation in the normal helper path.
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\current-state.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\bootstrap-integration.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`

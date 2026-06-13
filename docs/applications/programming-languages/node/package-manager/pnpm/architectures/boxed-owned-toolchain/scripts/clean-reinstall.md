@@ -23,6 +23,7 @@ The current scope is:
 - remove box-local browser caches exposed through:
   - `BOXED_PUPPETEER_CACHE_DIR`
   - `BOXED_PLAYWRIGHT_BROWSERS_PATH`
+- prefer PowerShell-native recursive deletion and only fall back to the explicit boxed `cmd.exe` lane if needed
 
 The Puppeteer-specific meaning of these browser-cache paths is owned here:
 
@@ -78,60 +79,12 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 & $launcher -Action OpenTerminal -RepoPath $resolvedRepoPath
 
-if (-not (Test-Path -LiteralPath $resolvedRepoPath)) {
-  throw "Repo path not found: $resolvedRepoPath"
+$uninstallScript = Join-Path $PSScriptRoot 'Start-TestMonoPnpmUninstall.ps1'
+if (-not (Test-Path -LiteralPath $uninstallScript)) {
+  throw "Project uninstall script not found: $uninstallScript"
 }
 
-$dependencyPaths = New-Object 'System.Collections.Generic.List[string]'
-
-@(
-  (Join-Path $resolvedRepoPath '.pnpm'),
-  (Join-Path $resolvedRepoPath 'node_modules')
-) | ForEach-Object {
-  [void]$dependencyPaths.Add($_)
-}
-
-foreach ($segment in 'apps', 'libs', 'tools') {
-  $segmentRoot = Join-Path $resolvedRepoPath $segment
-  if (-not (Test-Path -LiteralPath $segmentRoot)) {
-    continue
-  }
-
-  Get-ChildItem -LiteralPath $segmentRoot -Directory -ErrorAction SilentlyContinue |
-    ForEach-Object {
-      [void]$dependencyPaths.Add((Join-Path $_.FullName 'node_modules'))
-    }
-}
-
-$dependencyPaths |
-  Sort-Object -Unique |
-  Where-Object { Test-Path -LiteralPath $_ } |
-  ForEach-Object {
-    Write-Host "Removing $_"
-    cmd /c rmdir /s /q "$_"
-
-    if (Test-Path -LiteralPath $_) {
-      Remove-Item -LiteralPath $_ -Recurse -Force -ErrorAction SilentlyContinue
-    }
-  }
-
-$modulesYaml = Join-Path $resolvedRepoPath 'node_modules\.modules.yaml'
-if (Test-Path -LiteralPath $modulesYaml) {
-  Write-Host "Removing $modulesYaml"
-  Remove-Item -LiteralPath $modulesYaml -Force -ErrorAction SilentlyContinue
-}
-
-@(
-  $env:BOXED_PUPPETEER_CACHE_DIR,
-  $env:BOXED_PLAYWRIGHT_BROWSERS_PATH
-) |
-Where-Object { -not [string]::IsNullOrWhiteSpace($_) } |
-Sort-Object -Unique |
-Where-Object { Test-Path -LiteralPath $_ } |
-ForEach-Object {
-  Write-Host "Removing $_"
-  Remove-Item -LiteralPath $_ -Recurse -Force -ErrorAction SilentlyContinue
-}
+& $uninstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
 
 if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
   throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
@@ -182,6 +135,7 @@ exit $LASTEXITCODE
 The clean-reinstall path now matches the productive boxed-owned-toolchain PNPM contract:
 
 - bootstrap owns the boxed-CMD `COMSPEC` / `ComSpec` lane
+- bootstrap publishes the boxed `node-gyp` wrapper surface
 - the project-owned script initializes the boxed Windows native-build helper before the reinstall
 - the project-owned script sets `scriptShell` to boxed `cmd.exe`
 - the reinstall happens inside the normal project bootstrap context
@@ -206,6 +160,7 @@ The architecture-specific troubleshooting interpretation of that failure class l
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`

@@ -40,6 +40,9 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1`
 
 ## Why this document changed
 
@@ -164,6 +167,10 @@ Current responsibilities:
 - generate additional node aliases such as `node20.cmd`
 - generate additional node aliases such as `node20.ps1`
 - generate shell-native additional aliases such as `node20`
+- generate wrapper commands such as `node-gyp.cmd`
+- generate wrapper commands such as `node-gyp.ps1`
+- generate a shell-native `node-gyp` command
+- generate the JS wrapper payload `node-gyp-wrapper.cjs`
 - prepend the correct local runtime paths into `PATH`
 - publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
 - keep that productive child-process contract aligned to the preferred boxed `cmd.exe` lane
@@ -229,6 +236,11 @@ Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx') -Content $nxShellContent
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20.cmd') -Content $nodeCmdContent
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20.ps1') -Content $nodePs1Content
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20') -Content $nodeShellContent
+
+Write-AsciiFile -Path $nodeGypWrapperPath -Content $nodeGypWrapperContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node-gyp.cmd') -Content $nodeGypCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node-gyp.ps1') -Content $nodeGypPs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'node-gyp') -Content $nodeGypShellContent
 ```
 
 This matters because the current contract must support:
@@ -237,6 +249,7 @@ This matters because the current contract must support:
 - CMD command resolution
 - Git Bash command resolution
 - direct native-build environment preparation for `node-gyp`-bearing install/reinstall flows
+- a bootstrap-owned `node-gyp` wrapper that disables the Windows MSBuild file-tracking layer without editing downloaded dependency source
 
 at the same time.
 
@@ -248,6 +261,7 @@ Verified current outcomes:
 - `WindowsSdkDir` imports into the boxed PowerShell session
 - `WindowsSDKVersion` imports into the boxed PowerShell session
 - `cl.exe`, `MSBuild.exe`, `rc.exe`, and `mt.exe` resolve after helper execution
+- a direct boxed `node-gyp rebuild --verbose` succeeds through the bootstrap-published wrapper surface
 
 ## `Bootstrap.Python.psm1`
 
@@ -620,3 +634,4 @@ It is now:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
