@@ -122,6 +122,6 @@ Any later failure is then more likely to be package-specific, addon-code-specifi
 ## Related documents
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\python-binary.md`
-- `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\visual-studio-build-tools.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\visual-studio-build-tools.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\install-box-config.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\Architectures\host-sync\clean-reinstall.md`

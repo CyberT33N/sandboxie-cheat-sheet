@@ -208,6 +208,12 @@ Important distinction:
 
 In the current preferred productive implementation, that bootstrap-owned `ComSpec` contract points to the box-local mirrored `cmd.exe` lane.
 
+Important PNPM nuance:
+
+- that bootstrap-owned child-process contract is **not** automatically the preferred `pnpm install` / clean-reinstall lifecycle lane
+- the current project-owned PNPM scripts deliberately override `scriptShell` back to box-local Git Bash for lifecycle execution
+- boxed `cmd.exe` remains the helper / child-process lane, while Git Bash remains the preferred install/reinstall lifecycle lane
+
 Current bootstrap rule:
 
 ```powershell
@@ -320,7 +326,7 @@ So the current repository view is:
 - the original blocker was not the shell type itself
 - the original blocker was the wrong shell-execution surface
 - the preferred productive child-process contract is boxed `cmd.exe`
-- Git Bash remains an explicit alternative lane, not the preferred productive `ComSpec` contract
+- Git Bash remains an explicit alternative lane, and it is also the preferred PNPM install/reinstall lifecycle lane
 
 That is why this is now the **prioritized documented solution**.
 

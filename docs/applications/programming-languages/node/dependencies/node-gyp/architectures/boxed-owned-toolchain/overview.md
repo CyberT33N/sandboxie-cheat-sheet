@@ -104,25 +104,17 @@ Owns:
 - the Python and Windows SDK environment contract
 - the current boxed helper-lane assumptions for direct `node-gyp` use
 
-### Microsoft build projection
+### Windows Microsoft build-toolchain domain
 
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\microsoft-build-projection.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\microsoft-build-projection.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\dotnet-framework-projection.md`
 
 Owns:
 
-- the governed shared `vswhere.exe`, Visual Studio Build Tools, and Windows Kits source roots
+- the governed shared `vswhere.exe`, Visual Studio Build Tools, Windows Kits, and `.NET Framework` source roots
 - the canonical boxed Windows projection paths for those sources
-- the verified `VsDevCmd` / compiler / MSBuild / Windows Kits runtime results
-
-### .NET Framework projection
-
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\dotnet-framework-projection.md`
-
-Owns:
-
-- the governed shared `.NET Framework` source roots
-- the canonical boxed Windows projection paths for Framework / Framework64
-- the verified boxed `csc.exe` / `cvtres.exe` / `Add-Type` results
+- the verified `VsDevCmd` / compiler / MSBuild / Windows Kits / `Add-Type` runtime results
 
 ### Bootstrap integration
 
@@ -159,6 +151,8 @@ Owns:
   `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - central shell-selection contract:
   `docs\cli\shell\general.md`
+- Windows Microsoft build-toolchain domain:
+  `docs\applications\operating-systems\windows\build-toolchain\microsoft\general.md`
 
 ## Related
 

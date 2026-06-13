@@ -80,10 +80,12 @@ Therefore:
 
 - architecture overview:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
+- Windows Microsoft build-toolchain domain:
+  `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\overview.md`
 - Python build helper provisioning:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\python-binary.md`
 - host-provided Microsoft build tools:
-  `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`
+  `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\visual-studio-build-tools.md`
 - install-box config additions:
   `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\install-box-config.md`
 - full clean reinstall flow:

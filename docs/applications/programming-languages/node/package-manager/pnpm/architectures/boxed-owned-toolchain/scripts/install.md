@@ -18,16 +18,17 @@ The preferred shape is:
 
 1. the project adapter selects `PnpmCli`
 2. a project-owned install PS1 enters the project box through the normal bootstrap
-3. bootstrap projects the productive `ComSpec` / `COMSPEC` lane
-4. that install PS1 initializes the boxed Windows native-build environment helper for `node-gyp`-bearing lifecycle paths
-5. bootstrap publishes the boxed `node-gyp` wrapper surface before the install runs
+3. that install PS1 initializes the boxed Windows native-build environment helper for `node-gyp`-bearing lifecycle paths
+4. bootstrap publishes the boxed `node-gyp` wrapper surface before the install runs
+5. that install PS1 resolves the local boxed Git Bash executable from the mirrored Git runtime
 6. that install PS1 sets the validated PNPM lifecycle `scriptShell`
 7. that install PS1 runs `pnpm install`
 
 The current productive shell-specific requirement is:
 
-- boxed `cmd.exe` is the preferred lifecycle `scriptShell`
-- boxed `cmd.exe` is the preferred productive child-process lane for PNPM command execution
+- boxed Git Bash is the preferred lifecycle `scriptShell` for install/reinstall
+- boxed `cmd.exe` remains available for native-build helper import, uninstall fallback, and other explicit Windows shell surfaces
+- boxed PowerShell remains the preferred interactive default shell
 - bootstrap publishes:
   - `node-gyp-wrapper.cjs`
   - `node-gyp`
@@ -39,7 +40,11 @@ The current productive shell-specific requirement is:
 
 That keeps Windows native-build tracking control outside dependency source.
 
-The historical Git-Bash-based variant remains only as an alternative compatibility lane, not as the preferred productive path.
+Architectural interpretation:
+
+- Git Bash is preferred here because it keeps the generic PNPM lifecycle closer to the normal package-manager execution model
+- boxed `cmd.exe` is still a first-class helper lane, but using it as the primary install lane pushes the project toward postinstall suppression and manual replay
+- that broad manual replay model is not the preferred install contract
 
 If Git Bash is selected explicitly, the bootstrap still needs:
 
@@ -86,12 +91,24 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 & $launcher -Action OpenTerminal -RepoPath $RepoPath
 
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Git Bash executable not found.'
+}
+
 if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
   throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$cmdExe = $env:BOXED_CMD_EXE
-if (-not (Test-Path -LiteralPath $cmdExe)) {
+if (-not (Test-Path -LiteralPath $env:BOXED_CMD_EXE)) {
   throw 'Local boxed CMD executable not found.'
 }
 
@@ -100,7 +117,8 @@ $null = Initialize-NodeGypWindowsBuildEnvironment `
   -RegExe $env:BOXED_REG_EXE `
   -PythonExe $env:BOXED_PYTHON_EXE
 
-pnpm config set --location=project scriptShell "$cmdExe"
+Write-Host "LifecycleShell: $bashExe"
+pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 
 exit $LASTEXITCODE
@@ -123,13 +141,16 @@ exit $LASTEXITCODE
 
 This script body is the PNPM-domain proof that the preferred productive path is now:
 
-- bootstrap-owned `COMSPEC` / `ComSpec` on boxed `cmd.exe`
 - bootstrap-owned boxed helper lanes for Python / `reg.exe` / Windows native-build preparation
-- project-owned `scriptShell` on boxed `cmd.exe`
+- project-owned `scriptShell` on explicit boxed Git Bash
 - project-owned `pnpm install` launched through one explicit PS1
 - bootstrap-owned `node-gyp` wrapper publication so Windows MSBuild tracking behavior is adapted without editing downloaded dependencies
 
-That means the install contract no longer depends on the historical Git-Bash-based lifecycle shell.
+At the same time:
+
+- bootstrap can still keep separate Windows child-process rules such as `ComSpec` / `COMSPEC`
+- boxed `cmd.exe` remains available as a helper lane
+- but the install contract itself now deliberately returns to Git Bash as the preferred lifecycle shell
 
 ## Sanitized boilerplate note
 

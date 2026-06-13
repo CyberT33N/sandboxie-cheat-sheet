@@ -58,8 +58,23 @@ Without that combination, the integrated Git Bash terminal can have a valid PNPM
 The architectural reason for documenting this remains:
 
 - PowerShell is the preferred integrated VS Code default profile
-- Git Bash remains an explicitly supported shell-oriented lane, so that lane still needs a complete command surface
+- Git Bash is the preferred PNPM install/reinstall lifecycle lane, so that lane must have a complete command surface
 - but PowerShell/CMD remain valid when they are explicitly mirrored and selected as boxed shell lanes
+
+## Current install-lane interpretation
+
+The current boxed-owned-toolchain decision is intentionally split by surface:
+
+- PowerShell stays the preferred interactive VS Code shell
+- `cmd.exe` remains a valid boxed Windows helper lane
+- Git Bash is the preferred lifecycle `scriptShell` for `pnpm install` and clean reinstall
+
+Why:
+
+- boxed `cmd.exe` can still be used for helper paths such as `VsDevCmd.bat` import and cleanup fallback
+- but as the primary PNPM lifecycle lane it pushes the architecture toward postinstall suppression and manual replay
+- Git Bash keeps the generic lifecycle closer to native PNPM behavior
+- the remaining problems are then narrower follow-up surfaces such as optional native packages or Electron runtime materialization
 
 ## Sandboxie visibility note
 

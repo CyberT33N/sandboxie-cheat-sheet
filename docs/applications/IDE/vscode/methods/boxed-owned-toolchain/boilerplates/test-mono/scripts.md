@@ -30,6 +30,13 @@ That keeps:
 
 ## `Project.Config.ps1`
 
+Important ownership split:
+
+- the `MicrosoftBuild` block shown below is only the project-adapter pass-through
+- the actual Microsoft build-toolchain source of truth now lives in:
+  - `docs\applications\operating-systems\windows\build-toolchain\microsoft\general.md`
+  - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\overview.md`
+
 ```powershell
 $sharedRoot = 'C:\shared\sandbox-toolchains'
 $vsCodeRoot = Join-Path $sharedRoot 'ide\vscode'
@@ -188,9 +195,10 @@ It encodes the governance-approved boxed-owned-toolchain contract:
 
 The current shell-specific requirement is also part of this contract:
 
-- boxed `cmd.exe` is the preferred productive lifecycle `scriptShell`
+- boxed Git Bash is the preferred productive lifecycle `scriptShell`
 - boxed PowerShell remains the preferred interactive default shell
-- Git Bash remains an alternative shell lane and still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
+- boxed `cmd.exe` remains available as a helper lane for native-build preparation and cleanup fallback
+- Git Bash still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
 - native-build preparation projects the governed shared Microsoft build-source trees into their canonical Windows runtime paths before `pnpm install` runs
 - the boxed `node-gyp` wrapper is published by bootstrap so Windows build-tracking behavior is adapted without editing downloaded dependency source
 
@@ -210,12 +218,24 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 & $launcher -Action OpenTerminal -RepoPath $RepoPath
 
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Git Bash executable not found.'
+}
+
 if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
   throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$cmdExe = $env:BOXED_CMD_EXE
-if (-not (Test-Path -LiteralPath $cmdExe)) {
+if (-not (Test-Path -LiteralPath $env:BOXED_CMD_EXE)) {
   throw 'Local boxed CMD executable not found.'
 }
 
@@ -229,7 +249,8 @@ Write-Host "ProjectedVsRoot: $($nativeBuildRuntime.VSRoot)"
 Write-Host "ProjectedWindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
 Write-Host "ProjectedDotNetFramework64Csc: $($nativeBuildRuntime.DotNetFramework64CscExe)"
 
-pnpm config set --location=project scriptShell "$cmdExe"
+Write-Host "LifecycleShell: $bashExe"
+pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 
 exit $LASTEXITCODE
@@ -374,12 +395,24 @@ if (-not (Test-Path -LiteralPath $uninstallScript)) {
 
 & $uninstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
 
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Git Bash executable not found.'
+}
+
 if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
   throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$cmdExe = $env:BOXED_CMD_EXE
-if (-not (Test-Path -LiteralPath $cmdExe)) {
+if (-not (Test-Path -LiteralPath $env:BOXED_CMD_EXE)) {
   throw 'Local boxed CMD executable not found.'
 }
 
@@ -391,13 +424,13 @@ $nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
 Set-Location $resolvedRepoPath
 
 Write-Host "RepoPath: $resolvedRepoPath"
-Write-Host "ScriptShell: $cmdExe"
+Write-Host "LifecycleShell: $bashExe"
 Write-Host "VsRoot: $($nativeBuildRuntime.VSRoot)"
 Write-Host "VsDevCmd: $($nativeBuildRuntime.VsDevCmd)"
 Write-Host "WindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
 Write-Host "WindowsSdkVersion: $($nativeBuildRuntime.WindowsSdkVersion)"
-Write-Host 'Configuring PNPM lifecycle shell for boxed CMD...'
-pnpm config set --location=project scriptShell "$cmdExe"
+Write-Host 'Configuring PNPM lifecycle shell for boxed Git Bash...'
+pnpm config set --location=project scriptShell "$bashExe"
 
 Write-Host 'Running clean pnpm install...'
 pnpm install

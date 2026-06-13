@@ -35,130 +35,82 @@ The cross-cutting shell-selection write-ups live here:
 - `docs\cli\shell\general.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 
-## Historical fallback: Git Bash
+## Current install-lane decision
 
-Git Bash was the earlier validated workaround for parts of the boxed PNPM lifecycle problem.
+For `pnpm install` and `pnpm` clean reinstall, the current preferred lifecycle lane is explicit box-local Git Bash.
 
-That historical sequence was:
+Representative contract:
 
 ```powershell
-$bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\bin\bash.exe'
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
 if (-not (Test-Path -LiteralPath $bashExe)) {
-  $bashExe = Join-Path $env:BOXED_LOCAL_TOOLCHAIN_ROOT 'git\2.54.0\usr\bin\bash.exe'
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
 }
 
 if (-not (Test-Path -LiteralPath $bashExe)) {
-  throw 'Local boxed Bash executable not found.'
+  throw 'Local boxed Git Bash executable not found.'
 }
 
 pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 ```
 
-That path is still important historically and Git Bash remains an explicit alternative shell lane.
+This does **not** mean that Git Bash is the only valid shell in the boxed-owned-toolchain method.
 
-However, it is **no longer** the preferred productive PNPM contract for the boxed-owned-toolchain architecture.
+It means only that the lifecycle surface inside `pnpm install` / clean reinstall is currently healthier on explicit Git Bash than on the boxed-CMD lane.
 
-## Current preferred productive contract
+## Why Git Bash is preferred here
 
-The current preferred productive path is:
+The current repository evidence and handoff chain support this interpretation:
 
-1. boxed PowerShell stays the preferred interactive VS Code shell
-2. boxed `cmd.exe` becomes the productive PNPM lifecycle and child-process lane
-3. bootstrap projects that lane explicitly through `ComSpec` / `COMSPEC`
-4. project-owned install scripts set PNPM `scriptShell` to the boxed CMD binary
+- boxed PowerShell was already not the validated generic lifecycle lane
+- boxed `cmd.exe` remains useful interactively and as an explicit helper lane
+- but using boxed `cmd.exe` as the primary PNPM lifecycle shell pushed the install path toward shell-oriented hangs and manual recovery patterns
+- the realistic boxed-CMD escape hatch is to suppress lifecycle/postinstall work broadly and replay required steps manually
+- that is not the preferred architecture because it turns the project into a custom lifecycle orchestrator
+- Git Bash lets the normal lifecycle run much further and narrows the remaining failures to smaller package/runtime-specific follow-up surfaces
 
-### Bootstrap-owned `COMSPEC` / `ComSpec` contract
+## What boxed CMD means now
 
-The current productive bootstrap contract is:
+Boxed `cmd.exe` is **not** removed from the architecture.
 
-```powershell
-$boxedComSpec = $windowsShellRuntime.CmdExe
-if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
-  throw 'Local boxed CMD executable not found for ComSpec override.'
-}
+It still matters for:
 
-$env:ComSpec = $boxedComSpec
-$env:COMSPEC = $boxedComSpec
-$env:BOXED_COMSPEC = $boxedComSpec
-```
+- bootstrap-owned `ComSpec` / `COMSPEC` on separate Windows child-process surfaces
+- `Initialize-NodeGypWindowsBuildEnvironment` via boxed `cmd.exe`
+- cleanup fallback in uninstall scripts
+- explicit CMD terminal profiles
 
-This code belongs in the shared bootstrap entrypoints, not in ad hoc terminal overrides.
+But as the **primary** PNPM install/reinstall lane it is now treated as:
 
-### Project-owned install-script contract
+- diagnostic or fallback-only
+- only realistically viable if lifecycle/postinstall steps are suppressed and replayed explicitly
+- therefore **not** the preferred lifecycle contract
 
-The current productive install-script contract is:
+## Current expected post-install interpretation
 
-```powershell
-if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
-  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
-}
+Git Bash is the preferred install/reinstall lane, but it is not a blanket green guarantee.
 
-$cmdExe = $env:BOXED_CMD_EXE
-if (-not (Test-Path -LiteralPath $cmdExe)) {
-  throw 'Local boxed CMD executable not found.'
-}
+The current documented follow-up surfaces are:
 
-pnpm config set --location=project scriptShell "$cmdExe"
-pnpm install
-```
+- optional/native packages such as `cpu-features`, `canvas`, `msgpackr-extract`, and `lmdb` can still surface as skipped or require separate verification
+- Electron can still end in a partially materialized state and must then be verified and repaired explicitly
 
-The clean-reinstall flow uses the same `scriptShell` contract before it runs the reinstall.
+That is still a better failure class than boxed CMD, because the generic lifecycle has run and the remaining work is narrower and traceable.
 
-### Why boxed CMD is the preferred productive lane
+## Relationship to `ComSpec` / `COMSPEC`
 
-The current architectural preference is boxed CMD because it is the only lane that was fully validated across the productive PNPM command surfaces:
+The bootstrap-owned `ComSpec` / `COMSPEC` contract remains a **separate** Windows child-process surface.
 
-- `COMSPEC` / `ComSpec` pointing to boxed CMD succeeded
-- `pnpm exec nx --version` succeeded in a fresh boxed session
-- `pnpm exec tsx --version` succeeded from the actual target working directory
-- `pnpm exec tsx tooling/run/cli.ts --help` reached the application runner and returned only the expected CLI-schema validation output
+It can still point to boxed `cmd.exe` for other validated command paths.
 
-By contrast, a fresh boxed session with:
+PNPM lifecycle execution does **not** have to inherit that same lane, because project-owned `scriptShell` takes precedence for the install/reinstall surface.
 
-- `COMSPEC` / `ComSpec` pointing to boxed PowerShell
-
-failed immediately on `pnpm exec` with a PowerShell command-resolution / module-loading error.
-
-That means:
-
-- boxed PowerShell remains the preferred **interactive** shell
-- boxed CMD is the preferred **productive PNPM lifecycle and child-process** lane
-
-## Current validated fresh-session proof
-
-After the shared bootstrap and project install scripts were aligned to boxed CMD, a fresh boxed project terminal validated:
-
-```powershell
-$env:COMSPEC
-$env:ComSpec
-pnpm config get scriptShell
-pnpm exec nx --version
-
-Set-Location .\apps\test-tooling
-pnpm exec tsx --version
-pnpm exec tsx tooling/run/cli.ts --help
-```
-
-Validated interpretation:
-
-- `COMSPEC` and `ComSpec` both resolved to the boxed CMD executable
-- `scriptShell` resolved to the boxed CMD executable
-- `pnpm exec nx --version` was green
-- `pnpm exec tsx --version` was green in the target working directory
-- `pnpm exec tsx tooling/run/cli.ts --help` reached the runner and failed only with the expected command-schema validation message
-
-That is the current proof that the Git-Bash-based productive contract is no longer the active PNPM blocker.
-
-## Git Bash still remains available
-
-Git Bash is still a supported alternative shell lane.
-
-That matters for:
-
-- explicit Git Bash profiles in VS Code
-- shell-native wrapper testing
-- compatibility experiments that specifically need Bash semantics
+## Git Bash command-surface requirements
 
 If Git Bash is selected directly, the boxed-owned-toolchain contract still requires:
 
@@ -172,8 +124,6 @@ Without that, Git Bash can still show:
 bash: pnpm: command not found
 ```
 
-So Git Bash remains available, but it is no longer the preferred productive PNPM lifecycle lane.
-
 ## Why `--location=project` matters
 
 The `scriptShell` setting is written at project scope so that:
@@ -185,6 +135,8 @@ The `scriptShell` setting is written at project scope so that:
 ## Important nuance: `pnpm exec`
 
 `pnpm exec` remains a separate proof surface from plain lifecycle execution.
+
+Returning install/reinstall to Git Bash does **not** by itself settle every broader `pnpm exec` / Nx / child-process lane.
 
 That is exactly why the current contract had to be proven with:
 

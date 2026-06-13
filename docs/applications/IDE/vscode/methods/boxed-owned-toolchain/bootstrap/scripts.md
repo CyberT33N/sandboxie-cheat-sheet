@@ -115,6 +115,10 @@ These helpers are what make local runtime mirroring practical without forcing ev
 
 This is the governed Microsoft build-source projection adapter.
 
+The detailed platform-toolchain source of truth is no longer owned by the VS Code bootstrap document. It now lives here:
+
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\microsoft-build-projection.md`
+
 Current responsibilities:
 
 - validate the shared `vswhere.exe`, Visual Studio Build Tools, Windows Kits, and `.NET Framework` source roots
@@ -151,6 +155,15 @@ Verified current outcomes:
 
 This is the governed Node/Git/PNPM runtime adapter.
 
+Important ownership split:
+
+- `Bootstrap.Node.psm1` owns how Node/PNPM/bootstrap consume the Microsoft build-toolchain
+- it does **not** own the Microsoft build-toolchain domain itself
+- the platform/toolchain truth for Microsoft Build and `.NET Framework` projection now lives in:
+  - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\overview.md`
+  - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\microsoft-build-projection.md`
+  - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\dotnet-framework-projection.md`
+
 Current responsibilities:
 
 - validate the shared Git / Node / PNPM surfaces
@@ -174,6 +187,11 @@ Current responsibilities:
 - prepend the correct local runtime paths into `PATH`
 - publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
 - keep that productive child-process contract aligned to the preferred boxed `cmd.exe` lane
+
+Important scope boundary:
+
+- that boxed-CMD child-process contract does **not** force PNPM install/reinstall to use CMD as the lifecycle `scriptShell`
+- the current project-owned PNPM install surfaces explicitly switch that one lifecycle lane back to Git Bash
 
 Representative current contract:
 
@@ -490,6 +508,13 @@ Current behavior:
 - publishes explicit boxed helper lanes including `BOXED_REG_EXE`
 - sets local temp/Nx environment state
 - sets the productive boxed-CMD child-process contract
+
+That does **not** mean every project-owned package-manager lifecycle surface must also run on CMD.
+
+The current PNPM install and clean-reinstall scripts keep using:
+
+- boxed `cmd.exe` for helper duties such as `VsDevCmd.bat` import
+- but box-local Git Bash as the preferred lifecycle `scriptShell`
 
 ## Why this changed
 

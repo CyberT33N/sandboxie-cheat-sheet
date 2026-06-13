@@ -24,10 +24,16 @@ It defines:
 ### Host-sync modules
 
 - `docs\applications\programming-languages\python\architectures\host-sync\dev-python-build-helper.md`
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\visual-studio-build-tools.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\install-box-config.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\commands.md`
+
+### Cross-domain Microsoft build infrastructure
+
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\general.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\overview.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\overview.md`
 
 ### Generic baselines that remain the source of truth
 

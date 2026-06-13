@@ -86,12 +86,24 @@ if (-not (Test-Path -LiteralPath $uninstallScript)) {
 
 & $uninstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
 
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Git Bash executable not found.'
+}
+
 if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
   throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$cmdExe = $env:BOXED_CMD_EXE
-if (-not (Test-Path -LiteralPath $cmdExe)) {
+if (-not (Test-Path -LiteralPath $env:BOXED_CMD_EXE)) {
   throw 'Local boxed CMD executable not found.'
 }
 
@@ -103,13 +115,13 @@ $nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
 Set-Location $resolvedRepoPath
 
 Write-Host "RepoPath: $resolvedRepoPath"
-Write-Host "ScriptShell: $cmdExe"
+Write-Host "LifecycleShell: $bashExe"
 Write-Host "VsRoot: $($nativeBuildRuntime.VSRoot)"
 Write-Host "VsDevCmd: $($nativeBuildRuntime.VsDevCmd)"
 Write-Host "WindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
 Write-Host "WindowsSdkVersion: $($nativeBuildRuntime.WindowsSdkVersion)"
-Write-Host 'Configuring PNPM lifecycle shell for boxed CMD...'
-pnpm config set --location=project scriptShell "$cmdExe"
+Write-Host 'Configuring PNPM lifecycle shell for boxed Git Bash...'
+pnpm config set --location=project scriptShell "$bashExe"
 
 Write-Host 'Running clean pnpm install...'
 pnpm install
@@ -134,13 +146,18 @@ exit $LASTEXITCODE
 
 The clean-reinstall path now matches the productive boxed-owned-toolchain PNPM contract:
 
-- bootstrap owns the boxed-CMD `COMSPEC` / `ComSpec` lane
 - bootstrap publishes the boxed `node-gyp` wrapper surface
 - the project-owned script initializes the boxed Windows native-build helper before the reinstall
-- the project-owned script sets `scriptShell` to boxed `cmd.exe`
+- the project-owned script sets `scriptShell` to boxed Git Bash
 - the reinstall happens inside the normal project bootstrap context
 
-Git Bash remains an available alternative shell lane, but it is not the preferred productive clean-reinstall contract anymore.
+Boxed `cmd.exe` remains relevant for:
+
+- the boxed `VsDevCmd` import inside the native-build helper
+- cleanup fallback in the uninstall helper
+- separate Windows child-process surfaces outside the install/reinstall lifecycle lane
+
+But the clean-reinstall contract itself now deliberately returns to Git Bash as the preferred lifecycle shell, because the boxed-CMD-only path otherwise collapses toward postinstall suppression and manual replay.
 
 ## Expected next validation step
 

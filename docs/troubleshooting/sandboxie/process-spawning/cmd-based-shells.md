@@ -186,9 +186,9 @@ Any application, framework, or runtime can be affected if it:
 
 In validated boxed-owned-toolchain testing, there was an important split:
 
-- the historical Git-Bash-based `scriptShell` path was one intermediate workaround
-- the preferred productive contract later moved to boxed `cmd.exe` for both `COMSPEC` and project-owned PNPM `scriptShell`
-- `pnpm exec ...` remained a separate proof surface that had to be revalidated after that change
+- the historical Git-Bash-based `scriptShell` path is now again the preferred PNPM install/reinstall lifecycle lane
+- boxed `cmd.exe` still remains relevant as an explicit Windows helper lane and for separate bootstrap-owned child-process contracts
+- `pnpm exec ...` remains a separate proof surface that must not be conflated with the install/reinstall lifecycle lane
 
 There was also a second shell-surface nuance in the integrated Git Bash terminal:
 

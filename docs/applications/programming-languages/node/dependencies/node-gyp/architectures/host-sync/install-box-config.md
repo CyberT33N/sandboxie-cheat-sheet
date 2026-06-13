@@ -124,5 +124,5 @@ Replace that path with your real monorepo root when applying the config.
 ## Related documents
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\visual-studio-build-tools.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\visual-studio-build-tools.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\commands.md`

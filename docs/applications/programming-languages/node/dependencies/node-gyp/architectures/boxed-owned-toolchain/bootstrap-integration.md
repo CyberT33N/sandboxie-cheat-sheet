@@ -177,12 +177,24 @@ The current project-owned PNPM install script now explicitly opts into the `node
 ```powershell
 & $launcher -Action OpenTerminal -RepoPath $RepoPath
 
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Git Bash executable not found.'
+}
+
 if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
   throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
 }
 
-$cmdExe = $env:BOXED_CMD_EXE
-if (-not (Test-Path -LiteralPath $cmdExe)) {
+if (-not (Test-Path -LiteralPath $env:BOXED_CMD_EXE)) {
   throw 'Local boxed CMD executable not found.'
 }
 
@@ -196,7 +208,8 @@ Write-Host "ProjectedVsRoot: $($nativeBuildRuntime.VSRoot)"
 Write-Host "ProjectedWindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
 Write-Host "ProjectedDotNetFramework64Csc: $($nativeBuildRuntime.DotNetFramework64CscExe)"
 
-pnpm config set --location=project scriptShell "$cmdExe"
+Write-Host "LifecycleShell: $bashExe"
+pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 ```
 
@@ -207,6 +220,8 @@ Architecturally important nuance:
 - the project script does **not** patch `node-gyp` in `node_modules`
 - the project script enters the normal boxed bootstrap
 - the bootstrap-published `node-gyp` command surface and `npm_config_node_gyp` metadata then carry the wrapper behavior into native build flows
+- the native-build helper still uses boxed `cmd.exe` for `VsDevCmd.bat` import
+- but the PNPM lifecycle itself returns to Git Bash as the preferred install shell
 
 ## Project-owned clean-reinstall integration
 
@@ -215,6 +230,27 @@ The current clean-reinstall script also opts into the same helper before the fre
 ```powershell
 $uninstallScript = Join-Path $PSScriptRoot 'Start-TestMonoPnpmUninstall.ps1'
 & $uninstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
+
+if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
+  throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
+}
+
+$bashExe = Join-Path $env:BOXED_GIT_ROOT 'bin\bash.exe'
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  $bashExe = Join-Path $env:BOXED_GIT_ROOT 'usr\bin\bash.exe'
+}
+
+if (-not (Test-Path -LiteralPath $bashExe)) {
+  throw 'Local boxed Git Bash executable not found.'
+}
+
+if ([string]::IsNullOrWhiteSpace($env:BOXED_CMD_EXE)) {
+  throw 'BOXED_CMD_EXE was not initialized by project bootstrap.'
+}
+
+if (-not (Test-Path -LiteralPath $env:BOXED_CMD_EXE)) {
+  throw 'Local boxed CMD executable not found.'
+}
 
 $nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
   -CmdExe $env:BOXED_CMD_EXE `
@@ -226,7 +262,8 @@ Write-Host "VsDevCmd: $($nativeBuildRuntime.VsDevCmd)"
 Write-Host "WindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
 Write-Host "WindowsSdkVersion: $($nativeBuildRuntime.WindowsSdkVersion)"
 Write-Host "ProjectedDotNetFramework64Csc: $($nativeBuildRuntime.DotNetFramework64CscExe)"
-pnpm config set --location=project scriptShell "$cmdExe"
+Write-Host "LifecycleShell: $bashExe"
+pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 ```
 

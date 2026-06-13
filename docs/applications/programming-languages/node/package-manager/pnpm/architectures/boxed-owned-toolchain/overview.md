@@ -35,10 +35,29 @@ The current boxed-owned-toolchain PNPM reference truth is:
 2. project-selected PNPM version via the project bootstrap contract
 3. local mirrored command surface from bootstrap
 4. default per-box PNPM store
-5. boxed `cmd.exe` as the preferred productive lifecycle and child-process shell lane
-6. boxed Git Bash as an explicit alternative compatibility lane
+5. boxed Git Bash as the preferred PNPM install/reinstall lifecycle shell lane
+6. boxed `cmd.exe` as an explicit helper lane for native-build preparation, cleanup fallback, and separate Windows child-process contracts
 7. project-owned host-triggered install / clean-reinstall scripts
 8. no shared PNPM store as the default baseline
+
+## Current install-lane interpretation
+
+The current architecture distinction is:
+
+- boxed PowerShell remains the preferred interactive terminal profile
+- boxed `cmd.exe` remains a valid explicit Windows shell/helper lane
+- boxed Git Bash is the preferred `pnpm install` / clean-reinstall lifecycle lane
+
+Why this changed:
+
+- the boxed-CMD-only install path pushed lifecycle recovery toward postinstall suppression and manual replay
+- that is not the preferred package-manager architecture
+- Git Bash lets the generic lifecycle run much further and keeps the remaining failures narrower and package-specific
+
+That narrower follow-up surface currently includes:
+
+- optional/native packages such as `cpu-features`, `canvas`, `msgpackr-extract`, and `lmdb`
+- Electron runtime materialization checks after install
 
 ## Domain map
 
@@ -61,8 +80,8 @@ Owns:
 Owns:
 
 - the validated Sandboxie lifecycle-shell failure class
-- the preferred boxed-CMD bootstrap contract
-- the historical Git-Bash fallback
+- the preferred Git-Bash lifecycle contract for install/reinstall
+- why boxed `cmd.exe` is no longer the preferred install lane
 - Git Bash command-name resolution requirements
 - `pnpm exec` as a separate failure surface
 

@@ -1,98 +1,23 @@
 # Microsoft Visual Studio Build Tools
 
-## Architectural status
+## Compatibility note
 
-In the current validated host-sync `node-gyp` architecture, Microsoft Visual Studio Build Tools and Windows SDK are **host-provided**.
+The detailed host-sync source of truth for Microsoft Visual Studio Build Tools and Windows SDK has been moved into the Windows platform/toolchain domain:
 
-That means:
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\visual-studio-build-tools.md`
 
-- they remain installed on the host system
-- the install box consumes them through explicit Sandboxie visibility rules
-- the install-box shell must bootstrap the Visual Studio developer environment before `node-gyp` runs
+This `node-gyp` path remains only as a compatibility landing page because `node-gyp` consumes that infrastructure, but it no longer owns it.
 
-This is the current validated baseline for this repository.
+## What still belongs to `node-gyp`
 
-The explored alternative where Microsoft Build Tools should be installed from inside the sandbox is documented here:
+`node-gyp` still owns:
 
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
+- how the host-sync install shell consumes the Microsoft build-toolchain surface
+- how that environment is used before `node-gyp configure` / `node-gyp rebuild`
 
-That alternative is currently not validated. The host-provided method described on this page remains the preferred baseline.
+But the Microsoft build-toolchain itself now lives in the dedicated Windows build-toolchain area above.
 
-## Why the host provides these tools in the validated baseline
+## Related
 
-Compared to the central shared Python binary, Microsoft build tools are a much heavier Windows toolchain boundary:
-
-- `vswhere.exe`
-- `VsDevCmd.bat`
-- `MSBuild.exe`
-- `cl.exe`
-- `link.exe`
-- `lib.exe`
-- Windows SDK include/lib/bin trees
-- installer-managed and registry-backed discovery state
-
-For that reason, the currently validated `node-gyp` workflow in this repository uses the host-installed Build Tools instead of a mirrored portable copy under the shared toolchain root.
-
-## Required host checks
-
-Run these checks inside the install box after the relevant host paths are visible:
-
-```powershell
-$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-
-Test-Path $vswhere
-& $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-Test-Path "C:\Program Files\Microsoft Visual Studio"
-Test-Path "C:\Program Files (x86)\Windows Kits\10"
-```
-
-Expected result:
-
-- `vswhere.exe` exists
-- a valid Build Tools installation path is returned
-- the Windows SDK root exists
-
-## Bootstrap the Visual Studio build environment
-
-Run this in every new install-box shell before `node-gyp configure` / `node-gyp rebuild`:
-
-```powershell
-$vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-$vsRoot  = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-$vsDevCmd = Join-Path $vsRoot "Common7\Tools\VsDevCmd.bat"
-
-cmd /c "`"$vsDevCmd`" -arch=x64 -host_arch=x64 && set" |
-ForEach-Object {
-    if ($_ -match '^(.*?)=(.*)$') {
-        Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
-    }
-}
-
-Write-Host "VCINSTALLDIR = $env:VCINSTALLDIR"
-Get-Command cl.exe
-Get-Command msbuild.exe
-```
-
-Expected result:
-
-- `VCINSTALLDIR` is set
-- `cl.exe` resolves
-- `msbuild.exe` resolves
-
-## Why this bootstrap is required
-
-During validation, `node-gyp` could still fail with:
-
-```text
-VCINSTALLDIR not set, not running in VS Command Prompt
-Could not find any Visual Studio installation to use
-```
-
-even when the host Build Tools were installed and visible in the box.
-
-Importing the `VsDevCmd.bat` environment in the current shell fixed that failure mode.
-
-## Related documents
-
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\install-box-config.md`
-- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\commands.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\host-sync\overview.md`
+- `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\general.md`
