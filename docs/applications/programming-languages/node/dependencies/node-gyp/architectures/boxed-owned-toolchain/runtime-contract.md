@@ -31,7 +31,12 @@ The current helper accepts these key inputs:
 $null = Initialize-NodeGypWindowsBuildEnvironment `
   -CmdExe $env:BOXED_CMD_EXE `
   -RegExe $env:BOXED_REG_EXE `
-  -PythonExe $env:BOXED_PYTHON_EXE
+  -PythonExe $env:BOXED_PYTHON_EXE `
+  -VsWhereExe $env:BOXED_SHARED_VSWHERE_EXE `
+  -VisualStudioRoot $env:BOXED_SHARED_VISUAL_STUDIO_ROOT `
+  -WindowsSdkRoot $env:BOXED_SHARED_WINDOWS_SDK_ROOT `
+  -DotNetFrameworkRoot $env:BOXED_SHARED_DOTNET_FRAMEWORK_ROOT `
+  -DotNetFramework64Root $env:BOXED_SHARED_DOTNET_FRAMEWORK64_ROOT
 ```
 
 Current behavior:
@@ -39,46 +44,68 @@ Current behavior:
 - `CmdExe` is the explicit local helper lane used to import `VsDevCmd.bat`
 - `RegExe` is the explicit local registry helper lane available to the build environment
 - `PythonExe` is the boxed shared Python helper mirrored into the project execution tree
+- `VsWhereExe` is the governed shared `vswhere.exe` source path that bootstrap projects into the canonical Visual Studio installer path inside the box
+- `VisualStudioRoot` is the governed shared Visual Studio Build Tools source root that bootstrap projects into `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\...`
+- `WindowsSdkRoot` is the governed shared Windows Kits source root that bootstrap projects into `C:\Program Files (x86)\Windows Kits\10\...`
+- `DotNetFrameworkRoot` / `DotNetFramework64Root` are the governed shared compiler-source paths which the helper projects into `C:\Windows\Microsoft.NET\...` inside the box
 
 ## Visual Studio discovery contract
 
-The helper currently searches known Visual Studio 2022 roots directly:
+The helper now starts from governed shared Microsoft build sources and projects them into the canonical Windows paths inside the box:
 
-```powershell
-[string[]]$VisualStudioRootCandidates = @(
-  'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools',
-  'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community',
-  'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional',
-  'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise'
-)
+```text
+C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe
+C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\...
+C:\Program Files (x86)\Windows Kits\10\...
 ```
 
-It then resolves:
+That means:
 
-- `VSRoot`
-- `VsDevCmd`
-
-from the first candidate that contains:
-
-- `Common7\Tools\VsDevCmd.bat`
+- tools that hard-code `vswhere.exe` or `VsDevCmd.bat` still see the expected Windows path
+- the boxed helper lane executes those projected paths instead of direct host paths
+- `VSRoot` and `VsDevCmd` resolve from the projected Visual Studio tree
 
 ## Developer-environment import contract
 
-When `CmdExe` and `VsDevCmd.bat` are present, the helper imports the Visual Studio developer environment through the boxed local CMD lane:
+When `CmdExe` and `VsDevCmd.bat` are present, the helper imports the Visual Studio developer environment through the boxed local CMD lane.
+
+The current implementation uses a generated temporary CMD bridge so the helper can:
+
+- call `VsDevCmd.bat`
+- capture the resulting environment explicitly
+- rehydrate the selected variables back into the PowerShell session
+
+Representative current behavior:
 
 ```powershell
-& $CmdExe /d /c "`"$vsDevCmd`" -arch=x64 -host_arch=x64 && set" 2>$null |
-  ForEach-Object {
-    if ($_ -match '^(.*?)=(.*)$') {
-      Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
-    }
+$vsEnvVariables = @(
+  'VCINSTALLDIR',
+  'VCToolsInstallDir',
+  'VSINSTALLDIR',
+  'WindowsSdkDir',
+  'WindowsSDKVersion',
+  'WindowsSDKLibVersion',
+  'UCRTVersion',
+  'UniversalCRTSdkDir',
+  'Path',
+  'INCLUDE',
+  'LIB',
+  'LIBPATH'
+)
+
+$vsEnvImportOutput = & $CmdExe /d /c "`"$vsEnvImportScript`" `"$vsDevCmd`"" 2>$null
+
+foreach ($line in $vsEnvImportOutput) {
+  if ($line -match '^BOXED_ENV_([^=]+)=(.*)$') {
+    Set-Item -Path "Env:$($matches[1])" -Value $matches[2]
   }
+}
 ```
 
 This is the current boxed-owned-toolchain bridge between:
 
 - local mirrored shell/runtime surfaces
-- and host-provided Microsoft build infrastructure
+- and the projected canonical Microsoft build-tool paths inside the box
 
 ## Python environment contract
 
@@ -92,6 +119,26 @@ $env:npm_config_python = $PythonExe
 
 That keeps Python selection explicit for direct `node-gyp` usage and for install/reinstall flows that may auto-trigger native builds.
 
+## Microsoft .NET Framework projection contract
+
+When the shared `.NET Framework` compiler roots are present, the helper projects them into the hard-coded runtime paths that PowerShell `Add-Type` / `buildcheck` expect:
+
+```text
+C:\Windows\Microsoft.NET\Framework\v4.0.30319
+C:\Windows\Microsoft.NET\Framework64\v4.0.30319
+```
+
+Current behavior:
+
+- source of truth stays in `C:\shared\sandbox-toolchains\dev\shells\dotnet-framework\...`
+- bootstrap copies the full tree into the boxed `C:\Windows\Microsoft.NET\...` surface
+- the projected framework directories are prepended into `PATH`
+- helper metadata is published through:
+  - `BOXED_DOTNET_FRAMEWORK_ROOT`
+  - `BOXED_DOTNET_FRAMEWORK64_ROOT`
+  - `BOXED_DOTNET_FRAMEWORK_CSC_EXE`
+  - `BOXED_DOTNET_FRAMEWORK64_CSC_EXE`
+
 ## Windows SDK environment contract
 
 The helper resolves the newest SDK version from:
@@ -99,6 +146,17 @@ The helper resolves the newest SDK version from:
 ```text
 C:\Program Files (x86)\Windows Kits\10\Lib
 ```
+
+The current boxed projection also includes the Windows SDK DesignTime metadata path required by MSBuild:
+
+```text
+C:\Program Files (x86)\Windows Kits\10\DesignTime\CommonConfiguration\Neutral
+```
+
+Verified required files there include:
+
+- `uCRT.props`
+- `UAP\<version>\UAP.props`
 
 Then it normalizes these environment variables when missing or malformed:
 
@@ -140,10 +198,15 @@ into `PATH` when present, so tools such as `rc.exe` and `mt.exe` resolve in the 
 
 The helper publishes these metadata values:
 
+- `BOXED_VSWHERE_EXE`
 - `BOXED_VSROOT`
 - `BOXED_VSDEVCMD`
 - `BOXED_WINDOWS_SDK_ROOT`
 - `BOXED_WINDOWS_SDK_VERSION`
+- `BOXED_DOTNET_FRAMEWORK_ROOT`
+- `BOXED_DOTNET_FRAMEWORK64_ROOT`
+- `BOXED_DOTNET_FRAMEWORK_CSC_EXE`
+- `BOXED_DOTNET_FRAMEWORK64_CSC_EXE`
 
 And the broader boxed bootstrap already publishes:
 
@@ -151,8 +214,29 @@ And the broader boxed bootstrap already publishes:
 - `BOXED_POWERSHELL_EXE`
 - `BOXED_REG_EXE`
 - `BOXED_PYTHON_EXE`
+- `BOXED_SHARED_VSWHERE_EXE`
+- `BOXED_SHARED_VISUAL_STUDIO_ROOT`
+- `BOXED_SHARED_WINDOWS_SDK_ROOT`
+- `BOXED_SHARED_DOTNET_FRAMEWORK_ROOT`
+- `BOXED_SHARED_DOTNET_FRAMEWORK64_ROOT`
 
 Together those variables form the current boxed-owned-toolchain `node-gyp` runtime contract.
+
+## Verified helper result
+
+The following helper result is already runtime-verified in the boxed project shell:
+
+- `VCINSTALLDIR` is populated
+- `VCToolsInstallDir` is populated
+- `VSINSTALLDIR` is populated
+- `WindowsSdkDir` is populated
+- `WindowsSDKVersion` is populated
+- `Get-Command cl.exe` succeeds
+- `Get-Command msbuild.exe` succeeds
+- `Get-Command rc.exe` succeeds
+- `Get-Command mt.exe` succeeds
+- `Get-Command csc.exe` succeeds
+- `Get-Command cvtres.exe` succeeds
 
 ## Current direct-use posture
 

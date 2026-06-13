@@ -16,17 +16,34 @@ It documents:
 The current live shared implementation surfaces are:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\core\Bootstrap.Common.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\microsoft-build\Bootstrap.MicrosoftBuild.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\dotnet-framework\Bootstrap.DotNetFramework.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1`
-- `C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Project.Config.ps1`
-- `C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoPnpmInstall.ps1`
-- `C:\shared\sandbox-toolchains\projects\privadent-mono\bootstrap\Start-PrivadentMonoPnpmCleanReinstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmInstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1`
 
 ## Sanitized project adapter contract
 
-The sanitized project adapter now includes an explicit local `reg.exe` lane:
+The sanitized project adapter now includes both:
+
+- explicit local helper lanes
+- explicit shared Microsoft build-source roots
+
+```powershell
+MicrosoftBuild = @{
+  VsWhereExe = Join-Path $devRoot 'shells\vs-installer\3.1.7\vswhere.exe'
+  VisualStudioRoot = Join-Path $devRoot 'shells\visual-studio\2022\BuildTools'
+  WindowsSdkRoot = Join-Path $devRoot 'shells\windows-kits\10'
+  DotNetFrameworkRoot = Join-Path $devRoot 'shells\dotnet-framework\Framework\v4.0.30319'
+  DotNetFramework64Root = Join-Path $devRoot 'shells\dotnet-framework\Framework64\v4.0.30319'
+}
+```
+
+It also includes an explicit local `reg.exe` lane:
 
 ```powershell
 Shells = @{
@@ -56,6 +73,11 @@ $parameters = @{
   NodeRoot = $config.Toolchain.NodeRoot
   PnpmCli = $config.Toolchain.PnpmCli
   PythonRoot = $config.Toolchain.PythonRoot
+  VsWhereExe = $config.MicrosoftBuild.VsWhereExe
+  VisualStudioRoot = $config.MicrosoftBuild.VisualStudioRoot
+  WindowsSdkRoot = $config.MicrosoftBuild.WindowsSdkRoot
+  DotNetFrameworkRoot = $config.MicrosoftBuild.DotNetFrameworkRoot
+  DotNetFramework64Root = $config.MicrosoftBuild.DotNetFramework64Root
   CmdRoot = $config.Shells.CmdRoot
   PowerShellRoot = $config.Shells.PowerShellRoot
   RegRoot = $config.Shells.RegRoot
@@ -108,22 +130,23 @@ function Initialize-NodeGypWindowsBuildEnvironment {
     [string]$CmdExe,
     [string]$RegExe,
     [string]$PythonExe,
-    [string]$WindowsSdkRoot = 'C:\Program Files (x86)\Windows Kits\10',
-    [string[]]$VisualStudioRootCandidates = @(
-      'C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools',
-      'C:\Program Files (x86)\Microsoft Visual Studio\2022\Community',
-      'C:\Program Files (x86)\Microsoft Visual Studio\2022\Professional',
-      'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise'
-    )
+    [string]$VsWhereExe = $env:BOXED_SHARED_VSWHERE_EXE,
+    [string]$VisualStudioRoot = $env:BOXED_SHARED_VISUAL_STUDIO_ROOT,
+    [string]$WindowsSdkRoot = $env:BOXED_SHARED_WINDOWS_SDK_ROOT,
+    [string]$DotNetFrameworkRoot = $env:BOXED_SHARED_DOTNET_FRAMEWORK_ROOT,
+    [string]$DotNetFramework64Root = $env:BOXED_SHARED_DOTNET_FRAMEWORK64_ROOT
   )
 }
 ```
 
 This helper is responsible for:
 
+- projecting governed `vswhere.exe`, Visual Studio Build Tools, and Windows Kits sources into their canonical Windows paths inside the box
 - importing `VsDevCmd.bat` through boxed `cmd.exe`
 - binding the boxed Python helper into the active shell
+- projecting the shared `.NET Framework` compiler tree into `C:\Windows\Microsoft.NET\...`
 - normalizing Windows SDK environment values
+- ensuring the projected Windows Kits surface includes `DesignTime\CommonConfiguration\Neutral`
 - prepending the Windows SDK `bin\<version>\x64` path
 - publishing helper metadata back into the shell
 
@@ -143,10 +166,15 @@ if (-not (Test-Path -LiteralPath $cmdExe)) {
   throw 'Local boxed CMD executable not found.'
 }
 
-$null = Initialize-NodeGypWindowsBuildEnvironment `
+$nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
   -CmdExe $env:BOXED_CMD_EXE `
   -RegExe $env:BOXED_REG_EXE `
   -PythonExe $env:BOXED_PYTHON_EXE
+
+Write-Host "ProjectedVsWhereExe: $($nativeBuildRuntime.VsWhereExe)"
+Write-Host "ProjectedVsRoot: $($nativeBuildRuntime.VSRoot)"
+Write-Host "ProjectedWindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
+Write-Host "ProjectedDotNetFramework64Csc: $($nativeBuildRuntime.DotNetFramework64CscExe)"
 
 pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install
@@ -168,11 +196,24 @@ Write-Host "VsRoot: $($nativeBuildRuntime.VSRoot)"
 Write-Host "VsDevCmd: $($nativeBuildRuntime.VsDevCmd)"
 Write-Host "WindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
 Write-Host "WindowsSdkVersion: $($nativeBuildRuntime.WindowsSdkVersion)"
+Write-Host "ProjectedDotNetFramework64Csc: $($nativeBuildRuntime.DotNetFramework64CscExe)"
 pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install
 ```
 
 This keeps the native-build preparation explicit in the project-owned reinstall surface instead of mutating the generic project bootstrap path.
+
+## Verified runtime evidence
+
+The following integration points are already verified from the boxed project shell:
+
+- `vswhere.exe` resolves from the projected boxed installer path
+- `VsDevCmd.bat` resolves from the projected boxed Visual Studio tree
+- `VCINSTALLDIR`, `VCToolsInstallDir`, and `VSINSTALLDIR` are imported into PowerShell
+- `WindowsSdkDir` and `WindowsSDKVersion` are imported into PowerShell
+- `cl.exe`, `MSBuild.exe`, `rc.exe`, and `mt.exe` resolve after helper execution
+- `csc.exe` and `cvtres.exe` resolve after `.NET Framework` projection
+- boxed PowerShell `Add-Type` succeeds against the projected `.NET Framework` compiler chain
 
 ## Common bootstrap fallback that now matters here
 

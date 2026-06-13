@@ -21,34 +21,92 @@ The current boxed-owned-toolchain implementation now includes:
    - boxed `cmd.exe`
    - boxed Windows PowerShell
    - boxed `reg.exe`
-3. project bootstrap exports for those lanes and runtimes, including:
+3. governed shared Microsoft build sources under:
+   - `C:\shared\sandbox-toolchains\dev\shells\vs-installer\3.1.7\vswhere.exe`
+   - `C:\shared\sandbox-toolchains\dev\shells\visual-studio\2022\BuildTools\...`
+   - `C:\shared\sandbox-toolchains\dev\shells\windows-kits\10\...`
+   - `C:\shared\sandbox-toolchains\dev\shells\dotnet-framework\Framework\v4.0.30319`
+   - `C:\shared\sandbox-toolchains\dev\shells\dotnet-framework\Framework64\v4.0.30319`
+4. project bootstrap exports for those lanes and runtimes, including:
    - `BOXED_CMD_EXE`
    - `BOXED_POWERSHELL_EXE`
    - `BOXED_REG_EXE`
    - `BOXED_PYTHON_EXE`
-4. a dedicated `Initialize-NodeGypWindowsBuildEnvironment` helper in the shared Node bootstrap stack
-5. project-owned PNPM install and clean-reinstall scripts that opt into that helper before they run `pnpm install`
-6. a common bootstrap mirror fallback that avoids hard dependence on `robocopy.exe` when strict boxed child-process policy blocks it
+   - `BOXED_SHARED_VSWHERE_EXE`
+   - `BOXED_SHARED_VISUAL_STUDIO_ROOT`
+   - `BOXED_SHARED_WINDOWS_SDK_ROOT`
+   - `BOXED_SHARED_DOTNET_FRAMEWORK_ROOT`
+   - `BOXED_SHARED_DOTNET_FRAMEWORK64_ROOT`
+5. a dedicated `Initialize-NodeGypWindowsBuildEnvironment` helper in the shared Node bootstrap stack
+6. project-owned PNPM install and clean-reinstall scripts that opt into that helper before they run `pnpm install`
+7. a common bootstrap mirror fallback that avoids hard dependence on `robocopy.exe` when strict boxed child-process policy blocks it
+8. verified boxed build-environment results for:
+   - `VCINSTALLDIR`
+   - `VCToolsInstallDir`
+   - `VSINSTALLDIR`
+   - `WindowsSdkDir`
+   - `WindowsSDKVersion`
+9. verified boxed tool resolution for:
+   - `cl.exe`
+   - `MSBuild.exe`
+   - `rc.exe`
+   - `mt.exe`
+   - `csc.exe`
+   - `cvtres.exe`
+10. a verified boxed PowerShell `Add-Type` smoke-test result through the projected `.NET Framework` compiler path
 
 ## What the current helper contract already does
 
 The current helper-driven boxed-owned-toolchain `node-gyp` contract already:
 
-- resolves a supported Visual Studio root from known host installation candidates
-- resolves `VsDevCmd.bat`
+- projects the governed `vswhere.exe` source into:
+  - `C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe`
+- projects the governed Visual Studio Build Tools source into:
+  - `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\...`
+- projects the governed Windows Kits source into:
+  - `C:\Program Files (x86)\Windows Kits\10\...`
+- projects the governed Windows Kits DesignTime metadata into:
+  - `C:\Program Files (x86)\Windows Kits\10\DesignTime\CommonConfiguration\Neutral\...`
+- resolves `VsDevCmd.bat` from the projected boxed Visual Studio tree
 - imports the Visual Studio developer environment through the **boxed local `cmd.exe` lane**
 - sets:
   - `PYTHON`
   - `NODE_GYP_FORCE_PYTHON`
   - `npm_config_python`
+- projects the shared Microsoft .NET Framework compiler tree into:
+  - `C:\Windows\Microsoft.NET\Framework\v4.0.30319`
+  - `C:\Windows\Microsoft.NET\Framework64\v4.0.30319`
+- publishes the projected compiler paths back through:
+  - `BOXED_DOTNET_FRAMEWORK_ROOT`
+  - `BOXED_DOTNET_FRAMEWORK64_ROOT`
+  - `BOXED_DOTNET_FRAMEWORK64_CSC_EXE`
 - discovers the newest Windows SDK version under `C:\Program Files (x86)\Windows Kits\10\Lib`
 - normalizes Windows SDK environment variables when they are missing or malformed
 - prepends the Windows SDK `bin\<version>\x64` path into `PATH` when present
 - publishes helper metadata back into the shell through:
   - `BOXED_VSROOT`
   - `BOXED_VSDEVCMD`
+  - `BOXED_VSWHERE_EXE`
   - `BOXED_WINDOWS_SDK_ROOT`
   - `BOXED_WINDOWS_SDK_VERSION`
+
+## Verified boxed outcomes
+
+The following outcomes are already runtime-verified in the boxed project shell:
+
+- `vswhere.exe` resolves from the projected boxed Visual Studio installer path
+- `VCINSTALLDIR` resolves after helper execution
+- `VCToolsInstallDir` resolves after helper execution
+- `VSINSTALLDIR` resolves after helper execution
+- `WindowsSdkDir` resolves after helper execution
+- `WindowsSDKVersion` resolves after helper execution
+- `Get-Command cl.exe` succeeds
+- `Get-Command msbuild.exe` succeeds
+- `Get-Command rc.exe` succeeds
+- `Get-Command mt.exe` succeeds
+- `Get-Command csc.exe` succeeds
+- `Get-Command cvtres.exe` succeeds
+- boxed PowerShell `Add-Type` succeeds through the projected `.NET Framework` compiler chain
 
 ## What the current shell/helper lanes already provide
 

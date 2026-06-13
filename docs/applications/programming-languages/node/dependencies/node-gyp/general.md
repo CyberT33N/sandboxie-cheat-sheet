@@ -8,7 +8,7 @@ It defines:
 
 - the documented architecture track for `node-gyp` in governed Node monorepos
 - the current recommended host-sync overlay for host-sync VS Code / Cursor workflows
-- the split between Python provisioning, host-provided Microsoft build tools, install-box config, and build commands
+- the split between Python provisioning, boxed-owned projected Microsoft build sources, install-box config, and build commands
 
 ## Documentation map
 
@@ -48,8 +48,9 @@ The currently validated `node-gyp` posture for Node monorepos is:
 - keep daily execution in the run box
 - keep the host IDE on the host
 - provide a central shared Python build helper binary under `C:\shared\sandbox-toolchains\dev\python\...`
-- consume Microsoft Visual Studio Build Tools and Windows SDK from the host system through explicit Sandboxie visibility rules
-- bootstrap the install-box session with both the Python path and the Visual Studio developer environment before running `node-gyp`
+- provide governed shared Microsoft build sources under `C:\shared\sandbox-toolchains\dev\shells\...`
+- project those shared Microsoft build sources into the expected Windows paths inside the box during bootstrap
+- bootstrap the install-box session with both the Python path and the projected Visual Studio developer environment before running `node-gyp`
 
 The repository-wide fully validated end-to-end `node-gyp` baseline remains the documented host-sync method.
 
@@ -58,6 +59,16 @@ At the same time, the boxed-owned-toolchain architecture now has a documented **
 - implemented current bootstrap/runtime behavior
 - not a replacement for the host-sync comparison baseline
 - and not a catch-all place for open package-specific failures
+- including the current governed Microsoft source trees under:
+  - `C:\shared\sandbox-toolchains\dev\shells\vs-installer\...`
+  - `C:\shared\sandbox-toolchains\dev\shells\visual-studio\...`
+  - `C:\shared\sandbox-toolchains\dev\shells\windows-kits\...`
+  - `C:\shared\sandbox-toolchains\dev\shells\dotnet-framework\...`
+- plus bootstrap-owned projection into the expected Windows runtime paths inside the box for:
+  - `vswhere.exe`
+  - `VsDevCmd.bat`
+  - Windows SDK binaries/includes/libs
+  - PowerShell `Add-Type` / `buildcheck`
 
 ## Why `node-gyp` needs its own overlay
 
@@ -65,8 +76,8 @@ Compared to a generic `pnpm install` / `pnpm rebuild` flow, `node-gyp` adds seve
 
 - a Python runtime that is spawned by `node.exe`
 - generated GYP and MSBuild project files that must materialize to the real host-visible repo path
-- host-provided Microsoft compiler and linker tools
-- Visual Studio environment bootstrapping through `VsDevCmd.bat`
+- Microsoft compiler and linker tools that still need canonical Windows path semantics at runtime
+- Visual Studio environment bootstrapping through projected `VsDevCmd.bat`
 - ABI-sensitive rebuilds against the exact Node runtime that will later load the native addon
 
 That is why the generic monorepo boilerplate is necessary but not sufficient on its own.

@@ -57,6 +57,13 @@ return @{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
   }
+  MicrosoftBuild = @{
+    VsWhereExe = Join-Path $devRoot 'shells\vs-installer\3.1.7\vswhere.exe'
+    VisualStudioRoot = Join-Path $devRoot 'shells\visual-studio\2022\BuildTools'
+    WindowsSdkRoot = Join-Path $devRoot 'shells\windows-kits\10'
+    DotNetFrameworkRoot = Join-Path $devRoot 'shells\dotnet-framework\Framework\v4.0.30319'
+    DotNetFramework64Root = Join-Path $devRoot 'shells\dotnet-framework\Framework64\v4.0.30319'
+  }
   Shells = @{
     CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'
     PowerShellRoot = Join-Path $devRoot 'shells\powershell\10.0.26100.8457'
@@ -114,6 +121,11 @@ $parameters = @{
   NodeRoot = $config.Toolchain.NodeRoot
   PnpmCli = $config.Toolchain.PnpmCli
   PythonRoot = $config.Toolchain.PythonRoot
+  VsWhereExe = $config.MicrosoftBuild.VsWhereExe
+  VisualStudioRoot = $config.MicrosoftBuild.VisualStudioRoot
+  WindowsSdkRoot = $config.MicrosoftBuild.WindowsSdkRoot
+  DotNetFrameworkRoot = $config.MicrosoftBuild.DotNetFrameworkRoot
+  DotNetFramework64Root = $config.MicrosoftBuild.DotNetFramework64Root
   CmdRoot = $config.Shells.CmdRoot
   PowerShellRoot = $config.Shells.PowerShellRoot
   RegRoot = $config.Shells.RegRoot
@@ -175,6 +187,7 @@ The current shell-specific requirement is also part of this contract:
 - boxed `cmd.exe` is the preferred productive lifecycle `scriptShell`
 - boxed PowerShell remains the preferred interactive default shell
 - Git Bash remains an alternative shell lane and still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
+- native-build preparation projects the governed shared Microsoft build-source trees into their canonical Windows runtime paths before `pnpm install` runs
 
 ```powershell
 param(
@@ -201,10 +214,15 @@ if (-not (Test-Path -LiteralPath $cmdExe)) {
   throw 'Local boxed CMD executable not found.'
 }
 
-$null = Initialize-NodeGypWindowsBuildEnvironment `
+$nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
   -CmdExe $env:BOXED_CMD_EXE `
   -RegExe $env:BOXED_REG_EXE `
   -PythonExe $env:BOXED_PYTHON_EXE
+
+Write-Host "ProjectedVsWhereExe: $($nativeBuildRuntime.VsWhereExe)"
+Write-Host "ProjectedVsRoot: $($nativeBuildRuntime.VSRoot)"
+Write-Host "ProjectedWindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
+Write-Host "ProjectedDotNetFramework64Csc: $($nativeBuildRuntime.DotNetFramework64CscExe)"
 
 pnpm config set --location=project scriptShell "$cmdExe"
 pnpm install

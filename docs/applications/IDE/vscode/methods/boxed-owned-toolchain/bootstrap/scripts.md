@@ -28,6 +28,8 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 
 ### Toolchain stacks
 
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\microsoft-build\Bootstrap.MicrosoftBuild.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\dotnet-framework\Bootstrap.DotNetFramework.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
@@ -106,6 +108,42 @@ function Sync-TreeMirrorWithPowerShell {
 
 These helpers are what make local runtime mirroring practical without forcing every higher-level script to reimplement filesystem logic.
 
+## `Bootstrap.MicrosoftBuild.psm1`
+
+This is the governed Microsoft build-source projection adapter.
+
+Current responsibilities:
+
+- validate the shared `vswhere.exe`, Visual Studio Build Tools, Windows Kits, and `.NET Framework` source roots
+- project `vswhere.exe` into:
+  - `C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe`
+- project the validated Visual Studio Build Tools subtrees:
+  - `Common7\Tools`
+  - `MSBuild\Current\Bin`
+  - `MSBuild\Microsoft\VC`
+  - `VC\Auxiliary`
+  - `VC\Tools`
+- project the validated Windows Kits subtrees:
+  - `bin\<version>\x64`
+  - `Include\<version>`
+  - `Lib\<version>`
+  - `DesignTime\CommonConfiguration\Neutral`
+  - `SDKManifest.xml`
+- publish:
+  - `BOXED_VSWHERE_EXE`
+  - `BOXED_VSROOT`
+  - `BOXED_VSDEVCMD`
+  - `BOXED_WINDOWS_SDK_ROOT`
+  - `BOXED_SHARED_VSWHERE_EXE`
+  - `BOXED_SHARED_VISUAL_STUDIO_ROOT`
+  - `BOXED_SHARED_WINDOWS_SDK_ROOT`
+
+Verified current outcomes:
+
+- `vswhere.exe` resolves in the boxed project shell
+- `VsDevCmd.bat` resolves in the boxed project shell
+- the projected Windows Kits `DesignTime\CommonConfiguration\Neutral` surface is present
+
 ## `Bootstrap.Node.psm1`
 
 This is the governed Node/Git/PNPM runtime adapter.
@@ -115,6 +153,8 @@ Current responsibilities:
 - validate the shared Git / Node / PNPM surfaces
 - mirror them locally into the box execution tree
 - prepare the boxed Windows native-build environment for direct `node-gyp` usage
+- project governed Microsoft build-source trees into their canonical Windows runtime paths inside the box
+- including `vswhere.exe`, Visual Studio Build Tools, Windows Kits, and the `.NET Framework` compiler tree
 - generate wrapper commands such as `pnpm.cmd`
 - generate wrapper commands such as `nx.cmd`
 - generate wrapper commands such as `pnpm.ps1`
@@ -161,11 +201,17 @@ function Initialize-NodeGypWindowsBuildEnvironment {
     [string]$CmdExe,
     [string]$RegExe,
     [string]$PythonExe,
-    [string]$WindowsSdkRoot = 'C:\Program Files (x86)\Windows Kits\10'
+    [string]$VsWhereExe = $env:BOXED_SHARED_VSWHERE_EXE,
+    [string]$VisualStudioRoot = $env:BOXED_SHARED_VISUAL_STUDIO_ROOT,
+    [string]$WindowsSdkRoot = $env:BOXED_SHARED_WINDOWS_SDK_ROOT,
+    [string]$DotNetFrameworkRoot = $env:BOXED_SHARED_DOTNET_FRAMEWORK_ROOT,
+    [string]$DotNetFramework64Root = $env:BOXED_SHARED_DOTNET_FRAMEWORK64_ROOT
   )
 
-  # imports VsDevCmd.bat through boxed cmd.exe, binds the boxed Python helper,
-  # normalizes Windows SDK env values, and publishes boxed node-gyp helper metadata
+  # projects governed Microsoft build sources into canonical Windows paths,
+  # imports the resulting VsDevCmd environment through a generated boxed cmd bridge,
+  # binds the boxed Python helper, normalizes Windows SDK env values,
+  # and publishes boxed node-gyp helper metadata
 }
 ```
 
@@ -193,6 +239,15 @@ This matters because the current contract must support:
 - direct native-build environment preparation for `node-gyp`-bearing install/reinstall flows
 
 at the same time.
+
+Verified current outcomes:
+
+- `VCINSTALLDIR` imports into the boxed PowerShell session
+- `VCToolsInstallDir` imports into the boxed PowerShell session
+- `VSINSTALLDIR` imports into the boxed PowerShell session
+- `WindowsSdkDir` imports into the boxed PowerShell session
+- `WindowsSDKVersion` imports into the boxed PowerShell session
+- `cl.exe`, `MSBuild.exe`, `rc.exe`, and `mt.exe` resolve after helper execution
 
 ## `Bootstrap.Python.psm1`
 

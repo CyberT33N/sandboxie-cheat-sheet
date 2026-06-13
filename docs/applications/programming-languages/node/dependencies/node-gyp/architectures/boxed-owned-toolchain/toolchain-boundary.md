@@ -17,6 +17,10 @@ The following surfaces are current **shared-governed** toolchains which the boot
 - boxed `cmd.exe`
 - boxed Windows PowerShell
 - boxed `reg.exe`
+- governed `vswhere.exe` source under `dev\shells\vs-installer\...`
+- governed Visual Studio Build Tools source under `dev\shells\visual-studio\...`
+- governed Windows Kits source under `dev\shells\windows-kits\...`
+- shared Microsoft .NET Framework compiler snapshot under `dev\shells\dotnet-framework\...`
 - optional boxed `Clink`
 - optional boxed Starship
 
@@ -27,39 +31,48 @@ These are treated as governed artifacts because:
 - the bootstrap can mirror them deterministically into the box
 - they behave like toolchain/runtime inventory rather than installer-managed platform state
 
-## Host-provided Microsoft build infrastructure
+## Boxed projected Microsoft build infrastructure
 
-The following surfaces remain **host-provided** in the current boxed-owned-toolchain `node-gyp` contract:
+The following surfaces are now treated as **shared-governed sources with boxed projection into canonical Windows paths**:
 
-- Visual Studio Build Tools installation root
-- `VsDevCmd.bat`
-- Windows SDK include/lib/bin trees
-- Microsoft .NET compiler chain that PowerShell `Add-Type` may invoke indirectly
+- `C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe`
+- `C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\...`
+- `C:\Program Files (x86)\Windows Kits\10\...`
+- `C:\Windows\Microsoft.NET\Framework\v4.0.30319\...`
+- `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\...`
 
-These remain host-provided because they behave like heavier Windows platform infrastructure rather than like simple portable copied binaries.
+The source of truth for those projected paths now lives under the shared `dev\shells\...` subtree, and bootstrap materializes them into the exact Windows paths that `vswhere.exe`, `VsDevCmd.bat`, `buildcheck`, and PowerShell `Add-Type` expect.
+
+The currently verified Windows Kits projection includes:
+
+- `bin\<version>\x64`
+- `Include\<version>`
+- `Lib\<version>`
+- `DesignTime\CommonConfiguration\Neutral`
+- `SDKManifest.xml`
+
+That `DesignTime\CommonConfiguration\Neutral` subtree is part of the validated boxed-owned-toolchain runtime contract because MSBuild's Windows SDK validation requires:
+
+- `uCRT.props`
+- `UAP\<version>\UAP.props`
 
 ## Why this split is correct
 
 This boundary is correct because it keeps each concern in the right domain:
 
-1. **shared-governed developer toolchains**
+1. **shared-governed developer toolchains and Microsoft build sources**
    - versioned
-   - mirrored
+   - mirrored or projected by bootstrap
    - box-local at runtime
 
-2. **host-provided Microsoft platform toolchains**
-   - installer-managed
-   - OS-anchored
-   - imported through runtime environment bootstrap
-
-That means the boxed-owned-toolchain method does **not** need to pretend that all Microsoft build infrastructure is already a portable shared artifact just because Node, PNPM, Python, and shell helper binaries are.
+That means the boxed-owned-toolchain method no longer depends on direct host execution of Microsoft build-tool paths inside the project box.
 
 ## Twelve-factor reading
 
 The current boundary is twelve-factor aligned:
 
 - shared-governed binaries are explicit dependencies
-- host-provided Microsoft build state is imported through environment initialization
+- shared-governed Microsoft build sources are projected into canonical runtime paths through environment initialization
 - the runtime shell is prepared on demand for native builds
 - direct terminal defaults are not overloaded with native-build-only setup
 
@@ -77,7 +90,7 @@ It is **not** a signal that the whole Microsoft build chain has now become a sha
 
 ## Role of `VsDevCmd.bat`
 
-`VsDevCmd.bat` remains the current bridge between the host-provided Microsoft build world and the boxed-owned-toolchain shell.
+`VsDevCmd.bat` remains the current bridge between the projected Microsoft build world and the boxed-owned-toolchain shell.
 
 The boxed-owned-toolchain contract therefore treats:
 
@@ -85,13 +98,15 @@ The boxed-owned-toolchain contract therefore treats:
 - boxed Python
 - boxed `reg.exe`
 
-as the explicit local helper lanes, while:
+as the explicit local helper lanes, while the following are provided as shared-governed source trees and projected into canonical Windows paths inside the box:
 
+- `vswhere.exe`
 - `VsDevCmd.bat`
 - Visual Studio Build Tools
 - Windows SDK trees
+- .NET Framework compiler trees
 
-remain host-provided infrastructure that the helper imports into the active environment.
+This keeps the helper logic compatible with tools that hard-code Windows paths, while still preserving the shared-governed / boxed-projected architecture.
 
 ## Related
 
