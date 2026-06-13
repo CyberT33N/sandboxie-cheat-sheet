@@ -172,10 +172,13 @@ Current responsibilities:
 - prepare the boxed Windows native-build environment for direct `node-gyp` usage
 - project governed Microsoft build-source trees into their canonical Windows runtime paths inside the box
 - including `vswhere.exe`, Visual Studio Build Tools, Windows Kits, and the `.NET Framework` compiler tree
+- generate wrapper commands such as `git.cmd`
 - generate wrapper commands such as `pnpm.cmd`
 - generate wrapper commands such as `nx.cmd`
+- generate wrapper commands such as `git.ps1`
 - generate wrapper commands such as `pnpm.ps1`
 - generate wrapper commands such as `nx.ps1`
+- generate shell-native wrappers such as `git`
 - generate shell-native wrappers such as `pnpm`
 - generate shell-native wrappers such as `nx`
 - generate additional node aliases such as `node20.cmd`
@@ -188,6 +191,8 @@ Current responsibilities:
 - prepend the correct local runtime paths into `PATH`
 - publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
 - keep that productive child-process contract aligned to the preferred boxed `cmd.exe` lane
+- publish a bootstrap-owned Git wrapper surface that forces `core.longpaths=true`
+- publish a bootstrap-owned boxed Git credential-helper command surface without whitespace-sensitive helper naming
 
 Important scope boundary:
 
@@ -241,9 +246,16 @@ function Initialize-NodeGypWindowsBuildEnvironment {
 }
 ```
 
-Representative wrapper publication now includes all three relevant shell families:
+Representative wrapper publication now includes all three relevant shell families plus the boxed Git command surface:
 
 ```powershell
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'git.cmd') -Content $gitCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'git.ps1') -Content $gitPs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'git') -Content $gitShellContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'git-credential-manager-boxed.cmd') -Content $gcmCmdContent
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'git-credential-manager-boxed.ps1') -Content $gcmPs1Content
+Write-AsciiFile -Path (Join-Path $BootstrapBin 'git-credential-manager-boxed') -Content $gcmShellContent
+
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.cmd') -Content $pnpmCmdContent
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.ps1') -Content $pnpmPs1Content
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm') -Content $pnpmShellContent
@@ -279,8 +291,11 @@ Verified current outcomes:
 - `VSINSTALLDIR` imports into the boxed PowerShell session
 - `WindowsSdkDir` imports into the boxed PowerShell session
 - `WindowsSDKVersion` imports into the boxed PowerShell session
+- `LongPathsEnabled=1` is set in the boxed registry view during bootstrap
 - `cl.exe`, `MSBuild.exe`, `rc.exe`, and `mt.exe` resolve after helper execution
 - a direct boxed `node-gyp rebuild --verbose` succeeds through the bootstrap-published wrapper surface
+- boxed `git` now runs through a bootstrap-owned wrapper surface that applies `core.longpaths=true`
+- the boxed Git helper contract now uses `credential.helper=manager-boxed` so Git resolves a bootstrap-published helper command without path-with-spaces quoting issues
 
 ## `Bootstrap.Python.psm1`
 
@@ -452,6 +467,7 @@ Current behavior:
 - sets the Nx environment contract
 - sets local temp/cache paths
 - sets the productive boxed-CMD child-process contract
+- enables long-path support in the boxed registry view
 - exposes the promotion script path
 
 Representative current initialization:
@@ -483,12 +499,15 @@ if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath
   throw 'Local boxed CMD executable not found for ComSpec override.'
 }
 
+& $windowsShellRuntime.RegExe add 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem' /v LongPathsEnabled /t REG_DWORD /d 1 /f | Out-Null
+
 $env:NX_DAEMON = 'false'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
 $env:ComSpec = $boxedComSpec
 $env:COMSPEC = $boxedComSpec
 $env:BOXED_COMSPEC = $boxedComSpec
+$env:BOXED_LONG_PATHS_ENABLED = 'true'
 $env:BOXED_NX_LAUNCHER = $nodeRuntime.NxLauncher
 $env:BOXED_PROMOTION_SCRIPT = $promotionScript
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
@@ -509,6 +528,7 @@ Current behavior:
 - publishes explicit boxed helper lanes including `BOXED_REG_EXE`
 - sets local temp/Nx environment state
 - sets the productive boxed-CMD child-process contract
+- enables long-path support in the boxed registry view before later Git processes start
 
 That does **not** mean every project-owned package-manager lifecycle surface must also run on CMD.
 
@@ -532,6 +552,8 @@ The reason was:
 
 So the current boxed-owned-toolchain contract is now:
 
+- `Bootstrap.Node.psm1` publishes a boxed `git` wrapper that applies `core.longpaths=true`
+- `Bootstrap.Node.psm1` also publishes `git-credential-manager-boxed` so Git can resolve a boxed helper command from `PATH` instead of invoking a whitespace-sensitive absolute helper path
 - `Bootstrap.Node.psm1` generates both Windows wrapper commands and shell-native wrappers
 - `Bootstrap.Starship.psm1` writes Bash RC files that prepend `bootstrap-bin` to `PATH`
 - the integrated Git Bash terminal resolves `pnpm` through the shell-native wrapper rather than depending on `.cmd` lookup behavior

@@ -1,291 +1,105 @@
 # Boxed-Owned-Toolchain Git
 
-## Status
+## Architectural status
 
-This is the preferred Git architecture path in this repository.
-
-## Why this file exists
-
-The Git domain is being normalized toward an explicit `architectures\...` split.
-
-This file is the architecture entrypoint for the boxed-owned-toolchain variant.
-
-Use this document when Git authentication or cloning must happen inside the boxed-owned-toolchain method.
-
-From a domain-driven and 12-factor perspective, the correct owner for this workflow is the Git domain, not the VS Code domain.
-
-Why:
-
-- authentication is a Git concern
-- credential-helper selection is a Git concern
-- private-repo access checks are a Git concern
-- the initial boxed clone happens before the project bootstrap can operate on an existing repo path
-
-VS Code method documents should therefore reference this document instead of re-defining the Git login flow in multiple places.
-
-## Runtime contract
-
-The current governed Git runtime is:
-
-```text
-C:\shared\sandbox-toolchains\dev\git\2.54.0\
-```
-
-Expected executable:
-
-```text
-C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe
-```
-
-## Provisioning
-
-The current boxed-owned-toolchain provisioning path is:
-
-1. download the 7-Zip helper
-2. download the `PortableGit` self-extractor
-3. extract it into the governed shared toolchain root
-
-### 7-Zip helper
-
-```powershell
-$SevenZipInstaller = Join-Path $env:TEMP '7z2601-x64.exe'
-$SevenZipDir = Join-Path $env:TEMP '7zip2601'
-
-Invoke-WebRequest `
-  -Uri 'https://github.com/ip7z/7zip/releases/download/26.01/7z2601-x64.exe' `
-  -OutFile $SevenZipInstaller
-
-Remove-Item $SevenZipDir -Recurse -Force -ErrorAction SilentlyContinue
-
-Start-Process -FilePath $SevenZipInstaller -ArgumentList '/S',('/D=' + $SevenZipDir) -Wait
-```
-
-### PortableGit download and extraction
-
-```powershell
-$SevenZipDir = Join-Path $env:TEMP '7zip2601'
-$SevenZipExe = Join-Path $SevenZipDir '7z.exe'
-$GitSfx = Join-Path $env:TEMP 'PortableGit-2.54.0-64-bit.7z.exe'
-$GitDest = 'C:\shared\sandbox-toolchains\dev\git\2.54.0'
-
-Invoke-WebRequest `
-  -Uri 'https://github.com/git-for-windows/git/releases/download/v2.54.0.windows.1/PortableGit-2.54.0-64-bit.7z.exe' `
-  -OutFile $GitSfx
-
-Remove-Item "$GitDest\*" -Recurse -Force -ErrorAction SilentlyContinue
-
-& $SevenZipExe x $GitSfx ('-o' + $GitDest) -y
-
-& "$GitDest\cmd\git.exe" --version
-```
-
-Expected verification:
-
-```text
-git version 2.54.0.windows.1
-```
-
-## Preference
-
-This is the preferred architecture path.
+This is the **preferred Git architecture path** in this repository.
 
 The host-sync Git path remains only as a secondary / legacy reference here:
 
 - `docs\applications\git\architectures\host-sync\overview.md`
 
-## Boxed use
+## Role of this file
 
-For the boxed-owned-toolchain method:
+This file is now the **TOC / entrypoint** for the boxed-owned-toolchain Git source of truth.
 
-- the box consumes the governed shared `PortableGit` runtime
-- project bootstrap exposes it through the local mirrored toolchain contract
-- the first clone happens before project bootstrap opens the repo in boxed VS Code
-- authentication remains a Git-domain concern and should not be redefined in VS Code method documents
+The previous high-density overview has been split by concern so the Git domain can stay:
 
-The boxed-owned-toolchain Git model is:
+- single-source-of-truth oriented
+- easier to re-reference from VS Code method documents
+- easier to evolve without mixing provisioning, runtime, auth, and troubleshooting concerns
 
-- host launches a boxed shell or boxed one-shot command through `Start.exe`
-- the box consumes the shared `PortableGit` runtime
-- the private-repo login is completed through Git Credential Manager
-- the preferred sign-in path is the GitHub device flow in the host browser
-- the first boxed clone happens before project bootstrap opens the repo in the project box
+## Current reference snapshot
 
-## Architectural rules
+The current boxed-owned-toolchain Git reference truth is:
 
-### No host Git as the default path
+1. governed shared PortableGit under `dev\git\...`
+2. local mirrored Git runtime inside the box
+3. bootstrap-published boxed `git` wrapper surfaces:
+   - `git`
+   - `git.cmd`
+   - `git.ps1`
+4. bootstrap-published boxed Git Credential Manager helper surfaces:
+   - `git-credential-manager-boxed`
+   - `git-credential-manager-boxed.cmd`
+   - `git-credential-manager-boxed.ps1`
+5. automatic Git-side long-path participation through:
+   - `core.longpaths=true`
+6. Git-independent Windows long-path policy documented centrally in:
+   - `docs\troubleshooting\filesystem\windows-long-paths.md`
+7. authentication, helper selection, and first clone remain Git-domain concerns
+8. the preferred sign-in path remains GitHub device flow through the normal host browser
 
-For the boxed-owned-toolchain method, host Git is not the normal execution surface.
+## Domain map
 
-The only host-side participation in this workflow is:
+### Provisioning
 
-- `Start.exe` launching the boxed process
-- the host browser completing the GitHub device-code sign-in
+- `docs\applications\git\architectures\boxed-owned-toolchain\provisioning.md`
 
-### First clone is a Git-domain action
+Owns:
 
-The project bootstrap expects the target repo path to already exist.
+- governed shared Git root
+- PortableGit provisioning
+- expected shared executable surfaces
 
-That means:
+### Runtime contract
 
-- the initial clone must happen before `Start-<Project>VSCode.ps1 -Action OpenTerminal`
-- the initial clone is therefore documented here, in the Git area
+- `docs\applications\git\architectures\boxed-owned-toolchain\runtime-contract.md`
 
-## Validated flow
+Owns:
 
-### Step 1 - start from a neutral boxed working directory
+- local boxed Git projection
+- bootstrap-published `git` wrapper surfaces
+- bootstrap-published `git-credential-manager-boxed` helper surfaces
+- Git-side `core.longpaths=true`
+- the reason a boxed helper command is preferred over a whitespace-sensitive absolute helper path
 
-For the first clone, do **not** start from a path that forces Git to walk parent directories through a sensitive `C:\Users\...` chain in the box.
+### Authentication and clone
 
-Use a neutral working directory and explicitly control the target path.
+- `docs\applications\git\architectures\boxed-owned-toolchain\authentication-and-clone.md`
 
-Inside the boxed shell:
+Owns:
 
-```powershell
-Set-Location C:\
-$env:HOME = $env:USERPROFILE
-$env:GIT_CEILING_DIRECTORIES = "C:/Users/yourusername/source"
-```
+- public reachability smoke tests
+- private-repo access probe
+- helper-selection behavior
+- GitHub device flow
+- first clone workflow
+- pre-bootstrap one-shot clone special case
 
-This keeps Git repository discovery from walking above the intended source root during the pre-clone state.
+### Git-specific troubleshooting
 
-### Step 2 - public Git reachability smoke test
+- `docs\applications\git\architectures\boxed-owned-toolchain\troubleshooting\long-paths.md`
 
-Inside the boxed shell:
+Owns:
 
-```powershell
-$GitExe = "C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe"
+- Git-specific `Filename too long` interpretation
+- the Git-side long-path option
+- re-reference to the Git-independent long-path SSOT
 
-& $GitExe `
-  -c credential.helper= `
-  ls-remote https://github.com/git/git.git
-```
+## Cross-domain references
 
-If this returns refs, then:
-
-- the boxed Git runtime is working
-- network access to GitHub is working
-- the remaining problem, if any, is private-repo authentication or repo access
-
-### Step 3 - private-repo access probe
-
-Inside the boxed shell:
-
-```powershell
-$GitExe = "C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe"
-$GitHubUser = "yourgithubuser"
-
-& $GitExe `
-  -c credential.helper=manager `
-  ls-remote "https://$GitHubUser@github.com/yourorg/yourrepo.git"
-```
-
-### Step 4 - choose the credential helper
-
-If Git for Windows shows the helper-selection dialog:
-
-- choose `manager`
-- enable `Always use this from now on`
-
-This avoids being asked again on every private GitHub access in the same user context.
-
-### Step 5 - complete the GitHub login
-
-If Git Credential Manager shows a browser or device-code flow, the preferred path is:
-
-1. open `github.com/login/device` in the normal host browser
-2. use the GitHub account that already has the correct GitHub / SSO access
-3. if your GitHub sign-in is federated, continue through the normal GitHub flow such as Google-backed sign-in
-4. enter the device code shown by the boxed prompt
-5. complete any organization / SSO confirmation that GitHub requires
-
-This is the preferred method because:
-
-- it avoids typing credentials into the box
-- it works with modern GitHub sign-in flows
-- it keeps the Git command itself inside the sandbox while letting the host browser handle the OAuth/device ceremony
-
-### Step 6 - interpret post-login errors carefully
-
-After the device flow completes, you may still see an error dialog from `git-credential-manager.exe`, for example a Windows system error dialog.
-
-That dialog does **not** by itself prove that the login failed.
-
-The correct verification step is always the Git command result:
-
-```powershell
-$GitExe = "C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe"
-$GitHubUser = "yourgithubuser"
-
-& $GitExe `
-  -c credential.helper=manager `
-  ls-remote "https://$GitHubUser@github.com/yourorg/yourrepo.git"
-```
-
-If refs are returned, access is working, regardless of a prior helper-side dialog.
-
-### Step 7 - clone after access is verified
-
-Once `ls-remote` returns refs, clone the repo:
-
-```powershell
-$GitExe = "C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe"
-$GitHubUser = "yourgithubuser"
-
-New-Item -ItemType Directory -Force -Path "C:\Users\yourusername\source" | Out-Null
-
-& $GitExe `
-  -c credential.helper=manager `
-  clone "https://$GitHubUser@github.com/yourorg/yourrepo.git" "C:\Users\yourusername\source\yourrepo"
-```
-
-## Host-driven one-shot clone pattern
-
-If you want one single host command for a fresh boxed clone, use:
-
-```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:YOUR_PROJECT_BOX `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -Command "Set-Location 'C:\'; `$env:HOME = `$env:USERPROFILE; `$env:GIT_CEILING_DIRECTORIES = 'C:/Users/yourusername/source'; New-Item -ItemType Directory -Force -Path 'C:\Users\yourusername\source' | Out-Null; & 'C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe' -c credential.helper=manager clone 'https://yourgithubuser@github.com/yourorg/yourrepo.git' 'C:\Users\yourusername\source\yourrepo'"
-```
-
-This keeps the clone fully boxed while still reducing the host interaction to one reproducible command.
-
-## Failure interpretation
-
-### `Repository not found`
-
-Usually means one of:
-
-- wrong repo URL
-- the authenticated GitHub account cannot see that repo
-- org / SSO authorization did not actually complete for the target repo
-
-### No refs from the private `ls-remote`
-
-Treat this as an auth or repo-visibility problem, not as a VS Code bootstrap problem.
-
-### `Project repo not found`
-
-This is not a Git auth failure. It only means the project bootstrap was invoked before the repo was cloned.
-
-## Relationship to the VS Code documents
-
-After the initial clone succeeds:
-
-- use the project bootstrap to open the boxed terminal
-- use the project bootstrap to launch boxed VS Code
-
-Those flows remain documented in the VS Code method area and should reference this document for the Git login / initial clone part.
+- central shell-selection contract:
+  `docs\cli\shell\general.md`
+- Git-independent long-path troubleshooting:
+  `docs\troubleshooting\filesystem\windows-long-paths.md`
+- VS Code method entry:
+  `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`
+- VS Code method Git view:
+  `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\git.md`
+- sanitized project-adapter example:
+  `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
 
 ## Related
 
-- `docs\cli\shell\general.md`
 - `docs\applications\git\general.md`
 - `docs\applications\git\architectures\host-sync\overview.md`
-- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`
-- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\git.md`
-- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
