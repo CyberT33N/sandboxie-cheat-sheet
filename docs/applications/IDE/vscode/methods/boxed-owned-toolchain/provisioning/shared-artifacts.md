@@ -51,7 +51,6 @@ $Dirs = @(
   "$SharedRoot\dev\git\2.54.0",
   "$SharedRoot\dev\node\26.2.0",
   "$SharedRoot\dev\node\20.9.0",
-  "$SharedRoot\dev\pnpm\11.2.2",
   "$SharedRoot\dev\pnpm\11.5.0",
   "$SharedRoot\dev\shells\cmd\10.0.26100.8457",
   "$SharedRoot\dev\shells\powershell\10.0.26100.8457",
