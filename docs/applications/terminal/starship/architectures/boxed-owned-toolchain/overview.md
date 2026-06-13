@@ -15,12 +15,15 @@ For the boxed-owned-toolchain method:
 - bootstrap-generated Bash RC files initialize it for explicit boxed Git Bash profiles
 - boxed CMD can use it only through the separate `Clink` runtime adapter
 
-This does **not** mean:
+Starship is not limited to Git Bash in the boxed-owned-toolchain method.
 
-- Git Bash is the only shell that can work
-- or PowerShell/CMD are impossible in the boxed-owned-toolchain method
+Current lane split:
 
-It means:
+- PowerShell uses the bootstrap-generated PowerShell init files and is the preferred default interactive lane
+- CMD uses the separate `Clink` runtime adapter
+- Git Bash uses the bootstrap-generated Bash RC files and remains an explicit supported shell lane
+
+This means:
 
 - different shell lanes need different bootstrap-owned initialization shapes
 

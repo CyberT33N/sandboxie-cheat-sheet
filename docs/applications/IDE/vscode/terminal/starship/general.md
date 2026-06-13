@@ -1,45 +1,33 @@
+# VS Code Terminal Starship
 
-# INI Settings
-docs\applications\terminal\starship\general.md
+## Status
 
+This page remains only as a thin VS Code terminal reference.
 
-.vscode\settings.json
-```json
-{
-  "terminal.integrated.automationProfile.windows": {
-    "args": [
-      "-NoExit",
-      "-ExecutionPolicy",
-      "Bypass"
-    ],
-    "env": {
-      "NX_DAEMON": "false",
-      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache"
-    },
-    "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-  },
-  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
-  "terminal.integrated.profiles.windows": {
-    "DevBox PowerShell": {
-      "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
-      ],
-      "env": {
-        "NX_DAEMON": "false",
-        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
-        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
-      },
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-    }
-  }
-}
-      
-```
+The older content here described a host-shaped setup with paths such as:
+
+- `C:\Tools\DevBoxShell\...`
+- `C:\Program Files\starship\bin\starship.exe`
+
+That is no longer the current boxed-owned-toolchain contract.
+
+## Current boxed-owned-toolchain reading
+
+For the current preferred boxed-owned-toolchain method:
+
+- the Starship binary is governed under `C:\shared\sandbox-toolchains\dev\starship\1.25.1\`
+- bootstrap mirrors that binary locally into the box execution tree
+- boxed PowerShell is the preferred interactive VS Code default shell
+- boxed CMD is supported through the separate `Clink` adapter lane
+- boxed Git Bash remains an explicit supported shell lane
+
+Starship is therefore not restricted to Git Bash.
+
+Different shell lanes use different bootstrap-owned initialization shapes:
+
+- PowerShell uses the boxed PowerShell init files
+- CMD uses `Clink`
+- Git Bash uses the boxed Bash RC files
 
 
 
@@ -59,11 +47,6 @@ docs\applications\terminal\starship\general.md
 
 
 
-<br><br
-
----
-
-<br><br>
 
 
 
@@ -74,81 +57,21 @@ docs\applications\terminal\starship\general.md
 
 
 
-### Warum Starship **nicht als Prompt** erscheint (obwohl `starship --version` geht)
-Du hast aktuell nur den **Binary‑Zugriff/PATH** gelöst. Starship wird aber **nicht automatisch** zum Prompt, solange PowerShell nicht beim Start **Starship “init”** ausführt.
 
-Das erwartete Prompt‑Layout bekommst du erst, wenn in der PowerShell‑Session einmal ausgeführt wurde:
+## Source of truth
 
-```powershell
-Invoke-Expression (& "C:\Program Files\starship\bin\starship.exe" init powershell)
-```
+Use these documents instead of the older host-shaped examples that previously lived here:
 
----
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\vscode-runtime-and-catalog.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\toolchain\starship.md`
+- `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
+- `docs\cli\shell\clink.md`
 
-### Option 1 (schnell, für die aktuelle PowerShell‑Session)
-Im Sandbox‑PowerShell‑Fenster:
+## Legacy note
 
-```powershell
-Invoke-Expression (& "C:\Program Files\starship\bin\starship.exe" init powershell)
-```
+If you specifically need the older host-sync / host-visible Starship model, use:
 
-Danach sollte der Prompt sofort „Starship‑Style“ anzeigen.
-
----
-
-### Option 2 (best practice): automatisch in **VS Code Terminal** aktivieren
-Ergänze in `C:\git\test\test-synchronizer\.vscode\settings.json` dein Terminal‑Profil so, dass PowerShell Starship beim Start initialisiert.
-
-```json
-{
-  "terminal.integrated.automationProfile.windows": {
-    "args": [
-      "-NoExit",
-      "-ExecutionPolicy",
-      "Bypass"
-    ],
-    "env": {
-      "NX_DAEMON": "false",
-      "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache"
-    },
-    "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-  },
-  "terminal.integrated.defaultProfile.windows": "DevBox PowerShell",
-  "terminal.integrated.profiles.windows": {
-    "DevBox PowerShell": {
-      "args": [
-        "-NoExit",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-Command",
-        "& 'C:\\Program Files\\starship\\bin\\starship.exe' init powershell --print-full-init | Out-String | Invoke-Expression"
-      ],
-      "env": {
-        "NX_DAEMON": "false",
-        "NX_NATIVE_FILE_CACHE_DIRECTORY": "C:\\shared\\nx-native-cache",
-        "PATH": "C:\\Program Files\\starship\\bin;${env:PATH}",
-        "STARSHIP_CONFIG": "C:\\Users\\denni\\.config\\starship.toml"
-      },
-      "path": "C:\\Tools\\DevBoxShell\\powershell.exe"
-    }
-  }
-}
-      
-```
-
-- `STARSHIP_CONFIG` ist optional, macht das Config‑Lookup aber eindeutig.
-- `ExecutionPolicy Bypass` hilft dir auch bei `pnpm.ps1`‑Shims.
-
----
-
-### Option 3: automatisch in einem **normalen (boxed) PowerShell-Fenster**
-Du willst das gleiche Verhalten auch außerhalb VS Code? Dann starte PowerShell künftig mit einem Start‑Command:
-
-```powershell
-"C:\Tools\DevBoxShell\powershell.exe" -NoExit -ExecutionPolicy Bypass -Command "Invoke-Expression (& 'C:\Program Files\starship\bin\starship.exe' init powershell)"
-```
-
-Das kannst du z. B. als Shortcut speichern und immer darüber öffnen.
+- `docs\applications\terminal\starship\architectures\host-sync\overview.md`
 
 
 
@@ -159,13 +82,8 @@ Das kannst du z. B. als Shortcut speichern und immer darüber öffnen.
 
 
 
-<br><br
 
----
 
-<br><br>
+## Related
 
-# Troubleshooting
-
-## Debug
-- docs\troubleshooting\IDE\vscode\terminal\debug.md
+- `docs\applications\IDE\vscode\terminal\debug\general.md`

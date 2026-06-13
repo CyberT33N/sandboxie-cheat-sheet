@@ -266,9 +266,6 @@ The current validated state also requires bootstrap-generated wrappers:
 
 Current examples:
 
-- `nx`
-- `nx.cmd`
-- `nx.ps1`
 - `pnpm`
 - `pnpm.cmd`
 - `pnpm.ps1`
@@ -290,11 +287,10 @@ Why this matters:
 After the bootstrap-level `ComSpec` override, the Windows-shell mirroring, and the PowerShell-native wrappers were added, the following were validated in the boxed project shell:
 
 ```powershell
-nx --version
-nx run backend:port-guard --output-style=stream
-nx run frontend:port-guard --output-style=stream
-nx run test:smoke-electron-runtime --output-style=stream
 pnpm exec nx --version
+pnpm exec nx run backend:port-guard --output-style=stream
+pnpm exec nx run frontend:port-guard --output-style=stream
+pnpm exec nx run test:smoke-electron-runtime --output-style=stream
 ```
 
 All of those commands succeeded.
@@ -327,6 +323,7 @@ So the current repository view is:
 - the original blocker was the wrong shell-execution surface
 - the preferred productive child-process contract is boxed `cmd.exe`
 - Git Bash remains an explicit alternative lane, and it is also the preferred PNPM install/reinstall lifecycle lane
+- a plain `nx` alias is no longer required for the standard path and is now only an optional legacy surface
 
 That is why this is now the **prioritized documented solution**.
 
@@ -395,6 +392,10 @@ It is now a governed control-plane rule.
 For the CMD-specific prompt adapter, read:
 
 - `docs\cli\shell\clink.md`
+
+For the optional legacy Nx alias surface, read:
+
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\deprecated-wrapper-command-surface.md`
 
 ## Related
 

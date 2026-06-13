@@ -34,17 +34,16 @@ The current boxed-owned-toolchain Nx reference truth is:
 
 1. box-local Nx native cache and socket surfaces remain the baseline
 2. the Nx runtime contract is bootstrap-owned and environment-driven
-3. plain `nx` is now provided through bootstrap-generated wrappers:
-   - `nx`
-   - `nx.cmd`
-   - `nx-cli.cjs`
-4. the plain `nx` command surface is validated in the boxed project terminal
-5. `pnpm exec nx ...` remains a separate failure surface
-6. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
-7. the current productive child-process fix sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
-8. that child-process fix must not be confused with the preferred interactive default shell, which is boxed PowerShell
-9. the currently validated boxed target set now succeeds without manual per-command `ComSpec=bash ...` overrides
-10. Git Bash remains an explicit alternative compatibility lane rather than the preferred productive contract
+3. the preferred standard Nx execution path is now:
+   - `pnpm exec nx ...`
+4. the lower-level diagnostic proof path remains:
+   - `node <resolved nxCli> ...`
+5. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
+6. the current productive child-process fix sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
+7. that child-process fix must not be confused with the preferred interactive default shell, which is boxed PowerShell
+8. the currently validated boxed target set now succeeds without manual per-command `ComSpec=bash ...` overrides
+9. Git Bash remains the preferred PNPM install/reinstall lifecycle lane, but not the default Nx execution path
+10. the historical plain-`nx` wrapper surface remains only as an optional / legacy convenience layer and is no longer the recommended default
 
 ## Current architectural boundary
 
@@ -107,9 +106,20 @@ Owns:
 Owns:
 
 - the exact live shared bootstrap files
-- the current Nx wrapper implementation in shared bootstrap
+- the current default bootstrap integration for the standard Nx path
 - how the project and maintenance entrypoints call into that implementation
 - how the current command surface is validated
+
+### Optional legacy wrapper surface
+
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\deprecated-wrapper-command-surface.md`
+
+Owns:
+
+- the historical plain-`nx` wrapper implementation
+- why it was introduced
+- why it is no longer the recommended default
+- how it can remain available as an explicit opt-in convenience lane
 
 ## Cross-domain references
 

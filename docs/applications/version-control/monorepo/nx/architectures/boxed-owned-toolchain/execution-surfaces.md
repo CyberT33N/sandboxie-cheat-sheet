@@ -91,7 +91,7 @@ So the current evidence points to the Windows shell path, not to the target logi
 That later manual shell-selection validation has now been superseded by the current productive bootstrap-level solution:
 
 - bootstrap now sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
-- bootstrap now publishes PowerShell-native wrappers such as `nx.ps1` and `pnpm.ps1`
+- bootstrap now publishes the standard multi-shell command surfaces that are still needed, such as `pnpm.ps1`
 - bootstrap keeps Git Bash as an explicit alternative compatibility lane
 - the boxed project terminal now validates:
   - `nx run backend:port-guard`
@@ -105,9 +105,9 @@ That later manual shell-selection validation has now been superseded by the curr
 
 Current status:
 
-- validated
-- bootstrap-generated wrapper surface now exists
-- intended for ordinary developer usage in the boxed terminal
+- no longer the recommended default surface
+- should be treated as an optional legacy convenience lane only
+- if a plain `nx` alias is still desired, it should be enabled explicitly instead of assumed as part of the default bootstrap contract
 
 ### Direct `node <resolved nxCli>`
 
@@ -121,10 +121,10 @@ Current status:
 
 Current status:
 
-- still a separate proof surface from plain `nx`
+- this is now the preferred standard execution surface
 - currently validated as green under the boxed-CMD `COMSPEC` contract
-- must not be confused with plain `nx`
 - must still be verified separately whenever the shell-selection contract changes
+- must not be confused with the historical plain-`nx` wrapper surface
 
 ### `nx:run-commands` / `command`
 
@@ -169,25 +169,27 @@ That boundary is explicitly part of the current accepted architecture direction.
 The current prioritized repository solution is:
 
 1. keep the box strict
-2. keep plain `nx` bootstrap-owned
+2. treat `pnpm exec nx ...` as the preferred standard Nx execution path
 3. keep the child-process shell contract explicit and bootstrap-owned
 4. for the current productive `run-commands` fix, keep `ComSpec` / `COMSPEC` mapped to the box-local boxed-CMD executable
-5. keep PowerShell-native wrappers, CMD wrappers, and shell-native wrappers side by side
+5. keep PowerShell-native wrappers, CMD wrappers, and shell-native wrappers side by side where they are still actually needed
 6. treat boxed PowerShell as the preferred interactive default shell
-7. keep Git Bash available as an explicit alternative compatibility lane
+7. keep Git Bash available as an explicit alternative compatibility lane and as the preferred PNPM install/reinstall lifecycle lane
 8. keep the currently validated individual Nx `run-commands` target set aligned with that shell contract
+9. treat the historical plain-`nx` wrapper as optional legacy compatibility, not as a required default
 
 Latest validated boxed result:
 
 - `COMSPEC` points to:
   - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\shells\cmd\10.0.26100.8457\cmd.exe`
-- `nx` resolves from:
-  - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin\nx.ps1`
 - individual Nx targets succeed:
   - `backend:port-guard`
   - `frontend:port-guard`
   - `test:smoke-electron-runtime`
 - `pnpm exec nx --version` succeeds
+- direct `node <resolved nxCli>` succeeds
+- `pnpm exec tsx ...` succeeds in the real target working directory used by the application runner
+- this means the historical wrapper is no longer required for the current validated standard path
 
 ## Related
 

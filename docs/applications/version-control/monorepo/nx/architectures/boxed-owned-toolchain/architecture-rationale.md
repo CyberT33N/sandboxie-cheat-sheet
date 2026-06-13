@@ -130,8 +130,8 @@ That is the correct twelve-factor reading:
 The current Nx command surface is explicit:
 
 - `node <resolved nxCli>`
-- bootstrap-generated `nx`
-- bootstrap-generated `nx.cmd`
+- `pnpm exec nx`
+- optional legacy plain-`nx` wrapper surface when a team explicitly enables it
 
 The method does not depend on:
 

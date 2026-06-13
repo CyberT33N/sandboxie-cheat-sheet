@@ -2,14 +2,16 @@
 
 ## Scope
 
-This document owns the Nx-specific bootstrap integration for the boxed-owned-toolchain architecture.
+This document owns the **current default bootstrap integration** for Nx in the boxed-owned-toolchain architecture.
 
 It records:
 
 - the exact live shared files that implement the current behavior
-- the exact current code that generates the Nx command surface
 - the exact project bootstrap environment that Nx inherits
-- how the command surface is called and validated
+- the recommended standard command surface
+- the optional legacy wrapper split
+
+It no longer treats a plain `nx` wrapper as the required default contract.
 
 ## Current live implementation files
 
@@ -20,10 +22,6 @@ The current live shared implementation surfaces are:
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
 
 The current live project adapter chain used in the active project context includes:
-
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
-
-The sanitized documentation-safe boilerplate equivalent remains:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
 
@@ -60,143 +58,21 @@ $parameters = @{
 & $baseScript @parameters
 ```
 
-That means the Nx command surface is **not** hardcoded in the project adapter.
+That means the default Nx runtime contract is not hardcoded in the project adapter.
 
-It is published by the generic shared Node bootstrap layer.
+It is inherited from the generic shared Node/bootstrap layer.
 
-## Exact current Nx wrapper implementation
+## Current default bootstrap contract
 
-The current live Nx wrapper code is generated in:
+The current default bootstrap contract is:
 
-- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
+1. publish the governed local mirrored Node runtime
+2. publish the governed local mirrored `pnpm` command surface
+3. inject the boxed Nx runtime environment
+4. keep the Windows child-process shell contract explicit through boxed `cmd.exe`
+5. let Nx run through the workspace-local installation via `pnpm exec nx ...`
 
-The relevant current code is:
-
-```powershell
-$primaryNodeExe = Join-Path $NodeRoot 'node.exe'
-$nxLauncherPath = Join-Path $BootstrapBin 'nx-cli.cjs'
-
-$nxLauncherContent = @'
-'use strict';
-
-const { existsSync } = require('node:fs');
-const { spawnSync } = require('node:child_process');
-const { createRequire } = require('node:module');
-const path = require('node:path');
-
-function findWorkspaceAnchor(startDirectory) {
-  let currentDirectory = startDirectory;
-
-  while (true) {
-    const packageJsonPath = path.join(currentDirectory, 'package.json');
-    const pnpmWorkspacePath = path.join(currentDirectory, 'pnpm-workspace.yaml');
-    const nxJsonPath = path.join(currentDirectory, 'nx.json');
-
-    if (existsSync(packageJsonPath) || existsSync(pnpmWorkspacePath) || existsSync(nxJsonPath)) {
-      return currentDirectory;
-    }
-
-    const parentDirectory = path.dirname(currentDirectory);
-    if (parentDirectory === currentDirectory) {
-      return startDirectory;
-    }
-
-    currentDirectory = parentDirectory;
-  }
-}
-
-const workspaceAnchor = findWorkspaceAnchor(process.cwd());
-const requireFromWorkspace = createRequire(path.join(workspaceAnchor, '__boxed_nx_resolver__.cjs'));
-
-let nxCliPath;
-
-try {
-  nxCliPath = requireFromWorkspace.resolve('nx/bin/nx.js');
-} catch (firstError) {
-  try {
-    nxCliPath = requireFromWorkspace.resolve('nx/dist/bin/nx.js');
-  } catch (secondError) {
-    console.error('[boxed nx] Could not resolve the local Nx CLI from the current workspace.');
-    console.error(`[boxed nx] cwd=${process.cwd()}`);
-    console.error(`[boxed nx] workspaceAnchor=${workspaceAnchor}`);
-    console.error('[boxed nx] Checked: nx/bin/nx.js and nx/dist/bin/nx.js');
-    process.exit(1);
-  }
-}
-
-const result = spawnSync(process.execPath, [nxCliPath, ...process.argv.slice(2)], {
-  stdio: 'inherit',
-  env: process.env,
-});
-
-if (typeof result.status === 'number') {
-  process.exit(result.status);
-}
-
-if (result.error) {
-  console.error('[boxed nx] Failed to start Nx.', result.error);
-  process.exit(1);
-}
-
-process.exit(1);
-'@
-
-Write-AsciiFile -Path $nxLauncherPath -Content $nxLauncherContent
-
-$nxCmdContent = @(
-  '@echo off'
-  ('set "NODE_EXE={0}"' -f $primaryNodeExe)
-  ('set "NX_LAUNCHER={0}"' -f $nxLauncherPath)
-  '"%NODE_EXE%" "%NX_LAUNCHER%" %*'
-) -join [Environment]::NewLine
-
-Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.cmd') -Content $nxCmdContent
-
-$nxPs1Content = @(
-  ('$nodeExe = ''{0}''' -f $primaryNodeExe)
-  ('$nxLauncher = ''{0}''' -f $nxLauncherPath)
-  '& $nodeExe $nxLauncher @args'
-  'exit $LASTEXITCODE'
-) -join [Environment]::NewLine
-
-Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.ps1') -Content $nxPs1Content
-
-$nxShellContent = (@(
-  '#!/bin/sh'
-  ('NODE_EXE_WIN=''{0}''' -f $primaryNodeExe)
-  ('NX_LAUNCHER_WIN=''{0}''' -f $nxLauncherPath)
-  ''
-  'if command -v cygpath >/dev/null 2>&1; then'
-  '  NODE_EXE="$(cygpath -u "$NODE_EXE_WIN")"'
-  '  NX_LAUNCHER="$(cygpath -u "$NX_LAUNCHER_WIN")"'
-  'else'
-  '  NODE_EXE="$NODE_EXE_WIN"'
-  '  NX_LAUNCHER="$NX_LAUNCHER_WIN"'
-  'fi'
-  ''
-  'exec "$NODE_EXE" "$NX_LAUNCHER" "$@"'
-) -join "`n") + "`n"
-
-Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx') -Content $nxShellContent
-
-$env:BOXED_NX_LAUNCHER = $nxLauncherPath
-```
-
-## Why this implementation is correct
-
-This implementation is correct for the current architecture because it:
-
-1. resolves the local workspace Nx CLI dynamically instead of pinning one hardcoded path
-2. keeps the plain `nx` command surface available in PowerShell, CMD, and Git Bash
-3. keeps Nx hosted by the already-governed local mirrored Node runtime
-4. avoids dependence on a global host Nx install
-
-The current wrapper set now explicitly includes:
-
-- `nx`
-- `nx.cmd`
-- `nx.ps1`
-- `nx-cli.cjs`
+This means the current default bootstrap does **not** need to publish a plain `nx` alias in order for Nx to work.
 
 ## Exact current project environment contract
 
@@ -242,28 +118,71 @@ $env:BOXED_COMSPEC = $boxedComSpec
 $env:BOXED_NODE_ROOT = $nodeRuntime.NodeRoot
 $env:BOXED_PNPM_CLI = $nodeRuntime.PnpmCli
 $env:BOXED_NODE_EXTRA_COMMANDS = (($AdditionalNodeCommands.Keys | Sort-Object) -join ',')
-$env:BOXED_STARSHIP_ROOT = $starshipRuntime.StarshipRoot
-$env:BOXED_STARSHIP_EXE = $starshipRuntime.StarshipExe
-$env:BOXED_STARSHIP_CONFIG = $starshipRuntime.ConfigPath
-$env:BOXED_BASH_MINIMAL_RC = $starshipRuntime.BashMinimalRc
-$env:BOXED_BASH_STARSHIP_RC = $starshipRuntime.BashStarshipRc
-$env:BOXED_STARSHIP_AVAILABLE = if ($starshipRuntime.Available) { 'true' } else { 'false' }
 ```
 
 This is the exact reason the Nx contract belongs to bootstrap:
 
 - the socket path
 - native cache path
-- wrapper publication
-- and local mirrored command surface
+- temp/cache paths
+- and the Windows child-process contract
 
-all come into existence before the developer types the first Nx command.
+all come into existence before the developer runs the first Nx command.
 
-The current shell-selection contract belongs here as well, because `nx:run-commands` is sensitive to the Windows command-interpreter environment.
+## Recommended standard command surface
+
+The current recommended standard command surface is:
+
+```powershell
+pnpm exec nx --version
+pnpm exec nx show projects
+pnpm exec nx run test:serve --no-tui -- --profile=dev-evident
+```
+
+This keeps Nx on the workspace-local installation and avoids requiring a bootstrap-published alias for the normal path.
+
+The lower-level diagnostic path remains:
+
+```powershell
+$nxCli = node -p "try { require.resolve('nx/bin/nx.js') } catch { require.resolve('nx/dist/bin/nx.js') }"
+node $nxCli --version
+node $nxCli show projects
+```
+
+## Latest validated default result
+
+The latest validated default boxed results showed:
+
+- `pnpm exec nx --version` succeeds
+- `pnpm exec nx show projects` succeeds
+- `pnpm exec tsx --version` succeeds in the real target working directory used by the application runner
+- `pnpm exec tsx tooling/run/cli.ts --help` reaches the real runner surface
+- the full application can be started without depending on a bootstrap-published plain-`nx` alias
+
+That means the old wrapper is no longer required for the currently validated standard path.
+
+## Optional legacy wrapper surface
+
+The historical plain-`nx` wrapper has been moved out of the default contract.
+
+It now belongs to a separate optional / legacy surface:
+
+- documentation:
+  - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\deprecated-wrapper-command-surface.md`
+- shared implementation:
+  - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.NxWrapper.psm1`
+
+That optional path can still be useful when a team explicitly wants:
+
+- a plain `nx` alias in PowerShell
+- a plain `nx` alias in CMD
+- a plain `nx` alias in Git Bash
+
+But it is no longer the recommended default and no longer part of the required baseline.
 
 ## Maintenance integration
 
-The maintenance bootstrap also calls into the same Node bootstrap layer:
+The maintenance bootstrap still calls into the same shared Node bootstrap layer:
 
 ```powershell
 $nodeRuntime = Initialize-NodeToolchainRuntime `
@@ -275,100 +194,7 @@ $nodeRuntime = Initialize-NodeToolchainRuntime `
   -AdditionalNodeCommands $additionalNodeCommands
 ```
 
-That means the current Nx wrapper generation is not project-only.
-It is part of the shared shared-toolchain bootstrap layer.
-
-## How it is currently called
-
-### Host-side project terminal launch
-
-The current live project-terminal launch shape is:
-
-```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
-  -Action OpenTerminal `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
-```
-
-### Plain boxed Nx command surface
-
-Inside the bootstrapped project terminal, the expected entrypoints are now:
-
-```powershell
-nx --version
-nx show projects
-```
-
-### Diagnostic wrapper verification
-
-The current diagnostic verification commands are:
-
-```powershell
-$env:BOXED_BOOTSTRAP_BIN
-$env:BOXED_NX_LAUNCHER
-Get-ChildItem "$env:BOXED_BOOTSTRAP_BIN\nx*"
-where.exe nx
-Get-Command nx | Format-List Name,Source,Definition,CommandType
-```
-
-## Latest validated output
-
-Latest validated boxed output showed:
-
-- `nx`
-- `nx-cli.cjs`
-- `nx.cmd`
-- `nx.ps1`
-
-under:
-
-- `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin`
-
-And `Get-Command nx -All` showed:
-
-- `nx.ps1`
-- `nx.cmd`
-- `nx`
-
-with PowerShell resolving `nx` from:
-
-- `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\bootstrap-bin\nx.ps1`
-
-And:
-
-```powershell
-nx show projects
-```
-
-returned:
-
-- `test-tooling`
-- `installer`
-- `frontend`
-- `webpages`
-- `backend`
-- `test`
-
-The latest validated boxed environment also showed:
-
-```powershell
-$env:COMSPEC
-$env:ComSpec
-```
-
-returning:
-
-```text
-C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\shells\cmd\10.0.26100.8457\cmd.exe
-```
-
-That means the default Windows shell surface used by `nx:run-commands` is now redirected by bootstrap to the boxed-CMD lane for the currently validated command set.
+That keeps the Node/PNPM/runtime contract consistent, without forcing the optional legacy Nx alias into every default maintenance shell.
 
 ## Related
 
@@ -376,5 +202,6 @@ That means the default Windows shell surface used by `nx:run-commands` is now re
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\runtime-contract.md`
+- `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\deprecated-wrapper-command-surface.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\general.md`

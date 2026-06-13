@@ -56,17 +56,14 @@ It also needs shell-native wrappers for Bash-oriented command resolution, for ex
 
 - `pnpm`
 - `node20`
-- `nx`
 
 This is why the boxed-owned-toolchain bootstrap generates more than just `pnpm.cmd` and `node20.cmd`.
 
-It also publishes:
+The current recommended standard path for Nx itself is:
 
-- `nx.cmd`
-- `nx`
-- `nx-cli.cjs`
+- `pnpm exec nx ...`
 
-so the plain `nx` command surface is available inside the boxed bootstrap environment without requiring developers to resolve the local Nx entrypoint manually every time.
+The historical plain-`nx` wrapper surface may still exist as an optional legacy convenience layer, but it is no longer the recommended default contract.
 
 ## `nvm` is not part of the final contract
 

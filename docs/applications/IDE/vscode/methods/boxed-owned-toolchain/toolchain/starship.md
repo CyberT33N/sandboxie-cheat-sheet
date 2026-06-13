@@ -6,10 +6,13 @@
 
 The boxed-owned-toolchain method provisions it as a versioned shared runtime and mirrors it locally into the box execution tree during bootstrap.
 
-This must not be read as:
+Starship is not limited to Git Bash in this method.
 
-- Starship can only be used with Git Bash
-- or PowerShell/CMD are impossible in the method
+Current lane split:
+
+- PowerShell is the preferred default interactive lane
+- CMD is supported through the separate `Clink` adapter lane
+- Git Bash remains an explicit supported shell lane
 
 ## Selected form
 

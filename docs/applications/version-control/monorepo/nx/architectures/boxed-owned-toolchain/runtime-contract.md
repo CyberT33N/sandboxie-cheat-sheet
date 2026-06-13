@@ -131,13 +131,13 @@ This is also the correct twelve-factor reading:
 - the command surface does not rely on hidden workstation state
 - project startup stays explicit and reviewable
 
-## Current validated direct Nx surface
+## Current validated standard Nx surface
 
-The current direct proof surfaces are:
+The current preferred standard proof surfaces are:
 
 ```powershell
-nx --version
-nx show projects
+pnpm exec nx --version
+pnpm exec nx show projects
 ```
 
 Latest validated boxed output:
@@ -149,7 +149,7 @@ Latest validated boxed output:
 - `backend`
 - `test`
 
-The lower-level resolved entrypoint also remains valid for diagnosis:
+The lower-level resolved entrypoint remains valid for diagnosis:
 
 ```powershell
 $nxCli = node -p "try { require.resolve('nx/bin/nx.js') } catch { require.resolve('nx/dist/bin/nx.js') }"
@@ -166,7 +166,9 @@ For the boxed-owned-toolchain architecture in this repository, the current Nx ta
 2. `NX_DAEMON=false`
 3. `NX_SOCKET_DIR='C:\nxs'`
 4. `NX_ISOLATE_PLUGINS=false`
-5. plain `nx` command surface works in the boxed project context
+5. the preferred standard path is `pnpm exec nx ...`
+6. direct `node <resolved nxCli> ...` remains the diagnostic baseline
+7. the historical plain-`nx` wrapper surface is optional legacy compatibility, not part of the recommended default contract
 
 ## Related
 

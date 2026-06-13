@@ -31,6 +31,7 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\microsoft-build\Bootstrap.MicrosoftBuild.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\dotnet-framework\Bootstrap.DotNetFramework.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.Node.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\node\Bootstrap.NxWrapper.psm1` (optional legacy wrapper surface)
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\starship\Bootstrap.Starship.psm1`
@@ -174,13 +175,10 @@ Current responsibilities:
 - including `vswhere.exe`, Visual Studio Build Tools, Windows Kits, and the `.NET Framework` compiler tree
 - generate wrapper commands such as `git.cmd`
 - generate wrapper commands such as `pnpm.cmd`
-- generate wrapper commands such as `nx.cmd`
 - generate wrapper commands such as `git.ps1`
 - generate wrapper commands such as `pnpm.ps1`
-- generate wrapper commands such as `nx.ps1`
 - generate shell-native wrappers such as `git`
 - generate shell-native wrappers such as `pnpm`
-- generate shell-native wrappers such as `nx`
 - generate additional node aliases such as `node20.cmd`
 - generate additional node aliases such as `node20.ps1`
 - generate shell-native additional aliases such as `node20`
@@ -246,7 +244,7 @@ function Initialize-NodeGypWindowsBuildEnvironment {
 }
 ```
 
-Representative wrapper publication now includes all three relevant shell families plus the boxed Git command surface:
+Representative wrapper publication now includes the required multi-shell command surfaces plus the boxed Git command surface:
 
 ```powershell
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'git.cmd') -Content $gitCmdContent
@@ -259,10 +257,6 @@ Write-AsciiFile -Path (Join-Path $BootstrapBin 'git-credential-manager-boxed') -
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.cmd') -Content $pnpmCmdContent
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm.ps1') -Content $pnpmPs1Content
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'pnpm') -Content $pnpmShellContent
-
-Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.cmd') -Content $nxCmdContent
-Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx.ps1') -Content $nxPs1Content
-Write-AsciiFile -Path (Join-Path $BootstrapBin 'nx') -Content $nxShellContent
 
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20.cmd') -Content $nodeCmdContent
 Write-AsciiFile -Path (Join-Path $BootstrapBin 'node20.ps1') -Content $nodePs1Content
@@ -296,6 +290,7 @@ Verified current outcomes:
 - a direct boxed `node-gyp rebuild --verbose` succeeds through the bootstrap-published wrapper surface
 - boxed `git` now runs through a bootstrap-owned wrapper surface that applies `core.longpaths=true`
 - the boxed Git helper contract now uses `credential.helper=manager-boxed` so Git resolves a bootstrap-published helper command without path-with-spaces quoting issues
+- the standard Nx path works through `pnpm exec nx ...` without needing a bootstrap-published plain-`nx` alias
 
 ## `Bootstrap.Python.psm1`
 
@@ -508,7 +503,6 @@ $env:ComSpec = $boxedComSpec
 $env:COMSPEC = $boxedComSpec
 $env:BOXED_COMSPEC = $boxedComSpec
 $env:BOXED_LONG_PATHS_ENABLED = 'true'
-$env:BOXED_NX_LAUNCHER = $nodeRuntime.NxLauncher
 $env:BOXED_PROMOTION_SCRIPT = $promotionScript
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
 $env:BOXED_LOCAL_EXTENSIONS = $maintenancePaths.ExtensionsDir
