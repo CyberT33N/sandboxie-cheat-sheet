@@ -15,6 +15,10 @@ The operational troubleshooting trail for this architecture lives here:
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
 
+The project-owned post-install automation contract for this architecture now lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+
 ## Current validated outcome
 
 The validated troubleshooting flow in this repository reached a healthy Electron runtime state again.
@@ -128,6 +132,20 @@ Interpretation:
 - `electronCli` exists -> JS package resolves
 - `path.txt exists=false` -> install state is incomplete
 - `electron.exe exists=false` -> native Electron runtime is not materialized
+
+## Two supported operational modes
+
+The current boxed-owned-toolchain architecture supports two valid ways to handle this Electron-specific follow-up surface:
+
+1. **manual trigger later**
+   - verify the runtime after install
+   - if it is missing, run the explicit Electron post-install script manually
+2. **integrated post-install**
+   - let the project-owned PNPM install / clean-reinstall scripts call the Electron post-install script immediately after a successful `pnpm install`
+
+The full script contract and sanitized code example live here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 
 Important nuance:
 
@@ -291,18 +309,20 @@ That stronger strategy can include a mirrored explicit runtime path similar to t
 
 It also means the most sensible automation target is **not** a silent mutation inside every generic bootstrap path.
 
-The better automation shape is:
+The current preferred automation shape is:
 
-- a project-owned explicit Electron runtime validation / repair step
-- or a project-specific preflight that runs only when an Electron-bearing workflow actually needs the runtime
+- a project-owned explicit Electron post-install script
+- called from the project-owned PNPM install / clean-reinstall scripts after `pnpm install` succeeds
+- while still remaining available as a manual trigger when a team wants to keep the repair step explicit
 
-That preserves determinism and keeps the generic bootstrap from silently mutating the workspace on every launch.
+That preserves determinism, keeps Electron-specific mutation in the Electron domain, and avoids burdening every normal VS Code start path.
 
 ## Related
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 - `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\host-sync\general.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`

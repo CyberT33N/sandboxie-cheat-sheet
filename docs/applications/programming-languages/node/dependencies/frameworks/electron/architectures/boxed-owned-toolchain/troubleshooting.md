@@ -162,6 +162,10 @@ So the current interpretation should be:
    - `electron.exe exists=true`
 7. run the direct smoke guard again
 
+If this failure class is recurring for the project, the same validated sequence should be wrapped into the project-owned Electron post-install script instead of being repeated manually each time:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+
 ## Current conclusion
 
 The current validated conclusion is:
@@ -174,6 +178,7 @@ The current validated conclusion is:
 ## Related
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - `docs\applications\programming-languages\node\runtime\architectures\boxed-owned-toolchain\overview.md`

@@ -102,6 +102,15 @@ The current documented follow-up surfaces are:
 
 That is still a better failure class than boxed CMD, because the generic lifecycle has run and the remaining work is narrower and traceable.
 
+For the Electron-specific surface, the current documentation now supports two shapes:
+
+1. trigger the Electron post-install script manually later
+2. wire that post-install script directly into the project-owned install / clean-reinstall scripts
+
+The Electron-domain source of truth for that code now lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+
 ## Relationship to `ComSpec` / `COMSPEC`
 
 The bootstrap-owned `ComSpec` / `COMSPEC` contract remains a **separate** Windows child-process surface.

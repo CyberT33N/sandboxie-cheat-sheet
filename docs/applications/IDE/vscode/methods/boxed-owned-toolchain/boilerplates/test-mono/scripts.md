@@ -199,6 +199,7 @@ The current shell-specific requirement is also part of this contract:
 - boxed PowerShell remains the preferred interactive default shell
 - boxed `cmd.exe` remains available as a helper lane for native-build preparation and cleanup fallback
 - Git Bash still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
+- Electron post-install verification / repair belongs in its own Electron-domain script and is only called from the PNPM scripts
 - native-build preparation projects the governed shared Microsoft build-source trees into their canonical Windows runtime paths before `pnpm install` runs
 - the boxed `node-gyp` wrapper is published by bootstrap so Windows build-tracking behavior is adapted without editing downloaded dependency source
 
@@ -253,8 +254,26 @@ Write-Host "LifecycleShell: $bashExe"
 pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 
+$scriptExitCode = $LASTEXITCODE
+if ($scriptExitCode -ne 0) {
+  exit $scriptExitCode
+}
+
+$electronPostInstallScript = Join-Path $PSScriptRoot 'Start-TestMonoElectronPostInstall.ps1'
+if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
+  throw "Electron post-install script not found: $electronPostInstallScript"
+}
+
+& $electronPostInstallScript -RepoPath $RepoPath -SkipBootstrap
+
 exit $LASTEXITCODE
 ```
+
+## `Start-TestMonoElectronPostInstall.ps1`
+
+The full Electron-domain source of truth for the project-owned post-install script now lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 
 ## `Start-TestMonoPnpmUninstall.ps1`
 
@@ -434,6 +453,18 @@ pnpm config set --location=project scriptShell "$bashExe"
 
 Write-Host 'Running clean pnpm install...'
 pnpm install
+
+$scriptExitCode = $LASTEXITCODE
+if ($scriptExitCode -ne 0) {
+  exit $scriptExitCode
+}
+
+$electronPostInstallScript = Join-Path $PSScriptRoot 'Start-TestMonoElectronPostInstall.ps1'
+if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
+  throw "Electron post-install script not found: $electronPostInstallScript"
+}
+
+& $electronPostInstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
 
 exit $LASTEXITCODE
 ```

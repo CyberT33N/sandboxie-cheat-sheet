@@ -59,6 +59,15 @@ That narrower follow-up surface currently includes:
 - optional/native packages such as `cpu-features`, `canvas`, `msgpackr-extract`, and `lmdb`
 - Electron runtime materialization checks after install
 
+For that Electron-specific follow-up surface, the current architecture supports two documented choices:
+
+1. keep the Electron repair as an explicit manual post-install step
+2. call the Electron post-install script automatically from the project-owned install / clean-reinstall scripts
+
+The full Electron-domain script contract lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+
 ## Domain map
 
 ### Runtime contract

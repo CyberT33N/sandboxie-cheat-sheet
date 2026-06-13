@@ -67,6 +67,17 @@ The architecture-specific troubleshooting interpretation of the Electron failure
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
 
+The full project-owned Electron post-install script contract now lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+
+For the current Git-Bash-based install lane, there are therefore two supported operational choices:
+
+1. run `pnpm install` and trigger the Electron post-install script manually later if the runtime is missing
+2. call the Electron post-install script immediately after a successful `pnpm install`
+
+The second option is the preferred automation shape when the project repeatedly lands in the known Electron partial-materialization state.
+
 ## Sanitized script path
 
 ```text
@@ -121,6 +132,18 @@ Write-Host "LifecycleShell: $bashExe"
 pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
 
+$scriptExitCode = $LASTEXITCODE
+if ($scriptExitCode -ne 0) {
+  exit $scriptExitCode
+}
+
+$electronPostInstallScript = Join-Path $PSScriptRoot 'Start-TestMonoElectronPostInstall.ps1'
+if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
+  throw "Electron post-install script not found: $electronPostInstallScript"
+}
+
+& $electronPostInstallScript -RepoPath $RepoPath -SkipBootstrap
+
 exit $LASTEXITCODE
 ```
 
@@ -144,6 +167,7 @@ This script body is the PNPM-domain proof that the preferred productive path is 
 - bootstrap-owned boxed helper lanes for Python / `reg.exe` / Windows native-build preparation
 - project-owned `scriptShell` on explicit boxed Git Bash
 - project-owned `pnpm install` launched through one explicit PS1
+- project-owned Electron post-install verification / repair called only after `pnpm install` succeeded
 - bootstrap-owned `node-gyp` wrapper publication so Windows MSBuild tracking behavior is adapted without editing downloaded dependencies
 
 At the same time:
@@ -151,6 +175,7 @@ At the same time:
 - bootstrap can still keep separate Windows child-process rules such as `ComSpec` / `COMSPEC`
 - boxed `cmd.exe` remains available as a helper lane
 - but the install contract itself now deliberately returns to Git Bash as the preferred lifecycle shell
+- and Electron-specific repair logic stays in the Electron domain instead of being inlined permanently into the generic PNPM document
 
 ## Sanitized boilerplate note
 
@@ -165,6 +190,7 @@ That boilerplate remains useful as a reusable example, but PNPM-specific install
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 - `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`

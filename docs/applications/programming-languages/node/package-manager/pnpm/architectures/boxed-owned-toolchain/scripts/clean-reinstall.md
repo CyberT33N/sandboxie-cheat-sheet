@@ -33,6 +33,10 @@ Electron-specific follow-up verification and repair after a clean reinstall is o
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
 
+The full project-owned Electron post-install script contract now lives here:
+
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+
 The current scope does **not** include:
 
 - deleting `package.json`, `pnpm-lock.yaml`, or `pnpm-workspace.yaml`
@@ -126,6 +130,18 @@ pnpm config set --location=project scriptShell "$bashExe"
 Write-Host 'Running clean pnpm install...'
 pnpm install
 
+$scriptExitCode = $LASTEXITCODE
+if ($scriptExitCode -ne 0) {
+  exit $scriptExitCode
+}
+
+$electronPostInstallScript = Join-Path $PSScriptRoot 'Start-TestMonoElectronPostInstall.ps1'
+if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
+  throw "Electron post-install script not found: $electronPostInstallScript"
+}
+
+& $electronPostInstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
+
 exit $LASTEXITCODE
 ```
 
@@ -150,6 +166,7 @@ The clean-reinstall path now matches the productive boxed-owned-toolchain PNPM c
 - the project-owned script initializes the boxed Windows native-build helper before the reinstall
 - the project-owned script sets `scriptShell` to boxed Git Bash
 - the reinstall happens inside the normal project bootstrap context
+- after a successful reinstall, the project-owned script calls the Electron post-install verification / repair step
 
 Boxed `cmd.exe` remains relevant for:
 
@@ -160,6 +177,11 @@ Boxed `cmd.exe` remains relevant for:
 But the clean-reinstall contract itself now deliberately returns to Git Bash as the preferred lifecycle shell, because the boxed-CMD-only path otherwise collapses toward postinstall suppression and manual replay.
 
 ## Expected next validation step
+
+For projects that do not want this integrated automation, the alternative remains:
+
+- finish the reinstall
+- run the Electron post-install script manually later only when the runtime is missing
 
 After the clean reinstall finishes, the next direct PNPM-domain validation step is the relevant runtime probe or dependency consumer, for example:
 
@@ -177,6 +199,7 @@ The architecture-specific troubleshooting interpretation of that failure class l
 
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\host-sync\clean-reinstall.md`
 - `docs\applications\programming-languages\node\dependencies\puppeteer\boxed-owned-toolchain\overview.md`
