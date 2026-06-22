@@ -4,6 +4,8 @@
 
 This document records the **validated troubleshooting trail** for Electron runtime materialization failures in the boxed-owned-toolchain architecture.
 
+The environment captured here is boxed-owned-toolchain, but the failure class below should **not** be described as a sandbox-only root cause. The important troubleshooting axis is the Node runtime used for Electron materialization.
+
 It focuses on the concrete failure class where:
 
 - `pnpm install` appears to finish
@@ -65,7 +67,7 @@ Observed result:
 - `path.txt` still did not exist
 - `dist\electron.exe` still did not exist
 
-### 3. Direct `install.js` with the primary Node 26 surface
+### 3. Direct `install.js` with the primary Node 26 runtime
 
 We then targeted the current resolved package directly:
 
@@ -80,7 +82,7 @@ Observed result:
 - the command could exit cleanly
 - but the runtime state could still remain incomplete afterward
 
-### 4. Direct `install.js` with the secondary boxed `node20` surface
+### 4. Direct `install.js` with the Node 20 runtime
 
 Then we retried the same `install.js` with:
 
@@ -123,8 +125,11 @@ That means the more likely primary cause in this repository state is:
 not:
 
 - cache placement alone
+- sandboxing by itself
 
-## Why host behavior can still differ
+For lower Electron lines, the same troubleshooting rule still applies: make sure the install step runs with the Node version that matches that Electron line. In the validated repository state here, that version was Node 20.
+
+## Why this should not be framed as a sandbox-only root cause
 
 A host-side install can still work even when the boxed path does not, because the boxed path introduces additional constraints:
 
@@ -137,12 +142,13 @@ However, in the validated flow here, the decisive differentiator was **not merel
 
 The sharper differentiator was:
 
-- the successful direct repair with the boxed `node20` runtime
+- the successful direct repair with the Node 20 runtime used for this Electron install path
 
 So the current interpretation should be:
 
 - Sandboxie/boxed execution is part of the environment
 - but the most important proven corrective factor was the **Node 20 runtime selection for Electron install**
+- and the same troubleshooting logic can also apply outside the sandbox when Electron is installed through the wrong Node runtime
 
 ## Correct current troubleshooting sequence
 
@@ -172,8 +178,9 @@ The current validated conclusion is:
 
 - boxed `pnpm install` remains the default baseline
 - if Electron is still unavailable afterward, the next troubleshooting step is **not** to blame cache first
-- instead, treat the issue primarily as an **Electron materialization path under the wrong runtime selection**
-- the current proven repair step is the direct `install.js` execution through boxed `node20`
+- and it should also **not** be framed primarily as a sandbox-only defect
+- instead, treat the issue primarily as an **Electron materialization troubleshooting case under the wrong runtime selection**
+- the current proven repair step is the direct `install.js` execution through Node 20 for this Electron line
 
 ## Related
 

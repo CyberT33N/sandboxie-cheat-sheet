@@ -4,6 +4,8 @@
 
 This is the boxed-owned-toolchain source of truth for Electron-specific runtime troubleshooting in this repository.
 
+The troubleshooting documented here is anchored in the boxed-owned-toolchain environment, but the underlying failure class should not be presented as a sandbox-only root cause. The key troubleshooting question is whether Electron was installed with the correct Node runtime for that Electron line.
+
 Use this document when:
 
 - the project is running under the boxed-owned-toolchain architecture
@@ -78,6 +80,8 @@ However, Electron still remained vulnerable to a second failure class:
 - but the native runtime payload is not ready
 
 This can happen even when the overall `pnpm install` run looks mostly healthy.
+
+That Electron materialization problem should be treated as a troubleshooting surface in its own right, not as proof that the sandbox is the root cause. The same repair pattern can still matter outside the sandbox if Electron is installed through the wrong Node runtime.
 
 That is why a project can legitimately show both of these statements at different points in time:
 
@@ -192,7 +196,7 @@ Why:
 - the repair should target the exact currently resolved `electron` package in the workspace
 - not some guessed or hard-coded package location
 
-### Step 3 - run the Electron installer with the secondary Node 20 runtime
+### Step 3 - run the Electron installer with the Node 20 runtime used by this Electron line
 
 ```bash
 node20 "$electronInstall"
@@ -204,6 +208,7 @@ Why `node20`:
 - the current boxed-owned-toolchain project uses Node `26.2.0` as the primary control-plane runtime
 - but the Electron runtime truth in this project is Node `20.9.0`
 - in the validated debugging flow, the direct Electron install path had to be retried with the boxed `node20` command
+- more generally, when older or lower Electron lines are involved, the install step must run with the Node version that matches that Electron line
 
 Validated repository observation:
 
@@ -260,13 +265,15 @@ The current best interpretation is:
 1. a plain boxed `pnpm install` remains the correct default baseline
 2. Electron-specific runtime verification must still be treated as a separate concern
 3. when Electron is not correctly materialized, the explicit repair path above is the current validated corrective action
+4. that corrective action should be described as Electron troubleshooting, not as proof that the sandbox itself is the root cause
 
 So the repository should **not** reinterpret the situation as "Electron must always be manually installed after every normal install".
 
 The narrower, more correct statement is:
 
-- a normal install may leave Electron in a broken partial state in this architecture
+- a normal install may leave Electron in a broken partial state in this repository flow
 - when that happens, the repair sequence above is currently required
+- the deciding variable is the Node runtime used for Electron materialization, not simply the presence of a sandbox
 
 ## Relationship to the existing PNPM and Puppeteer documents
 
@@ -295,6 +302,7 @@ The current validated conclusion is narrower:
 
 - a repo-local Electron install can land in a broken state
 - when it does, the repair flow above is the current validated boxed-owned-toolchain troubleshooting path
+- and the same reasoning can apply outside the sandbox if the Electron install path is using the wrong Node version
 
 ## Current architectural recommendation
 
@@ -302,7 +310,7 @@ For the current boxed-owned-toolchain architecture, the most correct posture is:
 
 1. keep normal `pnpm install` as the default path
 2. if Electron is still unavailable afterward, verify `path.txt` and `dist\electron.exe`
-3. if Electron is not materialized, run the explicit repair flow above
+3. if Electron is not materialized, run the explicit repair flow above with the Node version that matches the Electron line
 4. if the repo-local package still cannot be repaired reliably, move to a stronger explicit runtime strategy
 
 That stronger strategy can include a mirrored explicit runtime path similar to the older host-sync Electron fallback, but that is **not** the first boxed-owned-toolchain troubleshooting step.
