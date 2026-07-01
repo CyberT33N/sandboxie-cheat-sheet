@@ -10,6 +10,16 @@ It owns:
 - cache placement guidance
 - daemon/plugin topology guidance
 
+## Plugin-specific documentation
+
+Plugin-specific Nx topics live here:
+
+- `docs\applications\version-control\monorepo\nx\plugins\`
+
+Current plugin-specific area:
+
+- `docs\applications\version-control\monorepo\nx\plugins\@nx%2Fesbuild\overview.md`
+
 ## Architecture split
 
 ### Preferred
