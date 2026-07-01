@@ -59,6 +59,10 @@ For cross-cutting shell-selection behavior such as `ComSpec` / `COMSPEC`, read:
 
 - `docs\cli\shell\general.md`
 
+For process enumeration and termination in a specific box, read:
+
+- `docs\cli\process\general.md`
+
 ## Minimal examples
 
 ### Start a program in a named box
@@ -151,5 +155,6 @@ then continue with:
 
 ## Related
 
+- `docs\cli\process\general.md`
 - `docs\cli\shell\general.md`
 - `docs\cli\terminal\general.md`

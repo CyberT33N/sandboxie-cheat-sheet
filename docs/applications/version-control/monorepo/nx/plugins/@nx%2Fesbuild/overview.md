@@ -26,7 +26,12 @@ The Nx architecture documents own:
 
 But when a problem is tied to one concrete Nx plugin, the plugin-specific write-up should live under `plugins\...` instead of being mixed into the generic Nx architecture pages.
 
+Generic boxed process termination semantics do not live here. They live in:
+
+- `docs\cli\process\general.md`
+
 ## Related
 
 - `docs\applications\version-control\monorepo\nx\general.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
+- `docs\cli\process\general.md`

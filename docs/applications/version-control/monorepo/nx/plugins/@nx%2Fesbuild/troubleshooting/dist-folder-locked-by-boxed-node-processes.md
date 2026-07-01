@@ -37,31 +37,23 @@ It is **not** the first-class answer to:
 
 ## Required boxed recovery step
 
-Before retrying the Nx command, terminate the stale boxed `node.exe` processes for the affected sandbox from the **host system**.
+The generic single source of truth for boxed process termination now lives here:
 
-Representative command for the project box `VS_CODE_PRIVADENT_MONO`:
+- `docs\cli\process\general.md`
+
+For this concrete `@nx/esbuild` failure class, the plugin-specific recovery step is to terminate the stale boxed `node.exe` processes for the affected sandbox before retrying the Nx command.
+
+Host-side command for the project box `VS_CODE_PRIVADENT_MONO`:
 
 ```powershell
 $box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 ```
 
-## Optional preview step
-
-If you want to inspect which boxed `node.exe` processes would be terminated first:
+In-box terminal command for the same boxed `node.exe` cleanup:
 
 ```powershell
-$box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | Select-Object ProcessId, Name, CommandLine
+$box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 ```
-
-## Coarse fallback
-
-If selective termination is not sufficient and you intentionally want to stop **all** programs in that sandbox, Sandboxie documents this host-side command:
-
-```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:VS_CODE_PRIVADENT_MONO /terminate
-```
-
-This is broader than the preferred `node.exe`-only recovery step.
 
 ## What to do next
 
@@ -86,7 +78,7 @@ The current repository interpretation is narrower:
 
 ## Related
 
+- `docs\cli\process\general.md`
 - `docs\applications\version-control\monorepo\nx\plugins\@nx%2Fesbuild\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`
-- `docs\cli\start\general.md`
 - `upstream\sandboxie-docs\docs\Content\StartCommandLine.md`

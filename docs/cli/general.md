@@ -41,6 +41,8 @@ The recommended high-level split is:
 docs\
   cli\
     general.md
+    process\
+      general.md
     shell\
       general.md
       clink.md
@@ -60,6 +62,18 @@ The `shell` area documents shell-selection and command-interpreter behavior that
 - Windows command-interpreter resolution
 
 This is where the cross-domain `ComSpec` / `COMSPEC` contract belongs.
+
+### `process\`
+
+The `process` area documents generic boxed-process enumeration and termination behavior.
+
+This is where:
+
+- `Start.exe /listpids`
+- `Start.exe /terminate`
+- selective host-side or in-box process termination patterns
+
+belong.
 
 ### `start\`
 
@@ -100,6 +114,7 @@ That means:
 
 Start here:
 
+- `docs\cli\process\general.md`
 - `docs\cli\shell\general.md`
 - `docs\cli\shell\clink.md`
 - `docs\cli\start\general.md`

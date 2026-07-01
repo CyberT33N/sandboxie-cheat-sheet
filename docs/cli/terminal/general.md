@@ -20,6 +20,7 @@ Read first:
 
 - `docs\cli\shell\general.md`
 - `docs\cli\start\general.md`
+- `docs\cli\process\general.md`
 
 ## Core rule
 
@@ -122,7 +123,12 @@ Do not overload a single generic passthrough mechanism for both.
 
 Application-specific areas should reference this document and then add only their workload-specific inner commands.
 
+If the actual problem is a stale boxed process rather than terminal launch semantics, switch to:
+
+- `docs\cli\process\general.md`
+
 ## Related
 
+- `docs\cli\process\general.md`
 - `docs\cli\shell\general.md`
 - `docs\cli\start\general.md`
