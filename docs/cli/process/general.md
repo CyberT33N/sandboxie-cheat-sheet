@@ -62,10 +62,10 @@ This is preferable to terminating the whole sandbox when only one runtime family
 
 ## Host-side selective `node.exe` termination
 
-Representative host-side command for the project box `VS_CODE_PRIVADENT_MONO`:
+Representative host-side command for the project box `VS_CODE_testproject_MONO`:
 
 ```powershell
-$box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+$box='VS_CODE_testproject_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 ```
 
 ## Host-side preview before termination
@@ -73,7 +73,7 @@ $box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\St
 If you want to inspect the matching boxed `node.exe` processes first:
 
 ```powershell
-$box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | Select-Object ProcessId, Name, CommandLine
+$box='VS_CODE_testproject_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | Select-Object ProcessId, Name, CommandLine
 ```
 
 ## Box-terminal selective `node.exe` termination
@@ -81,7 +81,7 @@ $box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\St
 The same selective pattern can also be run **inside** a boxed PowerShell terminal, as long as `Start.exe` is available on the machine:
 
 ```powershell
-$box='VS_CODE_PRIVADENT_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
+$box='VS_CODE_testproject_MONO'; $boxPids = (& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:$box /listpids | Where-Object { $_ -match '^\d+$' } | Select-Object -Skip 1 | ForEach-Object { [int]$_ }); Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Where-Object { $boxPids -contains $_.ProcessId } | ForEach-Object { Stop-Process -Id $_.ProcessId -Force }
 ```
 
 This is the preferred in-box command when you want to kill stale boxed Node runtimes without killing every process in the sandbox.
@@ -91,7 +91,7 @@ This is the preferred in-box command when you want to kill stale boxed Node runt
 If selective process termination is not sufficient and you deliberately want to stop **all** programs in the sandbox:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:VS_CODE_PRIVADENT_MONO /terminate
+& "C:\Program Files\Sandboxie-Plus\Start.exe" /box:VS_CODE_testproject_MONO /terminate
 ```
 
 This is broader than the preferred `node.exe`-only path.

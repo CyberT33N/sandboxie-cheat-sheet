@@ -13,7 +13,7 @@ Use this area when the topic is:
 ## Current plugin-specific topic
 
 - troubleshooting:
-  - `docs\applications\version-control\monorepo\nx\plugins\@nx%2Fesbuild\troubleshooting\dist-folder-locked-by-boxed-node-processes.md`
+  - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\plugins\@nx%2Fesbuild\troubleshooting\dist-folder-locked-by-boxed-node-processes.md`
 
 ## Why this area exists
 
