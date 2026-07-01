@@ -4,7 +4,7 @@
 
 ```powershell
 $Node26Root = "C:\shared\sandbox-toolchains\dev\node\26.2.0\node-v26.2.0-win-x64"
-$PnpmVersion = "11.5.0"
+$PnpmVersion = "11.7.0"
 $PnpmRoot = "C:\shared\sandbox-toolchains\dev\pnpm\$PnpmVersion"
 
 New-Item -ItemType Directory -Force -Path $PnpmRoot | Out-Null
@@ -20,14 +20,14 @@ Pop-Location
 
 The shared `dev\pnpm\` area may keep multiple PNPM versions side by side.
 
-If one project contract now requires `11.5.0`, provision it as an additional governed version instead of mutating older PNPM subtrees in place.
+If one project contract now requires `11.7.0`, provision it as an additional governed version instead of mutating older PNPM subtrees in place.
 
 Sanitized host-side example:
 
 ```powershell
 $SharedRoot = "C:\shared\sandbox-toolchains"
 $Node26Root = Join-Path $SharedRoot "dev\node\26.2.0\node-v26.2.0-win-x64"
-$PnpmVersion = "11.5.0"
+$PnpmVersion = "11.7.0"
 $PnpmRoot = Join-Path $SharedRoot "dev\pnpm\$PnpmVersion"
 
 New-Item -ItemType Directory -Force -Path $PnpmRoot | Out-Null
@@ -44,15 +44,15 @@ Pop-Location
 Expected verification:
 
 ```text
-11.5.0
+11.7.0
 ```
 
 ## What to change when a project must move to a newer PNPM version
 
 The current boxed-owned-toolchain sequence is:
 
-1. provision `11.5.0` in `C:\shared\sandbox-toolchains\dev\pnpm\11.5.0\...`
-2. update the project adapter so `PnpmCli` points to `dev\pnpm\11.5.0\package\bin\pnpm.cjs`
+1. provision `11.7.0` in `C:\shared\sandbox-toolchains\dev\pnpm\11.7.0\...`
+2. update the project adapter so `PnpmCli` points to `dev\pnpm\11.7.0\package\bin\pnpm.cjs`
 3. restart the project box through the normal bootstrap launcher
 
 After that, the boxed `pnpm` command resolves to the newly selected shared CLI because the bootstrap-generated wrapper will be rebuilt from the updated project contract.
@@ -65,8 +65,8 @@ It is the bootstrap-generated command surface for the currently selected shared 
 
 So commands such as:
 
-- `pnpm self-update 11.5.0`
-- `npm install -g pnpm@11.5.0`
+- `pnpm self-update 11.7.0`
+- `npm install -g pnpm@11.7.0`
 
 do not change the project-box contract by themselves when the project bootstrap still points at some other governed PNPM version.
 

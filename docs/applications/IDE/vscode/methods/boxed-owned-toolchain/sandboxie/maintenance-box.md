@@ -137,7 +137,7 @@ ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\
 not as a version-pinned rule such as:
 
 ```ini
-ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.5.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.7.0\
 ```
 
 Why this is the recommended rule:

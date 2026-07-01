@@ -134,7 +134,7 @@ C:\shared\sandbox-toolchains\
       20.9.0\
         node-v20.9.0-win-x64\
     pnpm\
-      11.5.0\
+      11.7.0\
         package\
           bin\
             pnpm.cjs

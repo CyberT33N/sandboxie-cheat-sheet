@@ -635,7 +635,7 @@ return @{
   Toolchain = @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
-    PnpmCli = Join-Path $devRoot 'pnpm\11.5.0\package\bin\pnpm.cjs'
+    PnpmCli = Join-Path $devRoot 'pnpm\11.7.0\package\bin\pnpm.cjs'
     PythonRoot = Join-Path $devRoot 'python'
     AdditionalNodeCommands = [ordered]@{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'

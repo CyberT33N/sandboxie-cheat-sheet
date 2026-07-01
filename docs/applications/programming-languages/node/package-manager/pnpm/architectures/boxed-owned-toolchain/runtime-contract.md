@@ -10,7 +10,7 @@ C:\shared\sandbox-toolchains\dev\pnpm\<version>\package\bin\pnpm.cjs
 
 It is hosted by the governed shared Node runtime rather than by `@pnpm/exe`.
 
-The current project-specific example contract points at `11.5.0`.
+The current project-specific example contract points at `11.7.0`.
 
 ## Why not `@pnpm/exe`
 
@@ -73,7 +73,7 @@ When the PNPM version is changed in the project contract, the relevant box would
 That is why the recommended Sandboxie visibility rule is **not**:
 
 ```ini
-ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.5.0\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\pnpm\11.7.0\
 ```
 
 but:
