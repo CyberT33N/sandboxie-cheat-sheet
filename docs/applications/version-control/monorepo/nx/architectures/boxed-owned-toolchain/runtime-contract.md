@@ -16,7 +16,7 @@ It explains:
 The current boxed-owned-toolchain Nx environment is:
 
 ```powershell
-$env:NX_DAEMON = 'false'
+$env:NX_DAEMON = 'true'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
 $env:NX_NATIVE_FILE_CACHE_DIRECTORY = $localNxCacheRoot
@@ -30,26 +30,51 @@ New-Item -ItemType Directory -Force -Path $env:NX_SOCKET_DIR | Out-Null
 
 ## What each variable means
 
-### `NX_DAEMON=false`
+### `NX_DAEMON=true`
 
-This disables the long-lived Nx daemon process.
+This enables the long-lived Nx daemon process.
 
 Architecturally, that means:
 
-- no background workspace watcher / graph server
-- fewer background processes
-- fewer IPC surfaces
-- less hidden state between commands
+- the workspace can use daemon-backed watch behavior
+- the project graph and watch surfaces stay available for long-running serve flows
+- the daemon becomes part of the boxed runtime contract instead of an ambient host default
 
 This does **not** disable Nx itself.
 
-It changes the execution model from:
+It changes the execution model toward:
 
-- long-lived performance infrastructure
+- a daemon-backed local workspace process
+- plus explicit bootstrap-owned daemon hygiene before the developer starts working
 
-to:
+## Bootstrap-owned daemon preflight
 
-- direct foreground computation
+The current boxed-owned-toolchain direction for this repository is not just:
+
+- `NX_DAEMON=true`
+
+It is also:
+
+- reset stale Nx daemon/cache state at bootstrap time
+- then start a fresh daemon explicitly
+
+Representative bootstrap-owned sequence:
+
+```powershell
+pnpm exec nx reset
+pnpm exec nx daemon --start
+```
+
+Why this is part of the runtime contract:
+
+- the project already proved that watch-oriented Nx commands need the daemon
+- a stale daemon/cache state produced the later `Io error. Look inside err_kind for more details.` failure class
+- doing the reset/start inside bootstrap keeps daemon lifecycle explicit instead of turning it into hidden workstation state
+
+This also means the current repository guidance is:
+
+- the default should be `NX_DAEMON=true`
+- and the boxed project bootstrap should own the reset/start preflight for installed Nx workspaces
 
 ### `NX_SOCKET_DIR`
 
@@ -97,9 +122,24 @@ What this means:
 
 This is the key architectural point:
 
-`NX_DAEMON` and `NX_ISOLATE_PLUGINS` are primarily **performance / infrastructure topology controls**, not core monorepo business functionality.
+`NX_DAEMON`, `NX_ISOLATE_PLUGINS`, and the daemon preflight sequence are primarily **runtime topology controls**.
 
-From an enterprise-grade sandbox perspective, fewer background processes and fewer cross-process IPC edges are often preferable because they reduce:
+From an enterprise-grade sandbox perspective, the important part is not “never run a daemon”.
+
+The important part is:
+
+- if the real project serve/watch contract needs the daemon, bootstrap must own it explicitly
+- and bootstrap must keep the daemon lifecycle deterministic instead of reusing stale background state blindly
+
+The current conservative posture therefore remains:
+
+- daemon enabled because the validated serve/watch path needs it
+- short socket path
+- box-local native cache
+- `NX_ISOLATE_PLUGINS=false`
+- bootstrap-owned reset/start hygiene
+
+That still reduces:
 
 - invisible runtime state
 - worker lifecycle fragility
@@ -111,8 +151,8 @@ So in this specific boxed-owned-toolchain environment, the current configuration
 
 It is a valid, conservative runtime posture:
 
-- smaller execution surface
-- simpler trust boundary
+- explicit daemon lifecycle
+- box-local state ownership
 - more deterministic command behavior
 
 ## Why bootstrap owns this contract
@@ -163,12 +203,13 @@ node $nxCli show projects
 For the boxed-owned-toolchain architecture in this repository, the current Nx target state is:
 
 1. box-local Nx native cache
-2. `NX_DAEMON=false`
+2. `NX_DAEMON=true`
 3. `NX_SOCKET_DIR='C:\nxs'`
 4. `NX_ISOLATE_PLUGINS=false`
-5. the preferred standard path is `pnpm exec nx ...`
-6. direct `node <resolved nxCli> ...` remains the diagnostic baseline
-7. the historical plain-`nx` wrapper surface is optional legacy compatibility, not part of the recommended default contract
+5. bootstrap-owned `pnpm exec nx reset` followed by `pnpm exec nx daemon --start` for installed Nx workspaces
+6. the preferred standard path is `pnpm exec nx ...`
+7. direct `node <resolved nxCli> ...` remains the diagnostic baseline
+8. the historical plain-`nx` wrapper surface is optional legacy compatibility, not part of the recommended default contract
 
 ## Related
 

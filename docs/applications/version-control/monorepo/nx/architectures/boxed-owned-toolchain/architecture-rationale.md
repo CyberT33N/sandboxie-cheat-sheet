@@ -62,9 +62,11 @@ From a domain-driven perspective, bootstrap is the anti-corruption layer between
 For Nx, bootstrap currently does all of the following:
 
 - selects the local mirrored Node runtime that will host Nx
-- publishes the `nx` command surface into `bootstrap-bin`
+- publishes the standard workspace-local Nx command surface through `pnpm exec nx ...`
+- optionally publishes a legacy plain-`nx` alias only when a team explicitly enables it
 - sets the Nx runtime environment variables
 - keeps cache and socket locations box-local
+- owns the daemon reset/start preflight for installed Nx workspaces
 
 That is exactly what an anti-corruption layer should do:
 
@@ -76,23 +78,36 @@ That is exactly what an anti-corruption layer should do:
 
 The current Nx contract is enterprise-correct because it prefers:
 
-- fewer background processes
-- fewer IPC edges
+- explicit background-process ownership
+- explicit daemon lifecycle
 - fewer hidden mutable runtime surfaces
 - more explicit startup-time configuration
 - clearer box-local ownership of execution state
 
 That is why the current configuration does **not** treat:
 
-- the Nx daemon
 - long deep socket paths
 - isolated plugin workers
 - host-shared native cache
 
 as unquestioned defaults.
 
-In a strict sandboxed environment, those features are not “free productivity”.
-They are additional runtime topology.
+In the current validated repository state, the daemon itself is no longer treated as something to disable by default.
+
+Why:
+
+- the real watch/serve path needs the daemon
+- the earlier `Daemon is not running` failure proved that the boxed runtime must support that contract explicitly
+- the later `Io error. Look inside err_kind for more details.` failure class showed that daemon state also needs explicit hygiene
+
+So the current boxed-owned-toolchain answer is:
+
+- enable the daemon by default
+- keep the socket path short and box-local
+- keep plugin isolation conservative
+- and let bootstrap reset and start the daemon explicitly for installed Nx workspaces
+
+That still treats daemon/runtime topology as something that must be governed deliberately instead of left to ambient host state.
 
 Additional runtime topology means:
 
@@ -102,7 +117,7 @@ Additional runtime topology means:
 - more timeout surfaces
 - more mediation paths through Sandboxie
 
-Reducing those surfaces is a valid enterprise choice, not a regression in architectural maturity.
+Reducing or governing those surfaces is a valid enterprise choice, not a regression in architectural maturity.
 
 ## Twelve-factor interpretation
 
@@ -159,6 +174,7 @@ The current design therefore keeps:
 - socket surfaces local
 - native cache local
 - runtime wrappers local
+- daemon lifecycle bootstrap-owned
 
 so they remain disposable execution artifacts, not shared stateful infrastructure.
 

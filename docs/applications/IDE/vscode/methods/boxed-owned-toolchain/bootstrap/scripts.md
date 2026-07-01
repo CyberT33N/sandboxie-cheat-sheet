@@ -186,6 +186,7 @@ Current responsibilities:
 - generate wrapper commands such as `node-gyp.ps1`
 - generate a shell-native `node-gyp` command
 - generate the JS wrapper payload `node-gyp-wrapper.cjs`
+- provide an explicit Nx daemon preflight helper for installed Nx workspaces
 - prepend the correct local runtime paths into `PATH`
 - publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
 - keep that productive child-process contract aligned to the preferred boxed `cmd.exe` lane
@@ -241,6 +242,16 @@ function Initialize-NodeGypWindowsBuildEnvironment {
   # imports the resulting VsDevCmd environment through a generated boxed cmd bridge,
   # binds the boxed Python helper, normalizes Windows SDK env values,
   # and publishes boxed node-gyp helper metadata
+}
+
+function Initialize-NxDaemonPreflight {
+  param(
+    [string]$RepoPath,
+    [string]$NodeRoot,
+    [string]$PnpmCli
+  )
+
+  # resets stale Nx state and starts a fresh daemon for installed Nx workspaces
 }
 ```
 
@@ -496,7 +507,7 @@ if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath
 
 & $windowsShellRuntime.RegExe add 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem' /v LongPathsEnabled /t REG_DWORD /d 1 /f | Out-Null
 
-$env:NX_DAEMON = 'false'
+$env:NX_DAEMON = 'true'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
 $env:ComSpec = $boxedComSpec
@@ -521,6 +532,7 @@ Current behavior:
 - initializes Node, Windows-shell, optional Python, and Starship layers
 - publishes explicit boxed helper lanes including `BOXED_REG_EXE`
 - sets local temp/Nx environment state
+- runs the Nx daemon reset/start preflight when the project adapter opts into it and the workspace is already installed
 - sets the productive boxed-CMD child-process contract
 - enables long-path support in the boxed registry view before later Git processes start
 
@@ -585,7 +597,7 @@ if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath
   throw 'Local boxed CMD executable not found for ComSpec override.'
 }
 
-$env:NX_DAEMON = 'false'
+$env:NX_DAEMON = 'true'
 $env:NX_SOCKET_DIR = 'C:\nxs'
 $env:NX_ISOLATE_PLUGINS = 'false'
 $env:ComSpec = $boxedComSpec
@@ -596,6 +608,24 @@ $env:BOXED_CODE_EXE = $localRuntime.CodeExe
 $env:BOXED_CODE_CLI = $localRuntime.CodeCli
 $env:BOXED_LOCAL_TOOLCHAIN_ROOT = $projectPaths.LocalToolchainRoot
 ```
+
+Representative current Nx daemon preflight integration:
+
+```powershell
+$nxDaemonPreflight = $null
+if ($NxDaemonBootstrapMode -eq 'ResetAndStart') {
+  $nxDaemonPreflight = Initialize-NxDaemonPreflight `
+    -RepoPath $RepoPath `
+    -NodeRoot $nodeRuntime.NodeRoot `
+    -PnpmCli $nodeRuntime.PnpmCli
+}
+```
+
+Current troubleshooting posture for Nx in this method:
+
+- the default should now be `NX_DAEMON=true`
+- for installed Nx workspaces, bootstrap should reset stale Nx state and then start the daemon explicitly
+- this keeps serve/watch behavior available while avoiding stale daemon/cache drift between boxed sessions
 
 ## `Publish-VSCodeMaintenance.ps1`
 
@@ -640,6 +670,9 @@ return @{
     AdditionalNodeCommands = [ordered]@{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
+  }
+  Nx = @{
+    DaemonBootstrapMode = 'ResetAndStart'
   }
   Shells = @{
     CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'

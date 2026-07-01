@@ -47,6 +47,7 @@ $parameters = @{
   NodeRoot = $config.Toolchain.NodeRoot
   PnpmCli = $config.Toolchain.PnpmCli
   PythonRoot = $config.Toolchain.PythonRoot
+  NxDaemonBootstrapMode = $config.Nx.DaemonBootstrapMode
   CmdRoot = $config.Shells.CmdRoot
   PowerShellRoot = $config.Shells.PowerShellRoot
   StarshipRoot = $config.Shells.StarshipRoot
@@ -70,7 +71,8 @@ The current default bootstrap contract is:
 2. publish the governed local mirrored `pnpm` command surface
 3. inject the boxed Nx runtime environment
 4. keep the Windows child-process shell contract explicit through boxed `cmd.exe`
-5. let Nx run through the workspace-local installation via `pnpm exec nx ...`
+5. for installed Nx workspaces, reset stale Nx state and start a fresh daemon through bootstrap-owned preflight
+6. let Nx run through the workspace-local installation via `pnpm exec nx ...`
 
 This means the current default bootstrap does **not** need to publish a plain `nx` alias in order for Nx to work.
 
@@ -87,7 +89,7 @@ $boxedComSpec = $windowsShellRuntime.CmdExe
 if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or -not (Test-Path -LiteralPath $boxedComSpec)) {
   throw 'Local boxed CMD executable not found for ComSpec override.'
 }
-$env:NX_DAEMON = 'false'
+$env:NX_DAEMON = 'true'
 $env:NX_SOCKET_DIR = $localNxSocketRoot
 $env:NX_ISOLATE_PLUGINS = 'false'
 $env:NX_NATIVE_FILE_CACHE_DIRECTORY = $localNxCacheRoot
@@ -129,6 +131,49 @@ This is the exact reason the Nx contract belongs to bootstrap:
 
 all come into existence before the developer runs the first Nx command.
 
+## Bootstrap-owned daemon preflight
+
+The current project adapter now passes an explicit mode for the Nx daemon bootstrap step:
+
+```powershell
+NxDaemonBootstrapMode = $config.Nx.DaemonBootstrapMode
+```
+
+The current project-owned value is:
+
+```powershell
+DaemonBootstrapMode = 'ResetAndStart'
+```
+
+When that mode is active, the shared bootstrap runs the Nx preflight only for:
+
+- repositories that actually contain `nx.json`
+- repositories that already have `node_modules`
+
+Representative helper call:
+
+```powershell
+$nxDaemonPreflight = Initialize-NxDaemonPreflight `
+  -RepoPath $RepoPath `
+  -NodeRoot $nodeRuntime.NodeRoot `
+  -PnpmCli $nodeRuntime.PnpmCli
+```
+
+Representative preflight sequence:
+
+```powershell
+pnpm exec nx reset
+pnpm exec nx daemon --start
+pnpm exec nx daemon
+```
+
+Why this is the current preferred bootstrap behavior:
+
+- the current serve/watch path needs the daemon
+- stale daemon/cache state produced the later `Io error. Look inside err_kind for more details.` failure class
+- putting reset/start into bootstrap keeps the daemon lifecycle explicit and reproducible
+- the preflight remains project-aware instead of turning every generic shell into an unconditional Nx reset surface
+
 ## Recommended standard command surface
 
 The current recommended standard command surface is:
@@ -155,6 +200,7 @@ The latest validated default boxed results showed:
 
 - `pnpm exec nx --version` succeeds
 - `pnpm exec nx show projects` succeeds
+- daemon-backed serve/watch no longer fails at the earlier `Daemon is not running` boundary
 - `pnpm exec tsx --version` succeeds in the real target working directory used by the application runner
 - `pnpm exec tsx tooling/run/cli.ts --help` reaches the real runner surface
 - the full application can be started without depending on a bootstrap-published plain-`nx` alias

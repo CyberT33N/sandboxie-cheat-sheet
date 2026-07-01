@@ -71,6 +71,9 @@ return @{
     DotNetFrameworkRoot = Join-Path $devRoot 'shells\dotnet-framework\Framework\v4.0.30319'
     DotNetFramework64Root = Join-Path $devRoot 'shells\dotnet-framework\Framework64\v4.0.30319'
   }
+  Nx = @{
+    DaemonBootstrapMode = 'ResetAndStart'
+  }
   Shells = @{
     CmdRoot = Join-Path $devRoot 'shells\cmd\10.0.26100.8457'
     PowerShellRoot = Join-Path $devRoot 'shells\powershell\10.0.26100.8457'
@@ -133,6 +136,7 @@ $parameters = @{
   WindowsSdkRoot = $config.MicrosoftBuild.WindowsSdkRoot
   DotNetFrameworkRoot = $config.MicrosoftBuild.DotNetFrameworkRoot
   DotNetFramework64Root = $config.MicrosoftBuild.DotNetFramework64Root
+  NxDaemonBootstrapMode = $config.Nx.DaemonBootstrapMode
   CmdRoot = $config.Shells.CmdRoot
   PowerShellRoot = $config.Shells.PowerShellRoot
   RegRoot = $config.Shells.RegRoot
@@ -198,6 +202,8 @@ The current shell-specific requirement is also part of this contract:
 - boxed Git Bash is the preferred productive lifecycle `scriptShell`
 - boxed PowerShell remains the preferred interactive default shell
 - boxed `cmd.exe` remains available as a helper lane for native-build preparation and cleanup fallback
+- project bootstrap enables Nx daemon preflight through:
+  - `DaemonBootstrapMode = 'ResetAndStart'`
 - Git Bash still needs a shell-native `pnpm` wrapper in `bootstrap-bin`, not only `pnpm.cmd`
 - Electron post-install verification / repair belongs in its own Electron-domain script and is only called from the PNPM scripts
 - native-build preparation projects the governed shared Microsoft build-source trees into their canonical Windows runtime paths before `pnpm install` runs

@@ -34,16 +34,21 @@ The current boxed-owned-toolchain Nx reference truth is:
 
 1. box-local Nx native cache and socket surfaces remain the baseline
 2. the Nx runtime contract is bootstrap-owned and environment-driven
-3. the preferred standard Nx execution path is now:
+3. the daemon is now part of the preferred default Nx posture:
+   - `NX_DAEMON=true`
+4. the current bootstrap-owned daemon hygiene for installed Nx workspaces is:
+   - `pnpm exec nx reset`
+   - `pnpm exec nx daemon --start`
+5. the preferred standard Nx execution path is now:
    - `pnpm exec nx ...`
-4. the lower-level diagnostic proof path remains:
+6. the lower-level diagnostic proof path remains:
    - `node <resolved nxCli> ...`
-5. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
-6. the current productive child-process fix sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
-7. that child-process fix must not be confused with the preferred interactive default shell, which is boxed PowerShell
-8. the currently validated boxed target set now succeeds without manual per-command `ComSpec=bash ...` overrides
-9. Git Bash remains the preferred PNPM install/reinstall lifecycle lane, but not the default Nx execution path
-10. the historical plain-`nx` wrapper surface remains only as an optional / legacy convenience layer and is no longer the recommended default
+7. `nx:run-commands` / `command` targets on Windows still sit on a shell-selection boundary
+8. the current productive child-process fix sets `ComSpec` / `COMSPEC` to the box-local boxed-CMD executable
+9. that child-process fix must not be confused with the preferred interactive default shell, which is boxed PowerShell
+10. the currently validated boxed target set now succeeds without manual per-command `ComSpec=bash ...` overrides
+11. Git Bash remains the preferred PNPM install/reinstall lifecycle lane, but not the default Nx execution path
+12. the historical plain-`nx` wrapper surface remains only as an optional / legacy convenience layer and is no longer the recommended default
 
 ## Current architectural boundary
 

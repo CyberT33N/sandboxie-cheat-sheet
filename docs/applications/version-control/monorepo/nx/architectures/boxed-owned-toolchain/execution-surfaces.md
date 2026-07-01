@@ -171,17 +171,20 @@ The current prioritized repository solution is:
 1. keep the box strict
 2. treat `pnpm exec nx ...` as the preferred standard Nx execution path
 3. keep the child-process shell contract explicit and bootstrap-owned
-4. for the current productive `run-commands` fix, keep `ComSpec` / `COMSPEC` mapped to the box-local boxed-CMD executable
-5. keep PowerShell-native wrappers, CMD wrappers, and shell-native wrappers side by side where they are still actually needed
-6. treat boxed PowerShell as the preferred interactive default shell
-7. keep Git Bash available as an explicit alternative compatibility lane and as the preferred PNPM install/reinstall lifecycle lane
-8. keep the currently validated individual Nx `run-commands` target set aligned with that shell contract
-9. treat the historical plain-`nx` wrapper as optional legacy compatibility, not as a required default
+4. keep `NX_DAEMON=true` as the default Nx posture for this repository
+5. for installed Nx workspaces, let bootstrap reset Nx state and start the daemon before the user begins the serve/watch workflow
+6. for the current productive `run-commands` fix, keep `ComSpec` / `COMSPEC` mapped to the box-local boxed-CMD executable
+7. keep PowerShell-native wrappers, CMD wrappers, and shell-native wrappers side by side where they are still actually needed
+8. treat boxed PowerShell as the preferred interactive default shell
+9. keep Git Bash available as an explicit alternative compatibility lane and as the preferred PNPM install/reinstall lifecycle lane
+10. keep the currently validated individual Nx `run-commands` target set aligned with that shell contract
+11. treat the historical plain-`nx` wrapper as optional legacy compatibility, not as a required default
 
 Latest validated boxed result:
 
 - `COMSPEC` points to:
   - `C:\Program Files\SandboxToolchains\VSCodeBoxes\test-mono\execution\toolchain\shells\cmd\10.0.26100.8457\cmd.exe`
+- the current project bootstrap resets Nx state and starts a fresh daemon for installed Nx workspaces
 - individual Nx targets succeed:
   - `backend:port-guard`
   - `frontend:port-guard`
