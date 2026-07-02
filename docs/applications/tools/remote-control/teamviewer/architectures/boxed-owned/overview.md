@@ -4,6 +4,19 @@
 
 Dieses Dokument beschreibt nur den verifizierten boxed Ablauf.
 
+Aktuell ist nur ein eingeschraenkter boxed Zustand verifiziert:
+
+- `TeamViewer` laesst sich in der Box starten.
+- Ein boxed Login in den `TeamViewer`-Account funktioniert in diesem Setup derzeit nicht stabil beziehungsweise bleibt haengen.
+- Die Direktverbindung ueber `ID` und `Passwort` ist damit in diesem Setup nicht der verifizierte Weg.
+- Wenn die Gegenseite eingehende Verbindungen explizit erlaubt und alle benoetigten Rechte vorhanden sind, bleibt eine session-ID-basierte Verbindung der einzige noch in Betracht kommende boxed Pfad.
+
+## Login und Host-SSO
+
+Das boxed Anmelden konnte im hier betrachteten Setup nicht reproduzierbar geloest werden.
+
+`UseSecurityMode=n` veraendert zwar das Anmeldeverhalten, fuehrt in den hier beobachteten Faellen aber zur unerwuenschten Uebernahme des Host-Anmeldezustands. Dieser Zustand gehoert deshalb nicht zu dem hier dokumentierten Zielbild.
+
 ## Sichtbarkeit der Setup-Optionen
 
 Unter `Generelle Optionen > Restriktionen` muss `Verhindere die Beeinträchtigung der Benutzeroberfläche` deaktiviert werden.
@@ -12,21 +25,26 @@ Das ist weiterhin notwendig, weil sonst die Checkbox beziehungsweise die auswäh
 
 ## Zwei Ausführungswege
 
-Es gibt zwei funktionierende Wege:
+Es gibt zwei praktikable Wege, um `TeamViewer` in dieser Box bereitzustellen:
 
 1. Präferierter Weg: Nicht installieren, sondern direkt `Nur starten` wählen.
 2. Alternativer Weg: Installieren. Dabei können zwar die bereits beobachteten Fehler erscheinen, aber wenn die Installation weiterläuft, sind die Binaries trotzdem vorhanden und können anschließend normal unter `Program Files` gestartet werden.
 
 ## Relevante Settings
 
-Für den funktionierenden Pfad sind von den hier betrachteten Anpassungen nur diese beiden Settings relevant:
+Fuer die aktuell dokumentierte Baseline, in der `TeamViewer` wieder startet und session-basierte Verbindungsversuche moeglich bleiben, sind aus den hier betrachteten Anpassungen vor allem diese Settings relevant:
 
 - `ProtectHostImages=n`
 - `CoverBoxedWindows=n`
+- `OpenWndStation=y`
 
-Diese beiden Settings werden hier nur auf `n` gesetzt, also effektiv deaktiviert. Die übrigen zwischenzeitlich getesteten Änderungen waren für den verifizierten boxed Pfad nicht notwendig.
+`OpenWndStation=y` wird hier benoetigt, damit der fruehere `OpenDesktop`-bezogene Start- beziehungsweise UI-Block nicht mehr auftritt.
 
-## Vollständige Config
+Die boxed Anmeldung wird dadurch jedoch nicht geloest. Zwischenzeitlich getestete Login-Workarounds wie `SpecialImage=chrome,msedgewebview2.exe`, `ExternalManifestHack=msedgewebview2.exe,y` oder eine Lockerung ueber `UseSecurityMode=n` haben keinen stabilen boxed Login-Pfad ergeben, der dem gewuenschten Zielbild entspricht.
+
+## Aktuell getestete Baseline-Config
+
+Diese Config spiegelt den Stand wider, in dem `TeamViewer` wieder startet. Sie beschreibt keinen verifizierten Login-Pfad in der Box.
 
 ```ini
 # ==================================================
@@ -153,6 +171,9 @@ UsePrivacyMode=y
 
 # Allow boxed job objects when required by the runtime.
 AllowBoxedJobs=y
+
+# Allow the current TeamViewer baseline to access the window station.
+OpenWndStation=y
 
 # Hide non-system processes from the boxed process view.
 HideNonSystemProcesses=y
