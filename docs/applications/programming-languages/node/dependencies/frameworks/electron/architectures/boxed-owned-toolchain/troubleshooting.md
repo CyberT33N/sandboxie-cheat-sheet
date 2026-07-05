@@ -172,6 +172,67 @@ If this failure class is recurring for the project, the same validated sequence 
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 
+## Full boxed PowerShell repair command
+
+If the dependency install already finished and only the Electron runtime is still incomplete, the preferred explicit repair lane is the project-owned Electron post-install script.
+
+Sanitized host-side example:
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:VS_CODE_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
+If a boxed project terminal is already open and its bootstrap environment is already initialized, the narrower rerun surface is:
+
+```powershell
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -SkipBootstrap
+```
+
+Why both forms exist:
+
+- the host-triggered command is the clean repair entrypoint when no boxed project terminal is currently open
+- the in-box `-SkipBootstrap` command is the preferred diagnostic / rerun surface when the boxed shell is already alive and the `BOXED_*` contract is present
+
+## When the manual post-install run is still required
+
+The manual post-install command is still the right step when all of the following are true:
+
+1. `pnpm install` already completed or mostly completed
+2. `electron/cli.js` resolves
+3. `path.txt` and/or `dist\electron.exe` are still missing
+4. the project wants a targeted Electron repair without paying the cost of a full dependency reinstall
+
+The manual command is **not** required as part of the normal happy path when the project-owned PNPM install / clean-reinstall scripts already invoke the post-install script and that integrated lane completes successfully.
+
+## Sandbox-specific interpretation
+
+Adding a post-install repair script does **not** automatically create a Sandboxie-only problem.
+
+The real risk is architectural drift:
+
+- if the repair stays on the boxed project bootstrap contract and uses the approved boxed runtime surfaces, it remains aligned to the boxed-owned-toolchain architecture
+- if a repository-local repair helper bypasses that boxed contract and falls back to external runtime managers or host-only assumptions, the helper can fail in the sandbox even though the project-owned boxed repair script itself is valid
+
+So the correct interpretation is **not**:
+
+- "post-install scripts are inherently bad in the sandbox"
+
+The correct interpretation is:
+
+- keep the repair explicit
+- keep it in the Electron/install domain
+- keep it aligned to the boxed runtime contract
+- and only require a manual rerun when the integrated lane is absent or the runtime still ended in a partial state
+
 ## Current conclusion
 
 The current validated conclusion is:
