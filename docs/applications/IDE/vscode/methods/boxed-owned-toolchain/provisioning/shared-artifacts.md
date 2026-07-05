@@ -6,9 +6,10 @@ This document contains the host-side provisioning commands that create and popul
 
 These commands are method-specific because they provision:
 
+- the shared VSCode-family catalog and seed tree
+- the shared VSCode-family extension store
 - the shared VS Code runtime tree
-- the shared catalog and seed tree
-- the shared extension store
+- the separate Cursor runtime tree
 - the shared Git / Node / pnpm toolchain tree
 - the shared bootstrap tree
 - the shared project / runner subtrees
@@ -33,14 +34,17 @@ Sanitized example using `test-mono`:
 
 ```powershell
 $VsCodeVersion = "1.121.0"
+$CursorVersion = "3.9.16"
 
 $SharedRoot = "C:\shared\sandbox-toolchains"
 $SharedIdeRoot = "$SharedRoot\ide\vscode"
+$SharedCursorRoot = "$SharedRoot\ide\cursor"
 $SharedProjectRoot = "$SharedRoot\projects\test-mono"
 $SharedBootstrapRoot = "$SharedRoot\dev\bootstrap"
 
 $Dirs = @(
   "$SharedIdeRoot\runtime\$VsCodeVersion",
+  "$SharedCursorRoot\runtime\$CursorVersion",
   "$SharedIdeRoot\catalog\vscode-user",
   "$SharedIdeRoot\catalog\vscode-user\snippets",
   "$SharedIdeRoot\catalog\vscode-user\assets\backgrounds\t33n",
@@ -54,11 +58,21 @@ $Dirs = @(
   "$SharedRoot\dev\pnpm\11.7.0",
   "$SharedRoot\dev\shells\cmd\10.0.26100.8457",
   "$SharedRoot\dev\shells\powershell\10.0.26100.8457",
+  "$SharedRoot\dev\shells\reg\10.0.26100.8457",
   "$SharedRoot\dev\shells\clink\1.9.26",
+  "$SharedRoot\dev\shells\vs-installer\3.1.7",
+  "$SharedRoot\dev\shells\visual-studio\2022\BuildTools",
+  "$SharedRoot\dev\shells\windows-kits\10",
+  "$SharedRoot\dev\shells\dotnet-framework\Framework\v4.0.30319",
+  "$SharedRoot\dev\shells\dotnet-framework\Framework64\v4.0.30319",
   "$SharedRoot\dev\python\3.14.5",
   "$SharedRoot\dev\starship\1.25.1",
   "$SharedBootstrapRoot\core",
+  "$SharedBootstrapRoot\platforms\vscode-family",
   "$SharedBootstrapRoot\platforms\vscode",
+  "$SharedBootstrapRoot\platforms\cursor",
+  "$SharedBootstrapRoot\stacks\microsoft-build",
+  "$SharedBootstrapRoot\stacks\dotnet-framework",
   "$SharedBootstrapRoot\stacks\node",
   "$SharedBootstrapRoot\stacks\shells",
   "$SharedBootstrapRoot\stacks\python",
@@ -96,6 +110,20 @@ Expand-Archive -LiteralPath $ZipPath -DestinationPath $RuntimePath -Force
 
 Test-Path "$RuntimePath\Code.exe"
 ```
+
+## Cursor runtime installation
+
+The current repository does **not** treat Cursor as another archive-style runtime that is provisioned through the same flow shown above for `VS Code`.
+
+Instead, the validated current method is:
+
+- install Cursor through the dedicated Cursor Maintenance Box
+- then keep the resulting runtime under:
+  - `C:\shared\sandbox-toolchains\ide\cursor\runtime\<version>\`
+
+The Cursor-specific installation flow lives here:
+
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\provisioning\runtime-installation.md`
 
 ## Provision shared Windows shell artifacts
 
@@ -294,6 +322,7 @@ Copy-Item "$env:USERPROFILE\.roo\*" `
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\provisioning\runtime-installation.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`

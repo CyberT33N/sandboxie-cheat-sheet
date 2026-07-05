@@ -8,9 +8,10 @@ Replace:
 
 - `test-mono`
 - `VS_CODE_TEST_MONO`
+- `CURSOR_TEST_MONO`
 - `C:\Users\yourusername\source\test-mono`
 
-with your real project slug, box name, and repo path.
+with your real project slug, editor-specific box names, and repo path.
 
 ## Why this document lives here
 
@@ -39,21 +40,40 @@ Important ownership split:
 
 ```powershell
 $sharedRoot = 'C:\shared\sandbox-toolchains'
-$vsCodeRoot = Join-Path $sharedRoot 'ide\vscode'
+$vscodeFamilySharedRoot = Join-Path $sharedRoot 'ide\vscode'
+$cursorRuntimeRoot = Join-Path $sharedRoot 'ide\cursor'
 $devRoot = Join-Path $sharedRoot 'dev'
+
+$sharedEditorState = @{
+  CatalogUserRoot = Join-Path $vscodeFamilySharedRoot 'catalog\vscode-user'
+  SharedExtensionsRoot = Join-Path $vscodeFamilySharedRoot 'extensions'
+  SeedGlobalStorageRoot = Join-Path $vscodeFamilySharedRoot 'catalog\seed\globalStorage'
+  SeedRooRoot = Join-Path $vscodeFamilySharedRoot 'catalog\seed\roo'
+}
 
 return @{
   SharedRoot = $sharedRoot
   ProjectName = 'test-mono'
-  BoxName = 'VS_CODE_TEST_MONO'
   DefaultRepoPath = 'C:\Users\yourusername\source\test-mono'
   VSCode = @{
-    CodeExe = Join-Path $vsCodeRoot 'runtime\1.121.0\Code.exe'
-    CodeCli = Join-Path $vsCodeRoot 'runtime\1.121.0\bin\code.cmd'
-    CatalogUserRoot = Join-Path $vsCodeRoot 'catalog\vscode-user'
-    SharedExtensionsRoot = Join-Path $vsCodeRoot 'extensions'
-    SeedGlobalStorageRoot = Join-Path $vsCodeRoot 'catalog\seed\globalStorage'
-    SeedRooRoot = Join-Path $vsCodeRoot 'catalog\seed\roo'
+    BoxName = 'VS_CODE_TEST_MONO'
+    RuntimeNamespace = 'vscode'
+    CodeExe = Join-Path $vscodeFamilySharedRoot 'runtime\1.121.0\Code.exe'
+    CodeCli = Join-Path $vscodeFamilySharedRoot 'runtime\1.121.0\bin\code.cmd'
+    CatalogUserRoot = $sharedEditorState.CatalogUserRoot
+    SharedExtensionsRoot = $sharedEditorState.SharedExtensionsRoot
+    SeedGlobalStorageRoot = $sharedEditorState.SeedGlobalStorageRoot
+    SeedRooRoot = $sharedEditorState.SeedRooRoot
+  }
+  Cursor = @{
+    BoxName = 'CURSOR_TEST_MONO'
+    RuntimeNamespace = 'cursor'
+    CodeExe = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\Cursor.exe'
+    CodeCli = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\resources\app\codeBin\code.cmd'
+    CatalogUserRoot = $sharedEditorState.CatalogUserRoot
+    SharedExtensionsRoot = $sharedEditorState.SharedExtensionsRoot
+    SeedGlobalStorageRoot = $sharedEditorState.SeedGlobalStorageRoot
+    SeedRooRoot = $sharedEditorState.SeedRooRoot
   }
   Toolchain = @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
@@ -85,9 +105,100 @@ return @{
 }
 ```
 
+## Current wrapper split
+
+The current project no longer keeps one editor-specific bootstrap body as the only source of truth.
+
+It now uses:
+
+- one shared project editor core
+- thin VS Code and Cursor wrappers
+- shared dependency and repair scripts that accept `-Editor`
+
+The current wrapper inventory is:
+
+- `Start-TestMonoEditor.ps1`
+- `Start-TestMonoVSCode.ps1`
+- `Start-TestMonoCursor.ps1`
+- `Start-TestMonoTerminal.ps1`
+- `Start-TestMonoElectronTerminal.ps1`
+- `Start-TestMonoCursorTerminal.ps1`
+- `Start-TestMonoCursorElectronTerminal.ps1`
+
+Representative thin wrappers:
+
+```powershell
+# Start-TestMonoVSCode.ps1
+param(
+  [ValidateSet('LaunchVSCode', 'OpenTerminal')]
+  [string]$Action = 'LaunchVSCode',
+  [string]$RepoPath,
+  [ValidateSet('General', 'ElectronServe')]
+  [string]$OpenTerminalIntent = 'General',
+  [switch]$EnableComSpecTraceProxy
+)
+
+$editorAction = switch ($Action) {
+  'LaunchVSCode' { 'LaunchEditor' }
+  'OpenTerminal' { 'OpenTerminal' }
+}
+
+& (Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1') `
+  -Editor VSCode `
+  -Action $editorAction `
+  -RepoPath $RepoPath `
+  -OpenTerminalIntent $OpenTerminalIntent `
+  -EnableComSpecTraceProxy:$EnableComSpecTraceProxy
+```
+
+```powershell
+# Start-TestMonoCursor.ps1
+param(
+  [ValidateSet('LaunchCursor', 'OpenTerminal')]
+  [string]$Action = 'LaunchCursor',
+  [string]$RepoPath,
+  [ValidateSet('General', 'ElectronServe')]
+  [string]$OpenTerminalIntent = 'General',
+  [switch]$EnableComSpecTraceProxy
+)
+
+$editorAction = switch ($Action) {
+  'LaunchCursor' { 'LaunchEditor' }
+  'OpenTerminal' { 'OpenTerminal' }
+}
+
+& (Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1') `
+  -Editor Cursor `
+  -Action $editorAction `
+  -RepoPath $RepoPath `
+  -OpenTerminalIntent $OpenTerminalIntent `
+  -EnableComSpecTraceProxy:$EnableComSpecTraceProxy
+```
+
+```powershell
+# Start-TestMonoCursorTerminal.ps1
+param([string]$RepoPath)
+& (Join-Path $PSScriptRoot 'Start-TestMonoTerminal.ps1') -Editor Cursor -RepoPath $RepoPath
+```
+
+```powershell
+# Start-TestMonoCursorElectronTerminal.ps1
+param(
+  [string]$RepoPath,
+  [switch]$EnableComSpecTraceProxy
+)
+
+& (Join-Path $PSScriptRoot 'Start-TestMonoElectronTerminal.ps1') `
+  -Editor Cursor `
+  -RepoPath $RepoPath `
+  -EnableComSpecTraceProxy:$EnableComSpecTraceProxy
+```
+
 ## `Start-TestMonoVSCode.ps1`
 
 This is the full sanitized project-adapter example for the current Electron-serve-aware bootstrap contract.
+
+In the current multi-editor architecture, the same inner pattern is owned by `Start-TestMonoEditor.ps1`, while `Start-TestMonoVSCode.ps1` and `Start-TestMonoCursor.ps1` stay thin wrappers over that shared project core.
 
 ```powershell
 param(
@@ -504,19 +615,22 @@ exit $LASTEXITCODE
 ```powershell
 param(
   [string]$RepoPath,
+  [ValidateSet('VSCode', 'Cursor')]
+  [string]$Editor = 'VSCode',
   [switch]$EnableComSpecTraceProxy
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1'
 
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
 
 & $launcher `
+  -Editor $Editor `
   -Action OpenTerminal `
   -RepoPath $RepoPath `
   -OpenTerminalIntent ElectronServe `
@@ -560,19 +674,22 @@ The current shell-specific requirement is also part of this contract:
 
 ```powershell
 param(
-  [string]$RepoPath = 'C:\Users\yourusername\source\test-mono'
+  [string]$RepoPath = 'C:\Users\yourusername\source\test-mono',
+
+  [ValidateSet('VSCode', 'Cursor')]
+  [string]$Editor = 'VSCode'
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1'
 
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
 
-& $launcher -Action OpenTerminal -RepoPath $RepoPath
+& $launcher -Editor $Editor -Action OpenTerminal -RepoPath $RepoPath
 
 if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
   throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
@@ -619,7 +736,7 @@ if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
   throw "Electron post-install script not found: $electronPostInstallScript"
 }
 
-& $electronPostInstallScript -RepoPath $RepoPath -SkipBootstrap
+& $electronPostInstallScript -Editor $Editor -RepoPath $RepoPath -SkipBootstrap
 
 exit $LASTEXITCODE
 ```
@@ -637,6 +754,8 @@ This is the sanitized project-box uninstall helper used by the clean-reinstall f
 ```powershell
 param(
   [string]$RepoPath,
+  [ValidateSet('VSCode', 'Cursor')]
+  [string]$Editor = 'VSCode',
   [switch]$SkipBootstrap
 )
 
@@ -652,8 +771,8 @@ else {
 }
 
 if (-not $SkipBootstrap) {
-  $launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
-  & $launcher -Action OpenTerminal -RepoPath $resolvedRepoPath
+  $launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1'
+  & $launcher -Editor $Editor -Action OpenTerminal -RepoPath $resolvedRepoPath
 }
 
 function Remove-BoxedPathTree {
@@ -732,7 +851,10 @@ This is the sanitized project-box clean-reinstall script.
 
 ```powershell
 param(
-  [string]$RepoPath
+  [string]$RepoPath,
+
+  [ValidateSet('VSCode', 'Cursor')]
+  [string]$Editor = 'VSCode'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -755,12 +877,12 @@ else {
   $RepoPath
 }
 
-$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1'
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
 
-& $launcher -Action OpenTerminal -RepoPath $resolvedRepoPath
+& $launcher -Editor $Editor -Action OpenTerminal -RepoPath $resolvedRepoPath
 
 $uninstallScript = Join-Path $PSScriptRoot 'Start-TestMonoPnpmUninstall.ps1'
 if (-not (Test-Path -LiteralPath $uninstallScript)) {
@@ -819,7 +941,7 @@ if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
   throw "Electron post-install script not found: $electronPostInstallScript"
 }
 
-& $electronPostInstallScript -RepoPath $resolvedRepoPath -SkipBootstrap
+& $electronPostInstallScript -Editor $Editor -RepoPath $resolvedRepoPath -SkipBootstrap
 
 exit $LASTEXITCODE
 ```
@@ -837,6 +959,20 @@ exit $LASTEXITCODE
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
+Cursor variant:
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:CURSOR_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1" `
+  -Editor Cursor `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
 ### Host command after materializing the boilerplate above into the shared project bootstrap subtree
 
 ```powershell
@@ -847,6 +983,20 @@ exit $LASTEXITCODE
   -NoExit `
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
+Cursor variant:
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:CURSOR_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+  -Editor Cursor `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 

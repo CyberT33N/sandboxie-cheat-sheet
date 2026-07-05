@@ -13,6 +13,7 @@ This document owns one **product-level** concern that is intentionally **not** a
 It does **not** own:
 
 - boxed-owned-toolchain bootstrap implementation details
+- boxed-owned-toolchain runtime-installation details
 - host-sync materialization details
 - login troubleshooting details
 - architecture-specific Sandboxie policy
@@ -256,6 +257,7 @@ It only defines the correct architectural split:
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
 - `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\integrated-terminal-conpty.md`
 - `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\sign-in.md`
 - `docs\applications\IDE\cursor\architectures\host-sync\debugging.md`

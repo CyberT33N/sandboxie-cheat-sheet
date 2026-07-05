@@ -56,8 +56,13 @@ C:\shared\sandbox-toolchains\
     test-mono\
       bootstrap\
         Project.Config.ps1
+        Start-TestMonoEditor.ps1
         Start-TestMonoVSCode.ps1
+        Start-TestMonoCursor.ps1
+        Start-TestMonoTerminal.ps1
         Start-TestMonoElectronTerminal.ps1
+        Start-TestMonoCursorTerminal.ps1
+        Start-TestMonoCursorElectronTerminal.ps1
 ```
 
 This `projects\` subtree is part of the shared runtime tree, not part of the cheat-sheet documentation tree.
@@ -66,8 +71,12 @@ The documentation tree intentionally keeps boilerplates separately from real pro
 
 Important launch split:
 
-- use `Start-TestMonoVSCode.ps1` for GUI launch and generic project-terminal launch
-- use `Start-TestMonoElectronTerminal.ps1` when the terminal is specifically meant for the canonical Electron serve lane
+- use `Start-TestMonoEditor.ps1` as the shared project core
+- use `Start-TestMonoVSCode.ps1` for the VS Code GUI lane
+- use `Start-TestMonoCursor.ps1` for the Cursor GUI lane
+- use `Start-TestMonoTerminal.ps1` for a generic editor-selectable project terminal
+- use `Start-TestMonoElectronTerminal.ps1` for the VS Code Electron terminal lane
+- use `Start-TestMonoCursorElectronTerminal.ps1` for the Cursor Electron terminal lane
 
 ## Runtime contract
 
@@ -154,6 +163,8 @@ This keeps the clone inside the project box while still letting the host launch 
 
 ## Step 3 - open the project terminal from the host
 
+### VS Code
+
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
   /box:VS_CODE_TEST_MONO `
@@ -166,14 +177,28 @@ This keeps the clone inside the project box while still letting the host launch 
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
+### Cursor
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:CURSOR_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1" `
+  -Action OpenTerminal `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
 What happens:
 
 - the named project box is entered
 - the normal Windows PowerShell binary is started inside the box
 - the project config is loaded
-- the generic VS Code project bootstrap is called
+- the shared project editor core delegates into the selected editor wrapper and then into the shared editor-family bootstrap
 - local `user-data`, `extensions`, and `bootstrap-bin` paths are prepared
-- the selected VS Code runtime is mirrored locally
+- the selected editor runtime is mirrored locally
 - the shared extension store is mirrored into the local project runtime copy
 - the canonical VS Code user catalog is copied into local `user-data`
 - the Node stack is wired into `PATH`
@@ -206,7 +231,9 @@ Expected interpretation:
 
 If the resolved `pnpm` version does not match the design target, treat that as a follow-up command-resolution item rather than a project-box start failure.
 
-## Step 5 - start the boxed VS Code GUI from the host
+## Step 5 - start the boxed editor GUI from the host
+
+### VS Code
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
@@ -220,11 +247,26 @@ If the resolved `pnpm` version does not match the design target, treat that as a
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
+### Cursor
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:CURSOR_TEST_MONO `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1" `
+  -Action LaunchCursor `
+  -RepoPath "C:\Users\yourusername\source\test-mono"
+```
+
 What happens:
 
 - the project adapter script loads `Project.Config.ps1`
+- the shared project editor core delegates into the selected editor-family bootstrap
 - the generic project bootstrap mirrors the shared extension store locally
-- VS Code launches with:
+- the selected editor launches with:
   - local `--user-data-dir`
   - local `--extensions-dir`
   - the repo path
@@ -281,6 +323,32 @@ Do not treat manual `code.cmd` typing inside an already-open maintenance termina
   -NoExit `
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
+  -Action ListExtensions
+```
+
+### Cursor maintenance terminal
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:CURSOR_MAINTENANCE `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\cursor\Start-CursorMaintenance.ps1" `
+  -Action OpenTerminal
+```
+
+### Cursor maintenance extension listing
+
+```powershell
+& "C:\Program Files\Sandboxie-Plus\Start.exe" `
+  /box:CURSOR_MAINTENANCE `
+  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
+  -NoLogo `
+  -NoExit `
+  -ExecutionPolicy Bypass `
+  -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\cursor\Start-CursorMaintenance.ps1" `
   -Action ListExtensions
 ```
 

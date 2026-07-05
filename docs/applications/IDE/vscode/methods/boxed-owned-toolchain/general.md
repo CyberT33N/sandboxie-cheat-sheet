@@ -102,6 +102,10 @@ Core model:
 - `docs\applications\terminal\starship\general.md`
 - `docs\applications\version-control\monorepo\nx\general.md`
 
+### 13. Cursor overlay on the shared family kernel
+
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
+
 ## Full shared tree snapshot
 
 This is a **sanitized modeled snapshot** of the current shared-tree shape.

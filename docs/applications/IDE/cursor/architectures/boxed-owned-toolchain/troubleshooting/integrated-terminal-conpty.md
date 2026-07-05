@@ -209,6 +209,8 @@ The reusable conclusion is narrower:
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 - `docs\applications\IDE\cursor\general.md`
 - `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\sign-in.md`
 - `docs\applications\operating-systems\windows\terminal\powershell\general.md`

@@ -19,12 +19,23 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\core\Bootstrap.Common.psm1`
 
-### VS Code platform
+### Shared editor-family platform
+
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Bootstrap.VSCodeFamily.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Start-VSCodeFamilyMaintenance.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Start-VSCodeFamilyProjectBase.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Publish-VSCodeFamilyMaintenance.ps1`
+
+### Thin editor wrappers
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Bootstrap.VSCode.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Publish-VSCodeMaintenance.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\cursor\Bootstrap.Cursor.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\cursor\Start-CursorMaintenance.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\cursor\Start-CursorProjectBase.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\cursor\Publish-CursorMaintenance.ps1`
 
 ### Toolchain stacks
 
@@ -39,8 +50,13 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 ### Project adapter example
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditor.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorElectronTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstall.ps1`
@@ -437,63 +453,32 @@ function Initialize-WindowsShellRuntime {
 }
 ```
 
-## `Bootstrap.VSCode.psm1`
+## `Bootstrap.VSCodeFamily.psm1`
 
-This is the VS Code platform adapter.
+This is the shared editor-family platform adapter.
 
 Current responsibilities:
 
-- compute the local box-root-aligned state and execution paths
-- mirror the VS Code runtime locally
+- compute the local box-root-aligned state and execution paths for the selected editor family box
+- mirror the selected editor runtime locally
 - mirror shared extensions into local runtime state
 - initialize local maintenance authoring state
 - publish/promote approved maintenance state back into shared surfaces
 
-Current path model:
+The important current split is:
 
-```powershell
-function New-VSCodeProjectPaths {
-  param([string]$ProjectName)
+- shared family behavior lives in `vscode-family`
+- thin editor-identity wrappers live in `vscode` and `cursor`
 
-  $boxRoot = Join-Path $env:ProgramFiles "SandboxToolchains\VSCodeBoxes\$ProjectName"
-  $stateRoot = Join-Path $boxRoot 'state'
-  $localExecutionRoot = Join-Path $boxRoot 'execution'
-}
+That is why the current architecture can keep one canonical family kernel without pretending that `VS Code` and `Cursor` share one runtime namespace.
 
-function New-VSCodeMaintenancePaths {
-  $boxRoot = Join-Path $env:ProgramFiles 'SandboxToolchains\VSCodeBoxes\maintenance'
-}
-```
+## `Start-VSCodeFamilyMaintenance.ps1`
 
-Current mirror/publish contract:
-
-```powershell
-function Initialize-VSCodeRuntimeMirror {
-  param(
-    [string]$CodeExe,
-    [string]$CodeCli,
-    [string]$LocalRuntimeRoot
-  )
-
-  # mirrors the shared VS Code runtime locally and excludes blocked components
-}
-
-function Initialize-VSCodeMaintenanceAuthoringState {
-  # initializes local maintenance catalog/extensions/seeds
-}
-
-function Publish-VSCodeMaintenanceAuthoringState {
-  # promotes local maintenance extensions/catalog/seeds back into shared surfaces
-}
-```
-
-## `Start-VSCodeMaintenance.ps1`
-
-This is the maintenance control-plane entry point.
+This is the shared maintenance control-plane entry point.
 
 Current behavior:
 
-- mirrors the VS Code runtime locally
+- mirrors the selected editor runtime locally
 - initializes local maintenance authoring state
 - initializes local Node/Python/Starship toolchain layers
 - sets the Nx environment contract
@@ -505,17 +490,17 @@ Current behavior:
 Representative current initialization:
 
 ```powershell
-$maintenancePaths = New-VSCodeMaintenancePaths
-$localRuntimeRoot = Join-Path $maintenancePaths.LocalRuntimeRoot "vscode\$VSCodeVersion"
+$maintenancePaths = New-VSCodeFamilyMaintenancePaths -BoxFamilyName $BoxFamilyName
+$localRuntimeRoot = Join-Path $maintenancePaths.LocalRuntimeRoot "$RuntimeNamespace\$EditorVersion"
 $localNxCacheRoot = Join-Path $maintenancePaths.LocalCacheRoot 'nx-native'
-$promotionScript = Join-Path $PSScriptRoot 'Publish-VSCodeMaintenance.ps1'
+$promotionScript = Join-Path $PSScriptRoot 'Publish-VSCodeFamilyMaintenance.ps1'
 
-$localRuntime = Initialize-VSCodeRuntimeMirror `
-  -CodeExe $codeExe `
-  -CodeCli $codeCli `
+$localRuntime = Initialize-VSCodeFamilyRuntimeMirror `
+  -EditorExe $codeExe `
+  -EditorCli $codeCli `
   -LocalRuntimeRoot $localRuntimeRoot
 
-Initialize-VSCodeMaintenanceAuthoringState `
+Initialize-VSCodeFamilyMaintenanceAuthoringState `
   -SharedCatalogUserRoot $catalogUserRoot `
   -SharedExtensionsRoot $sharedExtensionsRoot `
   -SharedSeedGlobalStorageRoot $sharedSeedGlobalStorageRoot `
@@ -545,14 +530,14 @@ $env:BOXED_CODE_CLI = $localRuntime.CodeCli
 $env:BOXED_LOCAL_EXTENSIONS = $maintenancePaths.ExtensionsDir
 ```
 
-## `Start-VSCodeProjectBase.ps1`
+## `Start-VSCodeFamilyProjectBase.ps1`
 
-This is the reusable project-box entry point.
+This is the reusable shared project-box entry point.
 
 Current behavior:
 
 - validates the repo path
-- mirrors the VS Code runtime locally
+- mirrors the selected editor runtime locally
 - mirrors the shared extension store locally
 - initializes seeds
 - initializes Node, Windows-shell, optional Python, and Starship layers
@@ -563,6 +548,7 @@ Current behavior:
 - enables the interactive project-terminal child-process spawn tracer
 - publishes the active Electron-Vite spawn stabilizer mode in the terminal header
 - enables long-path support in the boxed registry view before later Git processes start
+- forces the classic editor-window flags for Cursor project launches while keeping VS Code on the existing direct GUI path
 
 That does **not** mean every project-owned package-manager lifecycle surface must also run on CMD.
 
@@ -602,14 +588,14 @@ The current Windows-shell contract adds another lane:
 Representative current initialization:
 
 ```powershell
-$projectPaths = New-VSCodeProjectPaths -ProjectName $ProjectName
-$localRuntimeRoot = Join-Path $projectPaths.LocalRuntimeRoot "vscode\$vsCodeVersion"
-$localRuntime = Initialize-VSCodeRuntimeMirror `
-  -CodeExe $CodeExe `
-  -CodeCli $CodeCli `
+$projectPaths = New-VSCodeFamilyProjectPaths -ProjectName $ProjectName -BoxFamilyName $BoxFamilyName
+$localRuntimeRoot = Join-Path $projectPaths.LocalRuntimeRoot "$RuntimeNamespace\$EditorVersion"
+$localRuntime = Initialize-VSCodeFamilyRuntimeMirror `
+  -EditorExe $CodeExe `
+  -EditorCli $CodeCli `
   -LocalRuntimeRoot $localRuntimeRoot
 
-Sync-VSCodeExtensionsMirror -SharedExtensionsRoot $SharedExtensionsRoot -LocalExtensionsDir $projectPaths.ExtensionsDir
+Sync-VSCodeFamilyExtensionsMirror -SharedExtensionsRoot $SharedExtensionsRoot -LocalExtensionsDir $projectPaths.ExtensionsDir
 $starshipRuntime = Initialize-StarshipRuntime `
   -StarshipRoot $StarshipRoot `
   -LocalToolchainRoot $projectPaths.LocalToolchainRoot `
@@ -701,9 +687,41 @@ It is a documentation-safe boilerplate example, not a claim that the live shared
 Representative contract:
 
 ```powershell
+$sharedRoot = 'C:\shared\sandbox-toolchains'
+$vscodeFamilySharedRoot = Join-Path $sharedRoot 'ide\vscode'
+$cursorRuntimeRoot = Join-Path $sharedRoot 'ide\cursor'
+$devRoot = Join-Path $sharedRoot 'dev'
+
+$sharedEditorState = @{
+  CatalogUserRoot = Join-Path $vscodeFamilySharedRoot 'catalog\vscode-user'
+  SharedExtensionsRoot = Join-Path $vscodeFamilySharedRoot 'extensions'
+  SeedGlobalStorageRoot = Join-Path $vscodeFamilySharedRoot 'catalog\seed\globalStorage'
+  SeedRooRoot = Join-Path $vscodeFamilySharedRoot 'catalog\seed\roo'
+}
+
 return @{
   ProjectName = 'test-mono'
-  BoxName = 'VS_CODE_TEST_MONO'
+  DefaultRepoPath = 'C:\Users\yourusername\source\test-mono'
+  VSCode = @{
+    BoxName = 'VS_CODE_TEST_MONO'
+    RuntimeNamespace = 'vscode'
+    CodeExe = Join-Path $vscodeFamilySharedRoot 'runtime\1.121.0\Code.exe'
+    CodeCli = Join-Path $vscodeFamilySharedRoot 'runtime\1.121.0\bin\code.cmd'
+    CatalogUserRoot = $sharedEditorState.CatalogUserRoot
+    SharedExtensionsRoot = $sharedEditorState.SharedExtensionsRoot
+    SeedGlobalStorageRoot = $sharedEditorState.SeedGlobalStorageRoot
+    SeedRooRoot = $sharedEditorState.SeedRooRoot
+  }
+  Cursor = @{
+    BoxName = 'CURSOR_TEST_MONO'
+    RuntimeNamespace = 'cursor'
+    CodeExe = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\Cursor.exe'
+    CodeCli = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\resources\app\codeBin\code.cmd'
+    CatalogUserRoot = $sharedEditorState.CatalogUserRoot
+    SharedExtensionsRoot = $sharedEditorState.SharedExtensionsRoot
+    SeedGlobalStorageRoot = $sharedEditorState.SeedGlobalStorageRoot
+    SeedRooRoot = $sharedEditorState.SeedRooRoot
+  }
   Toolchain = @{
     GitRoot = Join-Path $devRoot 'git\2.54.0'
     NodeRoot = Join-Path $devRoot 'node\26.2.0\node-v26.2.0-win-x64'
@@ -740,10 +758,12 @@ It is now:
 - local-mirror execution
 - local maintenance authoring
 - explicit publish/promotion
+- one shared editor-family kernel with thin editor-specific wrappers
 - governed multi-runtime bootstrap wiring
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 - `docs\cli\shell\general.md`
 - `docs\cli\shell\clink.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`

@@ -11,7 +11,8 @@ C:\shared\sandbox-toolchains\
 From a domain-driven and 12-factor perspective, this location and split are intentional:
 
 - reusable bootstrap primitives belong in shared infrastructure
-- VS Code-specific orchestration belongs in a VS Code platform layer
+- shared editor-family orchestration belongs in a VSCode-family platform layer
+- thin editor-specific wrappers belong in editor-specific platform layers
 - Node-specific runtime wiring belongs in a Node stack layer
 - shell-specific runtime wiring belongs in a shell stack layer
 - prompt/runtime wiring can live in a dedicated stack layer when it must be mirrored and initialized explicitly
@@ -48,6 +49,9 @@ C:\shared\sandbox-toolchains\
       extensions\
       maintenance\
         user-data\
+    cursor\
+      runtime\
+        3.9.16\
   dev\
     git\
       2.54.0\
@@ -68,10 +72,26 @@ C:\shared\sandbox-toolchains\
       powershell\
         10.0.26100.8457\
           powershell.exe
+      reg\
+        10.0.26100.8457\
+          reg.exe
       clink\
         1.9.26\
           clink_x64.exe
           clink.bat
+      vs-installer\
+        3.1.7\
+          vswhere.exe
+      visual-studio\
+        2022\
+          BuildTools\
+      windows-kits\
+        10\
+      dotnet-framework\
+        Framework\
+          v4.0.30319\
+        Framework64\
+          v4.0.30319\
     starship\
       1.25.1\
         starship.exe
@@ -79,11 +99,26 @@ C:\shared\sandbox-toolchains\
       core\
         Bootstrap.Common.psm1
       platforms\
+        vscode-family\
+          Bootstrap.VSCodeFamily.psm1
+          Start-VSCodeFamilyProjectBase.ps1
+          Start-VSCodeFamilyMaintenance.ps1
+          Publish-VSCodeFamilyMaintenance.ps1
         vscode\
           Bootstrap.VSCode.psm1
           Start-VSCodeMaintenance.ps1
           Start-VSCodeProjectBase.ps1
+          Publish-VSCodeMaintenance.ps1
+        cursor\
+          Bootstrap.Cursor.psm1
+          Start-CursorMaintenance.ps1
+          Start-CursorProjectBase.ps1
+          Publish-CursorMaintenance.ps1
       stacks\
+        microsoft-build\
+          Bootstrap.MicrosoftBuild.psm1
+        dotnet-framework\
+          Bootstrap.DotNetFramework.psm1
         node\
           Bootstrap.Node.psm1
         shells\
@@ -96,8 +131,18 @@ C:\shared\sandbox-toolchains\
     test-mono\
       bootstrap\
         Project.Config.ps1
+        Start-TestMonoEditor.ps1
         Start-TestMonoVSCode.ps1
+        Start-TestMonoCursor.ps1
+        Start-TestMonoTerminal.ps1
         Start-TestMonoElectronTerminal.ps1
+        Start-TestMonoCursorTerminal.ps1
+        Start-TestMonoCursorElectronTerminal.ps1
+        Start-TestMonoPnpmInstall.ps1
+        Start-TestMonoPnpmCleanReinstall.ps1
+        Start-TestMonoPnpmUninstall.ps1
+        Start-TestMonoElectronPostInstall.ps1
+        Start-TestMonoElectronSpawnReplay.ps1
       export\
       runner-input\
 ```
@@ -122,25 +167,38 @@ The current file is:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\core\Bootstrap.Common.psm1`
 
-### `dev\bootstrap\platforms\vscode\`
+### `dev\bootstrap\platforms\vscode-family\`
 
-This is the VS Code platform adapter.
+This is the shared editor-family adapter for the current two-editor architecture.
 
-It contains the orchestration that is specific to VS Code as a platform:
+It contains the orchestration that is shared across `VS Code` and `Cursor`:
 
-- assert `Code.exe` / `code.cmd`
-- compute box-local VS Code paths
+- assert the editor runtime layout
+- compute box-local family paths
 - copy the canonical user catalog into `user-data`
 - mirror the shared extension store into the box-local `extensions` directory
 - initialize seed-backed paths like `globalStorage` and `.roo`
-- run `code.cmd` for CLI actions
-- run `Code.exe` for GUI launch
+- run the family CLI path for maintenance actions
+- run the direct editor GUI path for project launch
 
 The current files are:
 
-- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Bootstrap.VSCode.psm1`
-- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
-- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Bootstrap.VSCodeFamily.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Start-VSCodeFamilyMaintenance.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Start-VSCodeFamilyProjectBase.ps1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode-family\Publish-VSCodeFamilyMaintenance.ps1`
+
+### `dev\bootstrap\platforms\vscode\`
+
+This is now the thin VS Code compatibility wrapper layer.
+
+It binds the shared family kernel to the VS Code runtime namespace and preserves the no-breaking public VS Code command surface.
+
+### `dev\bootstrap\platforms\cursor\`
+
+This is the thin Cursor platform wrapper layer.
+
+It binds the shared family kernel to the Cursor runtime namespace and adds the Cursor-specific runtime exclusions and launch semantics.
 
 ### `dev\bootstrap\stacks\node\`
 
@@ -219,162 +277,132 @@ This is the project adapter layer.
 It contains only what is specific to one project:
 
 - the project name
-- the box name
 - the default repo path
-- the exact VS Code runtime bindings used by the project
+- the exact editor runtime bindings used by the project
 - the exact shared toolchain versions used by the project
 - any project-specific secondary runtime aliases
-- thin host entry points for GUI launch and terminal launch
+- the shared project editor core
+- thin host entry points for editor-specific GUI launch and terminal launch
+- project-owned install / uninstall / repair wrappers that select the editor without duplicating the whole project bootstrap
 
 Using the sanitized boilerplate project name `test-mono`, the files are:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditor.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorElectronTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstall.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1`
 
-## What each file currently does
+## What the current file families do
 
-### `Bootstrap.Common.psm1`
+### Core
 
-Provides the generic reusable helpers:
+`Bootstrap.Common.psm1` still owns the reusable filesystem/bootstrap helpers:
 
-- `Assert-PathExists`
-- `Ensure-Directory`
-- `Copy-FileIfExists`
-- `Test-DirectoryHasContent`
-- `Sync-TreeMirror`
-- `Initialize-TreeIfMissing`
-- `Copy-TreeContents`
-- `Initialize-TreeCopyIfMissing`
-- `Write-AsciiFile`
-- `Prepend-PathEntries`
+- path assertions
+- directory creation
+- tree mirroring
+- bootstrap-owned ASCII file generation
+- `PATH` prefix composition
 
-### `Bootstrap.Node.psm1`
+### Shared family platform
 
-Provides the Node stack wiring:
+The `vscode-family` layer now owns the shared editor-family runtime behavior:
 
-- validates the shared `Git`, `Node`, and `pnpm` surfaces
-- creates `pnpm.cmd`
-- creates a shell-native `pnpm` wrapper for Git Bash
-- creates additional node wrappers such as `node20.cmd`
-- creates shell-native additional wrappers such as `node20`
-- prepends `bootstrap-bin`, `git\cmd`, and the primary `Node` root to `PATH`
+- family layout assertions
+- local runtime mirroring
+- shared catalog sync
+- shared extension-store mirroring
+- seed initialization
+- family maintenance publish flow
+- family project launch flow
 
-### `Bootstrap.WindowsShells.psm1`
+### Thin editor wrappers
 
-Provides the Windows shell runtime wiring:
+The `vscode` and `cursor` layers now stay intentionally thin.
 
-- mirrors governed shared `cmd.exe` locally
-- mirrors governed shared Windows PowerShell locally
-- mirrors governed shared `Clink` locally when provisioned
-- prepends the local `Clink` root into `PATH`
-- writes:
-  - `cmd.minimal.init.cmd`
-  - `cmd.starship.init.cmd`
-  - `powershell.minimal.init.ps1`
-  - `powershell.starship.init.ps1`
-- keeps mutable Clink state in a box-local profile path instead of under `execution\bootstrap-bin`
+They bind the family kernel to:
 
-### `Bootstrap.Python.psm1`
+- the VS Code runtime namespace
+- or the Cursor runtime namespace
 
-Provides the Python stack wiring:
+without duplicating the shared catalog/toolchain/bootstrap behavior.
 
-- validates the shared Python surface
-- mirrors the selected Python version locally
-- prepends the local Python version root into `PATH`
+### Toolchain and native-build stacks
 
-### `Bootstrap.Starship.psm1`
+The stack layers now include:
 
-Provides the Starship prompt/runtime wiring:
+- `node`
+- `microsoft-build`
+- `dotnet-framework`
+- `shells`
+- `python`
+- `starship`
 
-- validates whether shared Starship is present
-- mirrors Starship locally when it is provisioned
-- prepends the local Starship directory into `PATH`
-- generates `bash.minimal.rc`
-- generates `bash.starship.rc`
+That reflects the real current boxed-owned-toolchain contract, where the project bootstrap can prepare:
 
-Those RC files are also responsible for prepending the local `bootstrap-bin` directory into the Bash `PATH` so Git Bash can resolve bootstrap-generated shell wrappers such as `pnpm` and `node20`.
+- Git / Node / pnpm
+- Windows shell lanes
+- Microsoft build-source projection
+- `.NET Framework` compiler projection
+- optional Python
+- optional Starship
 
-### `Bootstrap.VSCode.psm1`
+### Project adapter layer
 
-Provides the VS Code platform wiring:
+`Project.Config.ps1` is now the real editor-split contract.
 
-- validates `Code.exe` and `code.cmd`
-- computes box-local `user-data` and `extensions` paths
-- copies canonical `settings.json` / `keybindings.json`
-- mirrors snippets
-- mirrors shared extensions to the box-local runtime copy
-- initializes seed-backed runtime state if missing
-- wraps `code.cmd --install-extension`
-- wraps `code.cmd --list-extensions`
-- wraps `Code.exe`
+It keeps:
 
-### `Start-VSCodeMaintenance.ps1`
+- one `VSCode` block
+- one `Cursor` block
+- one shared `Toolchain` block
+- one shared `MicrosoftBuild` block
+- one shared `Nx` block
+- one shared `Shells` block
 
-Provides the maintenance control-plane entry point:
+`Start-TestMonoEditor.ps1` is the shared project-level editor core.
 
-- local maintenance authoring state under `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\...`
-- local mirrored runtime/toolchain execution
-- explicit publish/promotion back into shared canonical surfaces
-- CLI-first actions:
-  - `InstallExtension`
-  - `ListExtensions`
-  - `OpenTerminal`
-  - `LaunchVSCode`
+It chooses:
 
-### `Start-VSCodeProjectBase.ps1`
+- which editor was requested
+- which platform base script receives the call
+- whether the terminal intent is generic or Electron-specific
 
-Provides the reusable project-box orchestration:
+The remaining project wrappers are then deliberately thin:
 
-- validates the repo path
-- computes box-local VS Code paths
-- synchronizes shared extensions into a box-local extension runtime copy
-- initializes seeds
-- initializes the Node toolchain layer
-- initializes the Windows shell layer
-- initializes the Python toolchain layer when configured
-- initializes the Starship prompt/runtime layer
-- supports:
-  - `LaunchVSCode`
-  - `OpenTerminal`
+- `Start-TestMonoVSCode.ps1`
+- `Start-TestMonoCursor.ps1`
+- `Start-TestMonoTerminal.ps1`
+- `Start-TestMonoElectronTerminal.ps1`
+- `Start-TestMonoCursorTerminal.ps1`
+- `Start-TestMonoCursorElectronTerminal.ps1`
 
-### `Project.Config.ps1`
+The non-launch project scripts also stay shared and editor-selectable instead of duplicated:
 
-Provides the example `test-mono` project contract:
+- `Start-TestMonoPnpmInstall.ps1`
+- `Start-TestMonoPnpmCleanReinstall.ps1`
+- `Start-TestMonoPnpmUninstall.ps1`
+- `Start-TestMonoElectronPostInstall.ps1`
 
-- box name: `VS_CODE_TEST_MONO`
-- default repo path
-- VS Code runtime paths
-- shared extension path
-- seed paths
-- shared Git root
-- primary `Node 26.2.0`
-- optional shared Python root
-- shell roots for:
-  - `cmd.exe`
-  - Windows PowerShell
-  - `Clink`
-  - `Starship`
-- shared `pnpm.cjs`
-- additional `node20` command
+### Runtime contract
 
-### `Start-TestMonoVSCode.ps1`
+The current runtime contract is now:
 
-This is the project-specific host entry point for:
-
-- `-Action LaunchVSCode`
-- `-Action OpenTerminal`
-
-It loads `Project.Config.ps1`, resolves the repo path, applies the project-owned Electron shell-surface bootstrap when `OpenTerminalIntent=ElectronServe`, and then calls the generic `Start-VSCodeProjectBase.ps1`.
-
-### `Start-TestMonoElectronTerminal.ps1`
-
-This is the thin Electron-serve convenience wrapper that forwards directly to:
-
-- `Start-TestMonoVSCode.ps1 -Action OpenTerminal -OpenTerminalIntent ElectronServe`
-
-Use the wrapper when the terminal is specifically meant for the canonical Electron serve flow.
-For a generic project terminal, call `Start-TestMonoVSCode.ps1 -Action OpenTerminal` directly.
+- shared VSCode-family catalog, seeds, and extension store
+- separate `VS Code` and `Cursor` runtime namespaces
+- local mirrored runtime execution
+- local maintenance authoring state
+- explicit publish/promotion
+- one shared project bootstrap core with thin editor wrappers
+- shared dependency-management and repair scripts that select the editor through parameters instead of duplicating the whole project implementation
 
 ## Runtime contract
 
@@ -404,6 +432,7 @@ This preserves the architecture contract:
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`

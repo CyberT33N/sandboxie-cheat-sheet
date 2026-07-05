@@ -552,6 +552,8 @@ The required final statement is:
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\provisioning\runtime-installation.md`
 - `docs\applications\IDE\cursor\architectures\host-sync\debugging.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\troubleshooting.md`
 - `docs\applications\git\architectures\boxed-owned-toolchain\authentication-and-clone.md`

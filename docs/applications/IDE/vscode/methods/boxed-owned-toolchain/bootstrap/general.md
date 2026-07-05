@@ -65,8 +65,12 @@ In the current validated architecture, those explicit Windows shell lanes are pr
 The current bootstrap split is:
 
 - `core\`
+- `platforms\vscode-family\`
 - `platforms\vscode\`
+- `platforms\cursor\`
 - `stacks\node\`
+- `stacks\microsoft-build\`
+- `stacks\dotnet-framework\`
 - `stacks\shells\`
 - `stacks\python\`
 - `stacks\starship\`
@@ -75,13 +79,16 @@ The current bootstrap split is:
 This separates:
 
 - generic primitives
-- VS Code platform orchestration
+- shared VSCode-family orchestration
+- thin editor-specific platform wrappers
 - Node stack wiring
+- native Windows build-source projection
 - shell runtime wiring
 - project adapter logic
 
 ## Related
 
+- `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
 - `docs\cli\shell\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
