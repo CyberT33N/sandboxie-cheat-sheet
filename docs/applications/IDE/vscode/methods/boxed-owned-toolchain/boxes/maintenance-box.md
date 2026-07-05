@@ -38,6 +38,16 @@ Instead, the Maintenance Box authors local working state under the box execution
 
 Approved changes are then promoted back into the canonical shared surfaces.
 
+Important current nuance:
+
+- that promotion must run in the `VS_CODE_MAINTENANCE` boxed context
+- not as a naked host-side call to `Publish-VSCodeMaintenance.ps1`
+
+Why:
+
+- the maintenance authoring state is box-local first
+- the publish step must see that same boxed local state before copying it back into the canonical shared surfaces
+
 ## Operating model
 
 The Maintenance Box is:
@@ -56,6 +66,14 @@ Typical maintenance actions are:
 - optional GUI launch for manual inspection
 - publish/promote approved maintenance state
 
+Important current nuance:
+
+- `InstallExtension` can install either:
+  - a gallery identifier such as `eamodio.gitlens`
+  - or an absolute shared VSIX path such as `C:\shared\sandbox-toolchains\dev\vscode-extensions\vsix\CyberT33N\pretty-ts-errors-1.5.1.vsix`
+- for that VSIX path to be visible inside `VS_CODE_MAINTENANCE`, the Sandboxie box config must also allow read access to:
+  - `C:\shared\sandbox-toolchains\dev\vscode-extensions\`
+
 ## Why this box exists
 
 Without a dedicated maintenance author, shared IDE assets would become vulnerable to:
@@ -69,6 +87,8 @@ The Maintenance Box solves this by concentrating global authorship in a single b
 
 ## Related
 
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\installation-boilerplate.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\architecture\governance.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\sandboxie\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\cli\start\general.md`

@@ -67,6 +67,7 @@ $Dirs = @(
   "$SharedRoot\dev\shells\dotnet-framework\Framework64\v4.0.30319",
   "$SharedRoot\dev\python\3.14.5",
   "$SharedRoot\dev\starship\1.25.1",
+  "$SharedRoot\dev\vscode-extensions\vsix\CyberT33N",
   "$SharedBootstrapRoot\core",
   "$SharedBootstrapRoot\platforms\vscode-family",
   "$SharedBootstrapRoot\platforms\vscode",
@@ -292,6 +293,22 @@ For the architecture rationale, read:
 - `docs\applications\IDE\vscode\extensions\eslint\general.md`
 - `docs\applications\IDE\vscode\extensions\eslint\architectures\boxed-owned-toolchain\settings-json.md`
 
+## Shared source-artifact staging for local VSIX packages
+
+Local forked VSIX packages should be staged in the shared `dev` area before installation, for example:
+
+```text
+C:\shared\sandbox-toolchains\dev\vscode-extensions\vsix\CyberT33N\
+```
+
+That path is intentionally **not** the canonical published extension store.
+
+It is the source-artifact staging lane that feeds the Maintenance Box install flow before approved maintenance state is promoted into:
+
+```text
+C:\shared\sandbox-toolchains\ide\vscode\extensions\
+```
+
 ## Optional migration examples
 
 These are optional migration helpers, not required as part of the scratch-first default:
@@ -322,6 +339,8 @@ Copy-Item "$env:USERPROFILE\.roo\*" `
 
 ## Related
 
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\installation-boilerplate.md`
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\provisioning\runtime-installation.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`

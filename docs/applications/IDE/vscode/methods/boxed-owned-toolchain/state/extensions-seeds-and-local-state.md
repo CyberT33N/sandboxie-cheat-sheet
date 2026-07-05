@@ -20,6 +20,24 @@ C:\shared\sandbox-toolchains\ide\vscode\extensions\
 
 This store is the canonical published extension surface.
 
+## Source VSIX artifacts are a separate surface
+
+Local forked VSIX artifacts should **not** be staged directly into the canonical published extension store.
+
+They are installation inputs, not the published shared runtime state.
+
+The recommended staging root for those local source artifacts is:
+
+```text
+C:\shared\sandbox-toolchains\dev\vscode-extensions\vsix\CyberT33N\
+```
+
+That staging root is then consumed by the Maintenance Box install flow before the resulting maintenance authoring state is promoted into:
+
+```text
+C:\shared\sandbox-toolchains\ide\vscode\extensions\
+```
+
 ## Why project boxes do not use it directly as live runtime
 
 The project box does **not** point `--extensions-dir` directly at the shared extension store during normal runtime.
@@ -144,6 +162,8 @@ The box-local runtime state then contains the live mutable copy used by the proj
 
 ## Related
 
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\installation-boilerplate.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\architecture\governance.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boxes\maintenance-box.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boxes\project-box.md`

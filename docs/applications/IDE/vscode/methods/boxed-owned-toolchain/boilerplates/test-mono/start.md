@@ -310,7 +310,7 @@ Do not treat manual `code.cmd` typing inside an already-open maintenance termina
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
   -Action InstallExtension `
-  -ExtensionId "RooVeterinaryInc.roo-cline"
+  -ExtensionId "dbaeumer.vscode-eslint"
 ```
 
 ### List extensions from the canonical shared store

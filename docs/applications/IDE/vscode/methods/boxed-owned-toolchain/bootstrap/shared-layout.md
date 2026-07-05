@@ -95,6 +95,9 @@ C:\shared\sandbox-toolchains\
     starship\
       1.25.1\
         starship.exe
+    vscode-extensions\
+      vsix\
+        CyberT33N\
     bootstrap\
       core\
         Bootstrap.Common.psm1
@@ -269,6 +272,16 @@ It contains prompt-specific runtime support when `Starship` must be mirrored loc
 The current file is:
 
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\starship\Bootstrap.Starship.psm1`
+
+### `dev\vscode-extensions\vsix\`
+
+This is the shared source-artifact staging lane for local forked VS Code extension packages.
+
+It is **not** the canonical published extension store.
+
+It exists so locally built VSIX artifacts can be copied into the shared `dev` area first and then installed through the Maintenance Box before the resulting maintenance state is promoted into:
+
+- `C:\shared\sandbox-toolchains\ide\vscode\extensions\`
 
 ### `projects\<project>\bootstrap\`
 

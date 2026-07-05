@@ -34,7 +34,7 @@ The current maintenance script is:
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
   -Action InstallExtension `
-  -ExtensionId "RooVeterinaryInc.roo-cline"
+  -ExtensionId "dbaeumer.vscode-eslint"
 ```
 
 ### Preferred: list extensions from the host

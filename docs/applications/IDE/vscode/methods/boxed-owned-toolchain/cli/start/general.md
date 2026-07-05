@@ -44,7 +44,7 @@ The tested behavior shows that a generic free-form passthrough such as:
 or:
 
 ```powershell
--CodeArgs --install-extension RooVeterinaryInc.roo-cline
+-CodeArgs --install-extension dbaeumer.vscode-eslint
 ```
 
 is too fragile across multiple parsing layers.
@@ -66,6 +66,13 @@ Recommended payload parameters:
 - `-ProjectName`
 - `-RepoPath`
 - `-ExtensionId`
+
+Important current nuance:
+
+- `-ExtensionId` is the current wrapper parameter name
+- it can carry either:
+  - a gallery identifier such as `eamodio.gitlens`
+  - or an absolute VSIX path such as `C:\shared\sandbox-toolchains\dev\vscode-extensions\vsix\CyberT33N\pretty-ts-errors-1.5.1.vsix`
 
 ## Recommended project start contract
 
@@ -125,7 +132,7 @@ The preferred target shape is:
   -ExecutionPolicy Bypass `
   -File "C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1" `
   -Action InstallExtension `
-  -ExtensionId "RooVeterinaryInc.roo-cline"
+  -ExtensionId "dbaeumer.vscode-eslint"
 ```
 
 For list-only validation, use the same wrapper contract with `-Action ListExtensions`:
@@ -143,6 +150,11 @@ For list-only validation, use the same wrapper contract with `-Action ListExtens
 
 These host-driven maintenance actions are the preferred standard workflow.
 An already-open maintenance terminal remains useful for troubleshooting, but routine extension installation and extension listing should normally be invoked through the explicit wrapper actions above.
+
+For the full required extension inventory and the complete bulk-install boilerplate, read:
+
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\installation-boilerplate.md`
 
 ## Host-driven dependency install pattern
 

@@ -30,5 +30,7 @@ The current architecture-specific ESLint write-up is:
 
 ## Related
 
+- `docs\applications\IDE\vscode\extensions\general.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\vscode-runtime-and-catalog.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`

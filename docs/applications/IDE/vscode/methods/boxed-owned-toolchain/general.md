@@ -91,6 +91,9 @@ Core model:
 
 ### 11. Extension-specific settings
 
+- `docs\applications\IDE\vscode\extensions\general.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\installation-boilerplate.md`
 - `docs\applications\IDE\vscode\extensions\eslint\general.md`
 
 ### 12. Application-domain toolchain sources of truth

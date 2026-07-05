@@ -91,6 +91,7 @@ UseRamDisk=n
 
 ReadFilePath=C:\shared\sandbox-toolchains\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\bootstrap\
+ReadFilePath=C:\shared\sandbox-toolchains\dev\vscode-extensions\
 ReadFilePath=C:\shared\sandbox-toolchains\ide\vscode\runtime\1.121.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\git\2.54.0\
 ReadFilePath=C:\shared\sandbox-toolchains\dev\node\26.2.0\
@@ -125,6 +126,28 @@ The current maintenance runtime itself is expected to execute locally from the m
 
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\state\...`
 - `C:\Program Files\SandboxToolchains\VSCodeBoxes\maintenance\execution\...`
+
+## Local VSIX staging visibility
+
+When the Maintenance Box installs local forked extensions from staged VSIX artifacts, it must also be able to read the shared staging lane under:
+
+```text
+C:\shared\sandbox-toolchains\dev\vscode-extensions\
+```
+
+That is why the sanitized config example above now includes:
+
+```ini
+ReadFilePath=C:\shared\sandbox-toolchains\dev\vscode-extensions\
+```
+
+Without that read rule, absolute VSIX install targets such as:
+
+```text
+C:\shared\sandbox-toolchains\dev\vscode-extensions\vsix\CyberT33N\pretty-ts-errors-1.5.1.vsix
+```
+
+may be present on the host and still remain invisible from inside `VS_CODE_MAINTENANCE`.
 
 ## PNPM box-visibility governance
 

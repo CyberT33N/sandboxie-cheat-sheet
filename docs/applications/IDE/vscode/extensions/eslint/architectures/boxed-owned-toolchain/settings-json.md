@@ -45,7 +45,7 @@ The boxed-owned-toolchain method must not point ESLint back to host-managed path
 Instead, the extension is pinned to the governed shared Node binary:
 
 ```text
-C:\shared\sandbox-toolchains\dev\node\20.9.0node-v220.9.0in-x64\node.exe
+C:\shared\sandbox-toolchains\dev\node\20.9.0\node-v20.9.0-win-x64\node.exe
 ```
 
 This keeps the setting:
@@ -73,6 +73,7 @@ It documents the current ESLint contract only.
 
 ## Related
 
+- `docs\applications\IDE\vscode\extensions\architectures\boxed-owned-toolchain\inventory.md`
 - `docs\applications\IDE\vscode\extensions\eslint\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\state\vscode-runtime-and-catalog.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\provisioning\shared-artifacts.md`
