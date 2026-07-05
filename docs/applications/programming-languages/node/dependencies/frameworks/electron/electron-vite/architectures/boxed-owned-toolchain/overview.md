@@ -135,7 +135,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$launcher = Join-Path $PSScriptRoot 'Start-PrivadentMonoVSCode.ps1'
+$launcher = Join-Path $PSScriptRoot 'Start-testMonoVSCode.ps1'
 
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
@@ -163,7 +163,7 @@ That shim is retained because:
 Current implementation:
 
 ```powershell
-function Ensure-PrivyouElectronViteCmdShim {
+function Ensure-testElectronViteCmdShim {
   param(
     [Parameter(Mandatory = $true)]
     [string]$RepoPath,
