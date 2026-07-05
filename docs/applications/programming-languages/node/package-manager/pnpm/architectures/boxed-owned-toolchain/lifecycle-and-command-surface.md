@@ -166,6 +166,32 @@ For the Nx-specific command-surface split, read:
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\runtime-contract.md`
 
+## Nested orchestration boundary
+
+When `pnpm exec ...` is the visible outermost command surface, do **not** automatically conclude that PNPM itself is the primary root cause.
+
+The validated repository example proved a narrower and more important split:
+
+1. the inner dependency-wrapper command could work in isolation
+2. the direct inner tooling-runner command could work in isolation
+3. the full canonical `pnpm exec -> orchestrator -> runner -> final child-process` path could still hang at the last spawn edge
+
+That means `pnpm exec` can be:
+
+- the **reproduction surface**
+- without being the deepest architectural cause
+
+In that failure class, PNPM is part of the parent process tree that eventually reaches the problematic final launch boundary.
+
+The cross-cutting primary reference document for that architecture is:
+
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
+
+Important nuance:
+
+- it is **not yet fully proven** that the same failure class must affect every other package manager
+- but the repository evidence supports treating this as a **generic nested child-process orchestration risk**, not as a PNPM-only concept
+
 ## Related
 
 - `docs\cli\shell\general.md`
@@ -173,4 +199,5 @@ For the Nx-specific command-surface split, read:
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`

@@ -35,7 +35,7 @@ Use this as the default:
 ```powershell
 pnpm exec nx --version
 pnpm exec nx show projects
-pnpm exec nx run test:serve --no-tui -- --profile=dev-evident
+pnpm exec nx run desktop-app:serve --no-tui -- --profile=desktop-dev
 ```
 
 Use the lower-level diagnostic path when needed:

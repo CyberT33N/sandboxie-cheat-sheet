@@ -87,16 +87,315 @@ return @{
 
 ## `Start-TestMonoVSCode.ps1`
 
+This is the full sanitized project-adapter example for the current Electron-serve-aware bootstrap contract.
+
 ```powershell
 param(
   [ValidateSet('LaunchVSCode', 'OpenTerminal')]
   [string]$Action = 'LaunchVSCode',
 
-  [string]$RepoPath
+  [string]$RepoPath,
+
+  [ValidateSet('General', 'ElectronServe')]
+  [string]$OpenTerminalIntent = 'General',
+
+  [switch]$EnableComSpecTraceProxy
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
+
+function Write-AsciiText {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Path,
+
+    [Parameter(Mandatory = $true)]
+    [string]$Content
+  )
+
+  $parent = Split-Path -Parent $Path
+  if (-not [string]::IsNullOrWhiteSpace($parent) -and -not (Test-Path -LiteralPath $parent)) {
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+  }
+
+  [System.IO.File]::WriteAllText($Path, $Content, [System.Text.Encoding]::ASCII)
+}
+
+function Append-AsciiText {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Path,
+
+    [Parameter(Mandatory = $true)]
+    [string]$Content
+  )
+
+  $parent = Split-Path -Parent $Path
+  if (-not [string]::IsNullOrWhiteSpace($parent) -and -not (Test-Path -LiteralPath $parent)) {
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+  }
+
+  [System.IO.File]::AppendAllText($Path, $Content, [System.Text.Encoding]::ASCII)
+}
+
+function Get-TestMonoLogRoot {
+  $localAppData = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::LocalApplicationData)
+
+  if ([string]::IsNullOrWhiteSpace($localAppData)) {
+    $localAppData = $env:TEMP
+  }
+
+  if ([string]::IsNullOrWhiteSpace($localAppData)) {
+    throw 'Could not resolve a writable local log root.'
+  }
+
+  return (Join-Path $localAppData 'SandboxToolchains\Logs\test-mono')
+}
+
+function Write-TestMonoBootstrapLog {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Message
+  )
+
+  $timestamp = [DateTime]::UtcNow.ToString('o')
+  $logPath = Join-Path (Get-TestMonoLogRoot) 'electron-vite-bootstrap.log'
+  Append-AsciiText -Path $logPath -Content ('[{0}] {1}{2}' -f $timestamp, $Message, [Environment]::NewLine)
+}
+
+function Enable-TestMonoComSpecTraceProxy {
+  $proxyComSpec = $env:BOXED_CMD_PROXY_EXE
+  if ([string]::IsNullOrWhiteSpace($proxyComSpec) -or -not (Test-Path -LiteralPath $proxyComSpec)) {
+    Write-TestMonoBootstrapLog -Message 'Shared ComSpec diagnostic proxy is not available in the local boxed shell runtime. Continuing without proxy instrumentation.'
+    Write-Warning 'Shared ComSpec diagnostic proxy is not available in the local boxed shell runtime. Continuing without proxy instrumentation.'
+    return $false
+  }
+
+  $realComSpec = $env:BOXED_CMD_EXE
+  if ([string]::IsNullOrWhiteSpace($realComSpec) -or -not (Test-Path -LiteralPath $realComSpec)) {
+    throw 'BOXED_CMD_EXE was not initialized to a runnable boxed cmd.exe before enabling the shared ComSpec trace proxy.'
+  }
+
+  $comSpecTraceLog = Join-Path (Get-TestMonoLogRoot) 'comspec-wrapper.log'
+  $env:BOXED_REAL_COMSPEC = $realComSpec
+  $env:BOXED_COMSPEC_TRACE_LOG = $comSpecTraceLog
+  $env:BOXED_COMSPEC_DIAGNOSTIC_PROXY = $proxyComSpec
+  $env:ComSpec = $proxyComSpec
+  $env:COMSPEC = $proxyComSpec
+
+  Write-TestMonoBootstrapLog -Message ('Enabled shared ComSpec diagnostic proxy. Proxy="{0}" RealCmd="{1}" TraceLog="{2}"' -f $proxyComSpec, $realComSpec, $comSpecTraceLog)
+  Write-Host "ComSpecDiagnosticProxy: $proxyComSpec"
+  Write-Host "ComSpecDiagnosticRealCmd: $realComSpec"
+  Write-Host "ComSpecDiagnosticLog: $comSpecTraceLog"
+  return $true
+}
+
+function Publish-TestMonoComSpecMetadata {
+  $realComSpec = $env:BOXED_CMD_EXE
+  if (-not [string]::IsNullOrWhiteSpace($realComSpec) -and (Test-Path -LiteralPath $realComSpec)) {
+    $env:BOXED_REAL_COMSPEC = $realComSpec
+  }
+
+  $proxyComSpec = $env:BOXED_CMD_PROXY_EXE
+  if (-not [string]::IsNullOrWhiteSpace($proxyComSpec) -and (Test-Path -LiteralPath $proxyComSpec)) {
+    $env:BOXED_COMSPEC_DIAGNOSTIC_PROXY = $proxyComSpec
+  }
+}
+
+function Resolve-TestMonoElectronExecPath {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RepoPath
+  )
+
+  $desktopRoot = Join-Path $RepoPath 'apps\desktop-app'
+  $desktopPackageJson = Join-Path $desktopRoot 'package.json'
+
+  if (-not (Test-Path -LiteralPath $desktopPackageJson)) {
+    Write-TestMonoBootstrapLog -Message ('Electron exec path resolution skipped because desktop package.json is missing: "{0}"' -f $desktopPackageJson)
+    return $null
+  }
+
+  $candidateElectronRoots = New-Object System.Collections.Generic.List[string]
+  $desktopElectronRoot = Join-Path $desktopRoot 'node_modules\electron'
+  if (Test-Path -LiteralPath $desktopElectronRoot) {
+    $candidateElectronRoots.Add($desktopElectronRoot)
+  }
+
+  $pnpmRoot = Join-Path $RepoPath '.pnpm'
+  if (Test-Path -LiteralPath $pnpmRoot) {
+    $pnpmElectronDirs = Get-ChildItem -LiteralPath $pnpmRoot -Directory -Filter 'electron@*' -ErrorAction SilentlyContinue |
+      Sort-Object Name -Descending
+
+    foreach ($pnpmElectronDir in $pnpmElectronDirs) {
+      $candidateElectronRoot = Join-Path $pnpmElectronDir.FullName 'node_modules\electron'
+      if (Test-Path -LiteralPath $candidateElectronRoot) {
+        $candidateElectronRoots.Add($candidateElectronRoot)
+      }
+    }
+  }
+
+  foreach ($candidateElectronRoot in ($candidateElectronRoots | Select-Object -Unique)) {
+    $pathTxt = Join-Path $candidateElectronRoot 'path.txt'
+    $distDir = Join-Path $candidateElectronRoot 'dist'
+    $defaultExe = Join-Path $distDir 'electron.exe'
+
+    if (Test-Path -LiteralPath $pathTxt) {
+      $relativeBinary = [System.IO.File]::ReadAllText($pathTxt).Trim()
+      if (-not [string]::IsNullOrWhiteSpace($relativeBinary)) {
+        $binaryFromPathTxt = Join-Path $distDir $relativeBinary
+        if (Test-Path -LiteralPath $binaryFromPathTxt) {
+          return [pscustomobject]@{
+            Path = $binaryFromPathTxt
+            Source = 'path.txt'
+          }
+        }
+      }
+    }
+
+    if (Test-Path -LiteralPath $defaultExe) {
+      return [pscustomobject]@{
+        Path = $defaultExe
+        Source = 'dist-electron.exe'
+      }
+    }
+  }
+
+  Write-TestMonoBootstrapLog -Message ('Electron exec path resolution could not find a runnable electron.exe below desktop node_modules or .pnpm. DesktopRoot="{0}"' -f $desktopRoot)
+  return $null
+}
+
+function Set-TestMonoElectronExecPath {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RepoPath
+  )
+
+  $resolution = Resolve-TestMonoElectronExecPath -RepoPath $RepoPath
+  if (-not $resolution -or [string]::IsNullOrWhiteSpace($resolution.Path)) {
+    $warningMessage = 'Desktop-app Electron runtime path could not be resolved during bootstrap. Electron launch may fail until the runtime path is repaired.'
+    Write-TestMonoBootstrapLog -Message $warningMessage
+    Write-Warning $warningMessage
+    return $false
+  }
+
+  $env:ELECTRON_EXEC_PATH = $resolution.Path
+  $env:BOXED_ELECTRON_EXEC_PATH = $resolution.Path
+
+  Write-TestMonoBootstrapLog -Message ('Set ELECTRON_EXEC_PATH to "{0}" via {1}' -f $resolution.Path, $resolution.Source)
+  return $true
+}
+
+function Ensure-TestMonoElectronViteCmdShim {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RepoPath,
+
+    [Parameter(Mandatory = $true)]
+    [string]$FallbackNodeRoot
+  )
+
+  $electronViteCmd = Join-Path $RepoPath 'apps\desktop-app\node_modules\.bin\electron-vite.CMD'
+  $electronViteJs = Join-Path $RepoPath 'apps\desktop-app\node_modules\electron-vite\bin\electron-vite.js'
+
+  if (-not (Test-Path -LiteralPath $electronViteCmd) -or -not (Test-Path -LiteralPath $electronViteJs)) {
+    Write-TestMonoBootstrapLog -Message ('Electron-Vite shim skipped because required files are missing. CmdPath="{0}" JsPath="{1}"' -f $electronViteCmd, $electronViteJs)
+    return $false
+  }
+
+  $fallbackNodeExe = Join-Path $FallbackNodeRoot 'node.exe'
+  $shimContent = @(
+    '@echo off'
+    'setlocal EnableExtensions'
+    'set "_electronViteJs=%~dp0..\electron-vite\bin\electron-vite.js"'
+    'set "_shimLogDir=%LOCALAPPDATA%\SandboxToolchains\Logs\test-mono"'
+    'if not exist "%_shimLogDir%" mkdir "%_shimLogDir%" >nul 2>nul'
+    'set "_shimLog=%_shimLogDir%\electron-vite-shim.log"'
+    '>>"%_shimLog%" echo [%DATE% %TIME%] start cwd=%CD% boxed_node_root=%BOXED_NODE_ROOT% args=%*'
+    'if defined BOXED_NODE_ROOT if exist "%BOXED_NODE_ROOT%\node.exe" goto :boxedNodeRoot'
+    ('if exist "{0}" goto :fallbackNode' -f $fallbackNodeExe)
+    'goto :pathNode'
+    ':boxedNodeRoot'
+    '>>"%_shimLog%" echo [%DATE% %TIME%] using BOXED_NODE_ROOT "%BOXED_NODE_ROOT%\node.exe"'
+    '"%BOXED_NODE_ROOT%\node.exe" "%_electronViteJs%" %*'
+    'set "_shimExit=%ERRORLEVEL%"'
+    '>>"%_shimLog%" echo [%DATE% %TIME%] exit_code=%_shimExit%'
+    'exit /b %_shimExit%'
+    ':fallbackNode'
+    ('>>"%_shimLog%" echo [%DATE% %TIME%] using fallback "{0}"' -f $fallbackNodeExe)
+    ('"{0}" "%_electronViteJs%" %*' -f $fallbackNodeExe)
+    'set "_shimExit=%ERRORLEVEL%"'
+    '>>"%_shimLog%" echo [%DATE% %TIME%] exit_code=%_shimExit%'
+    'exit /b %_shimExit%'
+    ':pathNode'
+    '>>"%_shimLog%" echo [%DATE% %TIME%] using PATH node'
+    'node "%_electronViteJs%" %*'
+    'set "_shimExit=%ERRORLEVEL%"'
+    '>>"%_shimLog%" echo [%DATE% %TIME%] exit_code=%_shimExit%'
+    'exit /b %_shimExit%'
+  ) -join [Environment]::NewLine
+
+  $currentContent = if (Test-Path -LiteralPath $electronViteCmd) {
+    [System.IO.File]::ReadAllText($electronViteCmd)
+  }
+  else {
+    ''
+  }
+
+  if ($currentContent -ne $shimContent) {
+    Write-AsciiText -Path $electronViteCmd -Content $shimContent
+    Write-TestMonoBootstrapLog -Message ('Electron-Vite shim refreshed at "{0}" with fallback node "{1}"' -f $electronViteCmd, $fallbackNodeExe)
+  }
+  else {
+    Write-TestMonoBootstrapLog -Message ('Electron-Vite shim already up to date at "{0}"' -f $electronViteCmd)
+  }
+
+  return $true
+}
+
+function Test-TestMonoDesktopOutSurface {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$RepoPath
+  )
+
+  $desktopRoot = Join-Path $RepoPath 'apps\desktop-app'
+  $outRoot = Join-Path $desktopRoot 'out'
+  $chunksRoot = Join-Path $outRoot 'main\chunks'
+
+  if (-not (Test-Path -LiteralPath $desktopRoot)) {
+    Write-TestMonoBootstrapLog -Message ('Electron out preflight skipped because desktop root is missing: "{0}"' -f $desktopRoot)
+    return $false
+  }
+
+  Write-TestMonoBootstrapLog -Message ('Electron out preflight started. OutRoot="{0}" ChunksRoot="{1}"' -f $outRoot, $chunksRoot)
+
+  try {
+    if (Test-Path -LiteralPath $outRoot) {
+      Remove-Item -LiteralPath $outRoot -Recurse -Force -ErrorAction Stop
+      Write-TestMonoBootstrapLog -Message ('Removed existing Electron out root: "{0}"' -f $outRoot)
+    }
+    else {
+      Write-TestMonoBootstrapLog -Message ('Electron out root was already absent before preflight: "{0}"' -f $outRoot)
+    }
+
+    $null = New-Item -ItemType Directory -Force -Path $chunksRoot -ErrorAction Stop
+    Write-TestMonoBootstrapLog -Message ('Created Electron chunks root during preflight: "{0}"' -f $chunksRoot)
+
+    Remove-Item -LiteralPath $outRoot -Recurse -Force -ErrorAction Stop
+    Write-TestMonoBootstrapLog -Message ('Removed Electron out root after create test: "{0}"' -f $outRoot)
+  }
+  catch {
+    $warningMessage = 'Electron desktop out preflight failed for "{0}". See "{1}" for details. Continuing terminal startup.' -f $chunksRoot, (Join-Path (Get-TestMonoLogRoot) 'electron-vite-bootstrap.log')
+    Write-TestMonoBootstrapLog -Message ('Electron out preflight failed. Message="{0}" Type="{1}"' -f $_.Exception.Message, $_.Exception.GetType().FullName)
+    Write-TestMonoBootstrapLog -Message $warningMessage
+    Write-Warning $warningMessage
+    return $false
+  }
+
+  return $true
+}
 
 $config = & (Join-Path $PSScriptRoot 'Project.Config.ps1')
 
@@ -109,6 +408,34 @@ $resolvedRepoPath = if ([string]::IsNullOrWhiteSpace($RepoPath)) {
 }
 else {
   $RepoPath
+}
+
+$logRoot = Get-TestMonoLogRoot
+Write-TestMonoBootstrapLog -Message ('Bootstrap start. Action="{0}" RepoPath="{1}" LogRoot="{2}"' -f $Action, $resolvedRepoPath, $logRoot)
+$isElectronServeTerminal = $Action -eq 'OpenTerminal' -and $OpenTerminalIntent -eq 'ElectronServe'
+$effectiveNxDaemonBootstrapMode = if ($isElectronServeTerminal) {
+  $config.Nx.DaemonBootstrapMode
+}
+else {
+  'None'
+}
+
+Write-TestMonoBootstrapLog -Message ('OpenTerminalIntent="{0}" EffectiveNxDaemonBootstrapMode="{1}"' -f $OpenTerminalIntent, $effectiveNxDaemonBootstrapMode)
+
+if ($isElectronServeTerminal) {
+  $null = Set-TestMonoElectronExecPath -RepoPath $resolvedRepoPath
+
+  $electronViteShimReady = Ensure-TestMonoElectronViteCmdShim `
+    -RepoPath $resolvedRepoPath `
+    -FallbackNodeRoot $config.Toolchain.NodeRoot
+
+  if ($electronViteShimReady) {
+    $electronOutPreflightReady = Test-TestMonoDesktopOutSurface -RepoPath $resolvedRepoPath
+    Write-TestMonoBootstrapLog -Message ('Electron out preflight completed={0}' -f $electronOutPreflightReady)
+  }
+}
+else {
+  Write-TestMonoBootstrapLog -Message ('Skipping test-mono Electron shell-surface bootstrap for Action="{0}" OpenTerminalIntent="{1}"' -f $Action, $OpenTerminalIntent)
 }
 
 $baseScript = Join-Path $config.SharedRoot 'dev\bootstrap\platforms\vscode\Start-VSCodeProjectBase.ps1'
@@ -136,7 +463,7 @@ $parameters = @{
   WindowsSdkRoot = $config.MicrosoftBuild.WindowsSdkRoot
   DotNetFrameworkRoot = $config.MicrosoftBuild.DotNetFrameworkRoot
   DotNetFramework64Root = $config.MicrosoftBuild.DotNetFramework64Root
-  NxDaemonBootstrapMode = $config.Nx.DaemonBootstrapMode
+  NxDaemonBootstrapMode = $effectiveNxDaemonBootstrapMode
   CmdRoot = $config.Shells.CmdRoot
   PowerShellRoot = $config.Shells.PowerShellRoot
   RegRoot = $config.Shells.RegRoot
@@ -146,20 +473,38 @@ $parameters = @{
   AdditionalNodeCommands = $config.Toolchain.AdditionalNodeCommands
 }
 
+Write-TestMonoBootstrapLog -Message ('Delegating to base project bootstrap: "{0}"' -f $baseScript)
 & $baseScript @parameters
+Write-TestMonoBootstrapLog -Message ('Base project bootstrap returned. Action="{0}" LastExitCode="{1}"' -f $Action, $LASTEXITCODE)
 
 if ($Action -eq 'OpenTerminal') {
+  Publish-TestMonoComSpecMetadata
+
+  if ($EnableComSpecTraceProxy) {
+    try {
+      $null = Enable-TestMonoComSpecTraceProxy
+    }
+    catch {
+      Write-TestMonoBootstrapLog -Message ('Failed to enable shared ComSpec diagnostic proxy. Message="{0}" Type="{1}"' -f $_.Exception.Message, $_.Exception.GetType().FullName)
+      Write-Warning ('Failed to enable shared ComSpec diagnostic proxy. Continuing without it. Message: {0}' -f $_.Exception.Message)
+    }
+  }
+  else {
+    Write-TestMonoBootstrapLog -Message 'Shared ComSpec diagnostic proxy not enabled for this terminal.'
+  }
+
   return
 }
 
 exit $LASTEXITCODE
 ```
 
-## `Start-TestMonoTerminal.ps1`
+## `Start-TestMonoElectronTerminal.ps1`
 
 ```powershell
 param(
-  [string]$RepoPath
+  [string]$RepoPath,
+  [switch]$EnableComSpecTraceProxy
 )
 
 $ErrorActionPreference = 'Stop'
@@ -171,7 +516,11 @@ if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
 
-& $launcher -Action OpenTerminal -RepoPath $RepoPath
+& $launcher `
+  -Action OpenTerminal `
+  -RepoPath $RepoPath `
+  -OpenTerminalIntent ElectronServe `
+  -EnableComSpecTraceProxy:$EnableComSpecTraceProxy
 ```
 
 ## `Start-TestMonoPnpmInstall.ps1`

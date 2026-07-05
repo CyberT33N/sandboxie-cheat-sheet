@@ -185,6 +185,7 @@ The current validated conclusion is:
 ## Related
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\install.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\scripts\clean-reinstall.md`

@@ -97,7 +97,7 @@ C:\shared\sandbox-toolchains\
       bootstrap\
         Project.Config.ps1
         Start-TestMonoVSCode.ps1
-        Start-TestMonoTerminal.ps1
+        Start-TestMonoElectronTerminal.ps1
       export\
       runner-input\
 ```
@@ -230,7 +230,7 @@ Using the sanitized boilerplate project name `test-mono`, the files are:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1`
 
 ## What each file currently does
 
@@ -365,13 +365,16 @@ This is the project-specific host entry point for:
 - `-Action LaunchVSCode`
 - `-Action OpenTerminal`
 
-It loads `Project.Config.ps1`, resolves the repo path, and calls the generic `Start-VSCodeProjectBase.ps1`.
+It loads `Project.Config.ps1`, resolves the repo path, applies the project-owned Electron shell-surface bootstrap when `OpenTerminalIntent=ElectronServe`, and then calls the generic `Start-VSCodeProjectBase.ps1`.
 
-### `Start-TestMonoTerminal.ps1`
+### `Start-TestMonoElectronTerminal.ps1`
 
-This is the thin convenience wrapper that forwards directly to:
+This is the thin Electron-serve convenience wrapper that forwards directly to:
 
-- `Start-TestMonoVSCode.ps1 -Action OpenTerminal`
+- `Start-TestMonoVSCode.ps1 -Action OpenTerminal -OpenTerminalIntent ElectronServe`
+
+Use the wrapper when the terminal is specifically meant for the canonical Electron serve flow.
+For a generic project terminal, call `Start-TestMonoVSCode.ps1 -Action OpenTerminal` directly.
 
 ## Runtime contract
 

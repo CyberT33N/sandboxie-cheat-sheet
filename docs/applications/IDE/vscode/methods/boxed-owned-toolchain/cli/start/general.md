@@ -171,7 +171,7 @@ For the PNPM-domain source of truth for provisioning or updating the governed PN
 Using the sanitized example project name `test-mono`, the concrete launchers are:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1` (optional thin convenience wrapper)
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1` (optional thin Electron-serve convenience wrapper)
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`
 
 For the full shared bootstrap tree and the sanitized boilerplate start flow, read:

@@ -151,6 +151,44 @@ The boxed-owned-toolchain method must treat them separately:
 
 This separation is critical because otherwise one green command can hide another still-broken runtime lane.
 
+## Nested orchestration boundary
+
+The validated repository evidence also supports a second important distinction:
+
+- `nx run ...` can be the **visible canonical reproduction surface**
+- without proving that Nx alone is the deepest architectural cause
+
+In the validated example:
+
+1. the lower-level tooling runner could work directly
+2. the lower-level dependency-wrapper command could work directly
+3. the full canonical path that included `pnpm exec nx run ...` still hung later at the final child-process boundary
+
+That means Nx belongs to the real reproduction chain, but the deeper failure class is better described as:
+
+- **nested child-process orchestration under a strict boxed Windows process boundary**
+
+not simply:
+
+- "Nx cannot run this target"
+
+This distinction matters because a higher-level caller can change the final process tree that Nx eventually creates.
+
+So if:
+
+1. direct inner commands are green
+2. the target logic itself is green
+3. the full `pnpm exec -> Nx -> runner -> final child` path still hangs
+
+then the first-class cross-cutting reference is:
+
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
+
+Important scope note:
+
+- the current repository evidence strongly suggests this failure class is not inherently Nx-only
+- but it is **not yet fully proven** across every other orchestrator/package-manager combination
+
 ## Accepted solution-space boundary
 
 For the current architecture discussion, the first-class solution space is:
@@ -202,3 +240,4 @@ Latest validated boxed result:
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`

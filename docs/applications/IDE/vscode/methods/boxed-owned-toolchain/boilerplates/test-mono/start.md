@@ -57,12 +57,17 @@ C:\shared\sandbox-toolchains\
       bootstrap\
         Project.Config.ps1
         Start-TestMonoVSCode.ps1
-        Start-TestMonoTerminal.ps1
+        Start-TestMonoElectronTerminal.ps1
 ```
 
 This `projects\` subtree is part of the shared runtime tree, not part of the cheat-sheet documentation tree.
 
 The documentation tree intentionally keeps boilerplates separately from real projects.
+
+Important launch split:
+
+- use `Start-TestMonoVSCode.ps1` for GUI launch and generic project-terminal launch
+- use `Start-TestMonoElectronTerminal.ps1` when the terminal is specifically meant for the canonical Electron serve lane
 
 ## Runtime contract
 

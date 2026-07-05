@@ -20,6 +20,7 @@ The operational troubleshooting trail for this architecture lives here:
 The project-owned post-install automation contract for this architecture now lives here:
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\architectures\boxed-owned-toolchain\scripts\post-install.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md`
 
 ## Current validated outcome
 

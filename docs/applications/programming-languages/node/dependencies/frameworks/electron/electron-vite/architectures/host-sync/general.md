@@ -2,7 +2,7 @@
 
 ## Architectural status
 
-This framework now has two documented architecture tracks in this repository:
+This framework now has three documented architecture tracks in this repository:
 
 1. **Legacy host-installed / host-mirror references**  
    Keep only as historical / not recommended documentation:
@@ -14,6 +14,10 @@ This framework now has two documented architecture tracks in this repository:
      `docs\applications\IDE\vscode\methods\host-sync\templates\node-monorepo-materialized-dependencies.md`
    - Electron-Vite-specific overlay:  
      `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\templates\monorepo-install-run-boxes.md`
+
+3. **Boxed-owned-toolchain tooling-owned command surface**
+   - example-specific boxed orchestration / bootstrap adaptation:
+     `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md`
 
 ## Why Electron-Vite needs an overlay
 
@@ -39,5 +43,6 @@ That is why the generic monorepo template is necessary but not sufficient on its
 
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\general.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\debug.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\frameworks\electron\troubleshooting.md`
 - `docs\applications\programming-languages\node\dependencies\esbuild\general.md`

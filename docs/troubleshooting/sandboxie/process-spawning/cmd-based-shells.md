@@ -10,6 +10,15 @@ It is intentionally:
 - not framework-specific
 - not tied to one IDE
 
+For the separate failure class where:
+
+- the local shell/wrapper surface works in isolation
+- but a **deeper canonical orchestration chain** still hangs at the final child-process boundary
+
+use this primary reference document:
+
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
+
 The issue documented here applies whenever a program inside the box asks the runtime to spawn a Windows shell such as `cmd.exe` or `powershell.exe`.
 
 ## Problem statement
@@ -206,5 +215,6 @@ They are related, but they are not necessarily fixed by the same configuration c
 ## Related
 
 - `docs\cli\shell\general.md`
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
 - `docs\troubleshooting\sandboxie\privacy-mode\host-user-space-vs-box-root.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`

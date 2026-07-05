@@ -40,7 +40,7 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
-- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstall.ps1`
@@ -186,12 +186,16 @@ Current responsibilities:
 - generate wrapper commands such as `node-gyp.ps1`
 - generate a shell-native `node-gyp` command
 - generate the JS wrapper payload `node-gyp-wrapper.cjs`
+- generate the JS child-process tracer payload `child-process-spawn-tracer.cjs`
 - provide an explicit Nx daemon preflight helper for installed Nx workspaces
 - prepend the correct local runtime paths into `PATH`
 - publish a boxed `ComSpec` / `COMSPEC` shell contract for Windows shell-based child-process execution
 - keep that productive child-process contract aligned to the preferred boxed `cmd.exe` lane
 - publish a bootstrap-owned Git wrapper surface that forces `core.longpaths=true`
 - publish a bootstrap-owned boxed Git credential-helper command surface without whitespace-sensitive helper naming
+- detect the final `cmd.exe -> <dependency>.CMD` Electron-Vite dev launch inside the canonical serve lane
+- rewrite that final launch to direct `node.exe -> electron-vite.js`
+- apply a mode-controlled stabilized `stdio` strategy to that same rewritten spawn
 
 Important scope boundary:
 
@@ -288,6 +292,28 @@ This matters because the current contract must support:
 - a bootstrap-owned `node-gyp` wrapper that disables the Windows MSBuild file-tracking layer without editing downloaded dependency source
 
 at the same time.
+
+Representative current Electron-Vite child-process stabilization contract:
+
+```powershell
+$env:BOXED_SPAWN_STABILIZE_ELECTRON_VITE_CMD = 'true'
+$env:BOXED_SPAWN_STABILIZE_ELECTRON_VITE_CMD_MODE = 'direct-node-js-with-full-pipes'
+```
+
+```javascript
+const electronViteDirectNodeRewrite = createElectronViteDirectNodeRewrite(command, normalizedArgs);
+const rewriteElectronViteCmdSpawn = electronViteDirectNodeRewrite !== null;
+const stabilizeElectronViteCmdSpawn = rewriteElectronViteCmdSpawn || shouldStabilizeElectronViteCmdSpawn(command, normalizedArgs);
+const effectiveCommand = rewriteElectronViteCmdSpawn
+  ? electronViteDirectNodeRewrite.command
+  : command;
+const effectiveArgs = rewriteElectronViteCmdSpawn
+  ? electronViteDirectNodeRewrite.args
+  : args;
+const effectiveOptions = stabilizeElectronViteCmdSpawn
+  ? createStableElectronViteSpawnOptions(options)
+  : options;
+```
 
 Verified current outcomes:
 
@@ -534,6 +560,8 @@ Current behavior:
 - sets local temp/Nx environment state
 - runs the Nx daemon reset/start preflight when the project adapter opts into it and the workspace is already installed
 - sets the productive boxed-CMD child-process contract
+- enables the interactive project-terminal child-process spawn tracer
+- publishes the active Electron-Vite spawn stabilizer mode in the terminal header
 - enables long-path support in the boxed registry view before later Git processes start
 
 That does **not** mean every project-owned package-manager lifecycle surface must also run on CMD.
@@ -619,6 +647,20 @@ if ($NxDaemonBootstrapMode -eq 'ResetAndStart') {
     -NodeRoot $nodeRuntime.NodeRoot `
     -PnpmCli $nodeRuntime.PnpmCli
 }
+```
+
+Representative current interactive project-terminal tracer publication:
+
+```powershell
+$childProcessDebugLog = Join-Path $localTempRoot 'test-mono-child-process-debug.log'
+Enable-BoxedNodeChildProcessSpawnTrace `
+  -TracerPath $nodeRuntime.ChildProcessSpawnTracer `
+  -LogPath $childProcessDebugLog
+
+Write-Host "ChildProcessSpawnTracer: $($nodeRuntime.ChildProcessSpawnTracer)"
+Write-Host "ChildProcessDebugLog: $childProcessDebugLog"
+Write-Host "ElectronViteCmdSpawnStabilizer: $($env:BOXED_SPAWN_STABILIZE_ELECTRON_VITE_CMD)"
+Write-Host "ElectronViteCmdSpawnStabilizerMode: $($env:BOXED_SPAWN_STABILIZE_ELECTRON_VITE_CMD_MODE)"
 ```
 
 Current troubleshooting posture for Nx in this method:
@@ -709,4 +751,6 @@ It is now:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`
+- `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\msbuild-file-tracking-wrapper.md`

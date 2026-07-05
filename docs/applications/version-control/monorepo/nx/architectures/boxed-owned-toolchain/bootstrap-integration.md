@@ -181,7 +181,7 @@ The current recommended standard command surface is:
 ```powershell
 pnpm exec nx --version
 pnpm exec nx show projects
-pnpm exec nx run test:serve --no-tui -- --profile=dev-evident
+pnpm exec nx run desktop-app:serve --no-tui -- --profile=desktop-dev
 ```
 
 This keeps Nx on the workspace-local installation and avoids requiring a bootstrap-published alias for the normal path.

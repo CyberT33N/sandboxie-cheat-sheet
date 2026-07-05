@@ -91,6 +91,7 @@ Owns:
 - direct `nx` versus `pnpm exec nx`
 - `nx:run-commands` shell behavior on Windows
 - the current `ComSpec`-related findings
+- the distinction between Nx as the visible orchestration layer and a deeper nested child-process boundary failure
 
 ### Runtime contract
 
@@ -132,6 +133,8 @@ Owns:
   `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
 - Sandboxie shell-spawn troubleshooting:
   `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- Nested child-process orchestration troubleshooting:
+  `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
 - VS Code boxed-owned-toolchain bootstrap:
   `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
 

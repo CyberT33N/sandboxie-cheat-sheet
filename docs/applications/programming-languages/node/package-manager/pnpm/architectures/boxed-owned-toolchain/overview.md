@@ -93,6 +93,7 @@ Owns:
 - why boxed `cmd.exe` is no longer the preferred install lane
 - Git Bash command-name resolution requirements
 - `pnpm exec` as a separate failure surface
+- the distinction between PNPM as the visible outer command and a deeper nested child-process orchestration root cause
 
 ### Versioning and provisioning
 
@@ -120,6 +121,8 @@ Owns:
 
 - Sandboxie shell-spawn troubleshooting:
   `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
+- Nested child-process orchestration troubleshooting:
+  `docs\troubleshooting\sandboxie\process-spawning\nested-child-process-orchestration.md`
 - Central shell-selection contract:
   `docs\cli\shell\general.md`
 - Boxed-owned-toolchain Nx execution contract:

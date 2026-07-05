@@ -175,7 +175,7 @@ C:\shared\sandbox-toolchains\
       bootstrap\
         Project.Config.ps1
         Start-TestMonoVSCode.ps1
-        Start-TestMonoTerminal.ps1
+        Start-TestMonoElectronTerminal.ps1
       export\
       runner-input\
 ```
