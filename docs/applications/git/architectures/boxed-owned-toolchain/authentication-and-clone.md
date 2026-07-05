@@ -71,6 +71,7 @@ git ls-remote "https://$GitHubUser@github.com/yourorg/yourrepo.git"
 If Git for Windows shows the helper-selection dialog:
 
 - choose `manager`
+- if the UI wording shows `Managed` / a managed credential option instead of the literal word `manager`, choose that managed option
 - enable `Always use this from now on`
 
 The current boxed runtime then prefers the bootstrap-published helper command surface:
@@ -97,6 +98,12 @@ Why this is preferred:
 - it works with modern GitHub sign-in flows
 - it keeps the Git command itself inside the sandbox while letting the host browser handle the OAuth/device ceremony
 
+Important current operational nuance:
+
+- for a **fresh box / fresh private repo** the most reliable way to surface and persist that login flow is the first **direct shared `git.exe clone`** call with a user-qualified HTTPS URL
+- if the credential choice and login were already stored earlier, that command should normally proceed without asking again
+- if they were **not** stored yet, the same command should trigger the helper-selection / device-login flow once and then be retried if needed
+
 ## Step 6 - interpret post-login errors carefully
 
 After the device flow completes, you may still see an error dialog from `git-credential-manager.exe`.
@@ -112,6 +119,12 @@ git ls-remote "https://$GitHubUser@github.com/yourorg/yourrepo.git"
 ```
 
 If refs are returned, access is working.
+
+If refs do **not** return after the browser/device flow:
+
+- treat that as an auth / repo-visibility / SSO problem
+- do **not** treat it as a VS Code / Cursor / project-bootstrap problem
+- re-run the same private `ls-remote` or direct clone command only after confirming that the correct GitHub account and organization access were actually used
 
 ## Step 7 - clone after access is verified
 
@@ -132,7 +145,18 @@ There is still a special pre-bootstrap clone case:
 - the project bootstrap expects the repo path to exist already
 - therefore the very first clone is still a Git-domain pre-bootstrap action
 
-If you want one single host command for a fresh boxed clone, the current repository still documents this historical special-case shape:
+If you want one single host command for a fresh boxed clone, the current repository still documents this historical special-case shape.
+
+This command should be treated as the **one-time pre-bootstrap auth + clone entrypoint** for a fresh private repository in a new project box:
+
+- run it first
+- let it surface the managed credential flow
+- complete the login if prompted
+- if the login was newly completed, retry the same command once
+- for very long repository paths, set boxed `LongPathsEnabled=1` before the clone and run the direct shared `git.exe` clone with `-c core.longpaths=true`
+- after that, the normal project bootstrap can assume that the repo exists
+
+Sanitized example:
 
 ```powershell
 & "C:\Program Files\Sandboxie-Plus\Start.exe" `
@@ -141,7 +165,7 @@ If you want one single host command for a fresh boxed clone, the current reposit
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -Command "Set-Location 'C:\'; `$env:HOME = `$env:USERPROFILE; `$env:GIT_CEILING_DIRECTORIES = 'C:/Users/yourusername/source'; New-Item -ItemType Directory -Force -Path 'C:\Users\yourusername\source' | Out-Null; & 'C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe' -c credential.helper=manager clone 'https://yourgithubuser@github.com/yourorg/yourrepo.git' 'C:\Users\yourusername\source\yourrepo'"
+  -Command "& '$env:SystemRoot\System32\reg.exe' add 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem' /v LongPathsEnabled /t REG_DWORD /d 1 /f | Out-Null; Set-Location 'C:\'; `$env:HOME = `$env:USERPROFILE; `$env:GIT_CEILING_DIRECTORIES = 'C:/Users/example-user/source'; New-Item -ItemType Directory -Force -Path 'C:\Users\example-user\source' | Out-Null; & 'C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe' -c core.longpaths=true clone 'https://example-user@github.com/example-org/example-monorepo.git' 'C:\Users\example-user\source\example-monorepo'"
 ```
 
 Important nuance:
@@ -149,6 +173,28 @@ Important nuance:
 - this is a pre-bootstrap special case
 - it does **not** redefine the normal post-bootstrap Git runtime contract
 - the normal project terminal should prefer the bootstrap-published `git` wrapper once that runtime exists
+- the one-time direct clone call is also the place where the managed credential flow is expected to become stored for later reuse
+
+## Recovery from a partially checked-out long-path clone
+
+If the first direct clone already created a partial working tree and then failed with messages such as:
+
+```text
+error: unable to create file <path>: Filename too long
+```
+
+the current boxed-owned-toolchain recovery is:
+
+1. delete the partial boxed repo tree
+2. ensure boxed `LongPathsEnabled=1`
+3. retry the same direct shared `git.exe` clone with:
+   - `-c core.longpaths=true`
+
+Why:
+
+- the first private clone is still a pre-bootstrap special case
+- so the normal project bootstrap has not yet had a chance to publish the boxed `git` wrapper or set the boxed Windows long-path flag for that project box
+- that means the recovery must explicitly apply both long-path layers before retrying the clone
 
 ## Failure interpretation
 

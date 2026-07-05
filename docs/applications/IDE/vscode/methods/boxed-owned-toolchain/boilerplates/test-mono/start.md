@@ -128,12 +128,22 @@ The preferred one-shot clone pattern is:
   -NoLogo `
   -NoExit `
   -ExecutionPolicy Bypass `
-  -Command "Set-Location 'C:\'; `$env:HOME = `$env:USERPROFILE; `$env:GIT_CEILING_DIRECTORIES = 'C:/Users/yourusername/source'; New-Item -ItemType Directory -Force -Path 'C:\Users\yourusername\source' | Out-Null; & 'C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe' -c credential.helper=manager clone 'https://yourgithubuser@github.com/yourorg/test-mono.git' 'C:\Users\yourusername\source\test-mono'"
+  -Command "& '$env:SystemRoot\System32\reg.exe' add 'HKLM\SYSTEM\CurrentControlSet\Control\FileSystem' /v LongPathsEnabled /t REG_DWORD /d 1 /f | Out-Null; Set-Location 'C:\'; `$env:HOME = `$env:USERPROFILE; `$env:GIT_CEILING_DIRECTORIES = 'C:/Users/example-user/source'; New-Item -ItemType Directory -Force -Path 'C:\Users\example-user\source' | Out-Null; & 'C:\shared\sandbox-toolchains\dev\git\2.54.0\cmd\git.exe' -c core.longpaths=true clone 'https://example-user@github.com/example-org/example-monorepo.git' 'C:\Users\example-user\source\example-monorepo'"
 ```
+
+Important first-run nuance:
+
+- this command should be treated as the **one-time pre-bootstrap private clone entrypoint**
+- run it before the normal project bootstrap is expected to work
+- this direct shared `git.exe clone` call is also the place where Git for Windows can surface the managed credential flow and persist it for later reuse
+- if authentication was already stored earlier, the command should normally proceed without prompting
+- if it was not stored yet, complete the login once and then retry the same command if needed
+- because this is still **before** the normal project bootstrap, the command also sets boxed `LongPathsEnabled=1` itself and uses `-c core.longpaths=true` for the first clone
 
 If Git for Windows shows the helper-selection dialog during this first private access:
 
 - choose `manager`
+- if the UI wording shows `Managed` / a managed credential option instead of the literal word `manager`, choose that managed option
 - enable `Always use this from now on`
 
 If Git Credential Manager then offers the device-code flow, complete that in the normal host browser according to:
