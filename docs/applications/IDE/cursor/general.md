@@ -256,6 +256,7 @@ It only defines the correct architectural split:
 
 ## Related
 
+- `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\integrated-terminal-conpty.md`
 - `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\sign-in.md`
 - `docs\applications\IDE\cursor\architectures\host-sync\debugging.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\start.md`
