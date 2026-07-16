@@ -99,4 +99,4 @@ NormalFilePath=firefox.exe,C:\shared\
 
 ## Datein kopieren aus Box
 - Du kannst im Hostsystem in den jeweiligen Sandbox-Bereich wechseln und dort navigieren. In den meisten Fällen findest du das unter „User Current“.
-  - C:\Sandbox\denni\Browser_Firefox\user\current\Downloads
+  - C:\Sandbox\userName\Browser_Firefox\user\current\Downloads
