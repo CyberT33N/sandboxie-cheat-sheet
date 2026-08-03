@@ -34,7 +34,7 @@ Sanitized example using `test-mono`:
 
 ```powershell
 $VsCodeVersion = "1.121.0"
-$CursorVersion = "3.9.16"
+$CursorVersion = "3.14.7"
 
 $SharedRoot = "C:\shared\sandbox-toolchains"
 $SharedIdeRoot = "$SharedRoot\ide\vscode"

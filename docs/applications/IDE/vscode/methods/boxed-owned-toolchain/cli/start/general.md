@@ -79,13 +79,7 @@ Important current nuance:
 The preferred target shape is:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1" `
   -Action LaunchVSCode `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
@@ -96,21 +90,18 @@ For terminal-only workflows, use the same project bootstrap with `-Action OpenTe
 
 This keeps the launch path auditable:
 
+- host project wrapper
 - `Start.exe`
-- normal Windows `powershell.exe`
-- project bootstrap
+- boxed `cmd.exe`
+- boxed PowerShell
+- existing project bootstrap
 - explicit `-Action OpenTerminal`
 
-It does **not** require project-specific shell copies or shared terminal binaries.
+It uses the already mirrored project-specific PowerShell runtime when it is
+available.
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1" `
   -Action OpenTerminal `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
@@ -182,6 +173,8 @@ For the PNPM-domain source of truth for provisioning or updating the governed PN
 
 Using the sanitized example project name `test-mono`, the concrete launchers are:
 
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditorBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1` (optional thin Electron-serve convenience wrapper)
 - `C:\shared\sandbox-toolchains\dev\bootstrap\platforms\vscode\Start-VSCodeMaintenance.ps1`

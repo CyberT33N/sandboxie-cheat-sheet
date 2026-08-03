@@ -30,6 +30,7 @@ This currently contains:
 - `shells\`
 - `python\`
 - `starship\`
+- `ugrep\`
 - `bootstrap\`
 
 ## Shell and prompt/runtime additions
@@ -98,6 +99,7 @@ as the architecture center.
 - Clink: governed shared CMD runtime adapter under `dev\shells\clink\1.9.26\`
 - Python: optional bootstrap hook under `dev\python\` exists in the shared scripts, but Python-domain boxed-owned runtime guidance is not yet validated
 - Starship: optional shared prompt runtime under `dev\starship\1.25.1\`
+- ugrep: governed text-search binary under `dev\ugrep\7.8.1\ugrep.exe`
 
 ## Domain ownership
 
@@ -108,6 +110,7 @@ Binary-specific provisioning and architecture details belong to the application 
 - PNPM: `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\overview.md`
 - Python: `docs\applications\programming-languages\python\general.md`
 - Starship: `docs\applications\terminal\starship\architectures\boxed-owned-toolchain\overview.md`
+- ugrep source/provisioning: `docs\applications\operating-systems\windows\dependency-manager\chocolatey\general.md`
 
 This method area keeps the orchestration view, not the binary-specific source of truth.
 

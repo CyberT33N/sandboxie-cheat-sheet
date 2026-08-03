@@ -46,12 +46,16 @@ The live shared files under `C:\shared\sandbox-toolchains\...` remain the operat
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\Bootstrap.WindowsShells.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\python\Bootstrap.Python.psm1`
 - `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\starship\Bootstrap.Starship.psm1`
+- `C:\shared\sandbox-toolchains\dev\bootstrap\stacks\ugrep\Bootstrap.Ugrep.psm1`
 
 ### Project adapter example
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditorBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditor.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1`
@@ -715,8 +719,8 @@ return @{
   Cursor = @{
     BoxName = 'CURSOR_TEST_MONO'
     RuntimeNamespace = 'cursor'
-    CodeExe = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\Cursor.exe'
-    CodeCli = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\resources\app\codeBin\code.cmd'
+    CodeExe = Join-Path $cursorRuntimeRoot 'runtime\3.14.7\Cursor.exe'
+    CodeCli = Join-Path $cursorRuntimeRoot 'runtime\3.14.7\resources\app\codeBin\code.cmd'
     CatalogUserRoot = $sharedEditorState.CatalogUserRoot
     SharedExtensionsRoot = $sharedEditorState.SharedExtensionsRoot
     SeedGlobalStorageRoot = $sharedEditorState.SeedGlobalStorageRoot
@@ -731,6 +735,10 @@ return @{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
   }
+  Ugrep = @{
+    SharedUgrepExe = Join-Path $devRoot 'ugrep\7.8.1\ugrep.exe'
+    ProgramDataUgrepExe = 'C:\ProgramData\chocolatey\bin\ugrep.exe'
+  }
   Nx = @{
     DaemonBootstrapMode = 'ResetAndStart'
   }
@@ -744,6 +752,20 @@ return @{
   }
 }
 ```
+
+## `Bootstrap.Ugrep.psm1`
+
+`ugrep` is a governed utility-binary stack, not an editor extension and not a
+live host Chocolatey dependency.
+
+The stack:
+
+- validates the shared `dev\ugrep\<version>\ugrep.exe` binary
+- copies it into the local project toolchain
+- copies the same governed binary into the boxed compatible ProgramData path
+- verifies both copies by checksum
+- prepends the local `ugrep` directory to `PATH`
+- publishes `BOXED_UGREP_EXE` and `UGREP_EXECUTABLE_PATH`
 
 ## Operational conclusion
 
@@ -764,6 +786,7 @@ It is now:
 ## Related
 
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`
 - `docs\cli\shell\general.md`
 - `docs\cli\shell\clink.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`

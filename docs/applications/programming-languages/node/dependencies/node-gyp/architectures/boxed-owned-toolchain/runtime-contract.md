@@ -49,6 +49,10 @@ Current behavior:
 - `WindowsSdkRoot` is the governed shared Windows Kits source root that bootstrap projects into `C:\Program Files (x86)\Windows Kits\10\...`
 - `DotNetFrameworkRoot` / `DotNetFramework64Root` are the governed shared compiler-source paths which the helper projects into `C:\Windows\Microsoft.NET\...` inside the box
 
+The `.NET Framework` projection is owned by the Windows Microsoft
+build-toolchain domain. Node-Gyp consumes it; it does not own the
+host-image/PowerShell launch compatibility rule.
+
 ## Visual Studio discovery contract
 
 The helper now starts from governed shared Microsoft build sources and projects them into the canonical Windows paths inside the box:
@@ -138,6 +142,14 @@ Current behavior:
   - `BOXED_DOTNET_FRAMEWORK64_ROOT`
   - `BOXED_DOTNET_FRAMEWORK_CSC_EXE`
   - `BOXED_DOTNET_FRAMEWORK64_CSC_EXE`
+
+The complete projected tree includes CLR runtime images. After it exists,
+normal project entry must use boxed CMD followed by boxed PowerShell when
+`ProtectHostImages=y`. Do not remove individual CLR files from the projection
+to work around `SBIE1305`; the Windows-domain launch boundary explains the
+correct process chain:
+
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\host-image-launch-boundary.md`
 
 ## Windows SDK environment contract
 

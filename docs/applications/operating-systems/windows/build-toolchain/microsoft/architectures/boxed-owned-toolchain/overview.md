@@ -35,6 +35,16 @@ Owns:
 - projection into canonical `C:\Windows\Microsoft.NET\...` paths inside the box
 - the verified `Add-Type` / `buildcheck` compatibility bridge
 
+### Host image launch boundary
+
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\host-image-launch-boundary.md`
+
+Owns:
+
+- the `ProtectHostImages=y` interaction with projected CLR images
+- the required boxed CMD -> boxed PowerShell project-entry chain
+- the rule that CLR files remain part of the full projection
+
 ## Why this area exists
 
 These topics were previously mixed into consumer-specific documentation such as:
@@ -57,3 +67,4 @@ The current boundary is therefore:
 
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`

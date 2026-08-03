@@ -25,7 +25,7 @@ So the important split is:
 The current shared runtime target for Cursor is:
 
 ```text
-C:\shared\sandbox-toolchains\ide\cursor\runtime\3.9.16\
+C:\shared\sandbox-toolchains\ide\cursor\runtime\3.14.7\
 ```
 
 The validated runtime surface there includes:
@@ -71,7 +71,7 @@ The validated current architectural flow is:
 2. stage the Cursor installer `.exe` into that maintenance context
 3. run the installer there
 4. validate that the Cursor runtime files now exist
-5. keep the resulting runtime under `C:\shared\sandbox-toolchains\ide\cursor\runtime\3.9.16\`
+5. keep the resulting runtime under `C:\shared\sandbox-toolchains\ide\cursor\runtime\3.14.7\`
 6. continue to consume the shared VSCode-family catalog, seed, and extension surfaces from:
    - `C:\shared\sandbox-toolchains\ide\vscode\...`
 

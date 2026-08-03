@@ -51,7 +51,7 @@ C:\shared\sandbox-toolchains\
         user-data\
     cursor\
       runtime\
-        3.9.16\
+        3.14.7\
   dev\
     git\
       2.54.0\
@@ -95,6 +95,9 @@ C:\shared\sandbox-toolchains\
     starship\
       1.25.1\
         starship.exe
+    ugrep\
+      7.8.1\
+        ugrep.exe
     vscode-extensions\
       vsix\
         CyberT33N\
@@ -130,19 +133,27 @@ C:\shared\sandbox-toolchains\
           Bootstrap.Python.psm1
         starship\
           Bootstrap.Starship.psm1
+        ugrep\
+          Bootstrap.Ugrep.psm1
   projects\
     test-mono\
       bootstrap\
         Project.Config.ps1
+        Start-TestMonoEditorBoxed.ps1
         Start-TestMonoEditor.ps1
+        Start-TestMonoVSCodeBoxed.ps1
         Start-TestMonoVSCode.ps1
+        Start-TestMonoCursorBoxed.ps1
         Start-TestMonoCursor.ps1
         Start-TestMonoTerminal.ps1
         Start-TestMonoElectronTerminal.ps1
         Start-TestMonoCursorTerminal.ps1
         Start-TestMonoCursorElectronTerminal.ps1
+        Start-TestMonoPnpmInstallBoxed.ps1
         Start-TestMonoPnpmInstall.ps1
+        Start-TestMonoPnpmCleanReinstallBoxed.ps1
         Start-TestMonoPnpmCleanReinstall.ps1
+        Start-TestMonoPnpmUninstallBoxed.ps1
         Start-TestMonoPnpmUninstall.ps1
         Start-TestMonoElectronPostInstall.ps1
         Start-TestMonoElectronSpawnReplay.ps1

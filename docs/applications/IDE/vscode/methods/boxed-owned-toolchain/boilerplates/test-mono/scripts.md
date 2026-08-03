@@ -57,6 +57,7 @@ return @{
   DefaultRepoPath = 'C:\Users\yourusername\source\test-mono'
   VSCode = @{
     BoxName = 'VS_CODE_TEST_MONO'
+    BoxFamilyName = 'VSCodeBoxes'
     RuntimeNamespace = 'vscode'
     CodeExe = Join-Path $vscodeFamilySharedRoot 'runtime\1.121.0\Code.exe'
     CodeCli = Join-Path $vscodeFamilySharedRoot 'runtime\1.121.0\bin\code.cmd'
@@ -67,9 +68,10 @@ return @{
   }
   Cursor = @{
     BoxName = 'CURSOR_TEST_MONO'
+    BoxFamilyName = 'CursorBoxes'
     RuntimeNamespace = 'cursor'
-    CodeExe = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\Cursor.exe'
-    CodeCli = Join-Path $cursorRuntimeRoot 'runtime\3.9.16\resources\app\codeBin\code.cmd'
+    CodeExe = Join-Path $cursorRuntimeRoot 'runtime\3.14.7\Cursor.exe'
+    CodeCli = Join-Path $cursorRuntimeRoot 'runtime\3.14.7\resources\app\codeBin\code.cmd'
     CatalogUserRoot = $sharedEditorState.CatalogUserRoot
     SharedExtensionsRoot = $sharedEditorState.SharedExtensionsRoot
     SeedGlobalStorageRoot = $sharedEditorState.SeedGlobalStorageRoot
@@ -83,6 +85,10 @@ return @{
     AdditionalNodeCommands = [ordered]@{
       node20 = Join-Path $devRoot 'node\20.9.0\node-v20.9.0-win-x64\node.exe'
     }
+  }
+  Ugrep = @{
+    SharedUgrepExe = Join-Path $devRoot 'ugrep\7.8.1\ugrep.exe'
+    ProgramDataUgrepExe = 'C:\ProgramData\chocolatey\bin\ugrep.exe'
   }
   MicrosoftBuild = @{
     VsWhereExe = Join-Path $devRoot 'shells\vs-installer\3.1.7\vswhere.exe'
@@ -117,13 +123,19 @@ It now uses:
 
 The current wrapper inventory is:
 
+- `Start-TestMonoEditorBoxed.ps1`
 - `Start-TestMonoEditor.ps1`
+- `Start-TestMonoVSCodeBoxed.ps1`
 - `Start-TestMonoVSCode.ps1`
+- `Start-TestMonoCursorBoxed.ps1`
 - `Start-TestMonoCursor.ps1`
 - `Start-TestMonoTerminal.ps1`
 - `Start-TestMonoElectronTerminal.ps1`
 - `Start-TestMonoCursorTerminal.ps1`
 - `Start-TestMonoCursorElectronTerminal.ps1`
+- `Start-TestMonoPnpmInstallBoxed.ps1`
+- `Start-TestMonoPnpmCleanReinstallBoxed.ps1`
+- `Start-TestMonoPnpmUninstallBoxed.ps1`
 
 Representative thin wrappers:
 

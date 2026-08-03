@@ -32,6 +32,21 @@ The helper projects those shared roots into the canonical runtime paths expected
 
 This boxed projection is the current compatibility bridge for `Add-Type` and `buildcheck`.
 
+## Host image protection launch boundary
+
+The full projected tree includes CLR runtime images such as `mscoreei.dll`,
+`clr.dll`, and `clrjit.dll`.
+
+With `ProtectHostImages=y`, host PowerShell must not be used as the normal
+first process in a project box after this projection exists. It can be blocked
+with `SBIE1305` when it tries to load one of those boxed images.
+
+The projection must remain intact. The correct solution is a host entry wrapper
+that starts boxed CMD and then the already mirrored boxed PowerShell executable.
+The complete rationale and launch contract live here:
+
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\host-image-launch-boundary.md`
+
 ## Helper-owned environment outputs
 
 The projection publishes:
@@ -86,5 +101,6 @@ It documents only that the `.NET Framework` compiler projection itself is workin
 
 - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\microsoft-build-projection.md`
+- `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\host-image-launch-boundary.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\runtime-contract.md`
 - `docs\applications\programming-languages\node\dependencies\node-gyp\architectures\boxed-owned-toolchain\bootstrap-integration.md`

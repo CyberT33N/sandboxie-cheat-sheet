@@ -83,6 +83,7 @@ Then read the Cursor-specific deltas:
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\boxes\project-box.md`
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\boxes\maintenance-box.md`
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\provisioning\runtime-installation.md`
 
 ### 3. Cursor product and troubleshooting overlays

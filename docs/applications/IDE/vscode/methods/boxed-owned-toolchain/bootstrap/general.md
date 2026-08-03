@@ -74,6 +74,7 @@ The current bootstrap split is:
 - `stacks\shells\`
 - `stacks\python\`
 - `stacks\starship\`
+- `stacks\ugrep\`
 - `projects\test-mono\bootstrap\`
 
 This separates:
@@ -84,7 +85,19 @@ This separates:
 - Node stack wiring
 - native Windows build-source projection
 - shell runtime wiring
+- governed utility-binary wiring
 - project adapter logic
+
+## Host entry boundary
+
+Project bootstrap runs inside a sandbox and cannot select the first PowerShell
+image that enters the box. When the boxed `.NET Framework` projection exists,
+the project must use a host wrapper that starts boxed CMD followed by boxed
+PowerShell before it delegates to the existing in-box project script.
+
+The host-entry contract is documented here:
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`
 
 ## Related
 
@@ -92,6 +105,7 @@ This separates:
 - `docs\cli\shell\general.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\shared-layout.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\overview.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`

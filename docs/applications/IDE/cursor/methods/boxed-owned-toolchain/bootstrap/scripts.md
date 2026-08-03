@@ -138,12 +138,7 @@ not:
 ### Launch the Cursor GUI for the project box
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_test_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursor.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1" `
   -Action LaunchCursor `
   -RepoPath "C:\Users\denni\source\test-mono"
 ```
@@ -151,26 +146,17 @@ not:
 ### Open the generic Cursor project terminal
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_test_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursorTerminal.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1" `
+  -Action OpenTerminal `
   -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
 ### Open the Cursor Electron terminal
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_test_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursorElectronTerminal.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1" `
+  -Action OpenTerminal `
+  -OpenTerminalIntent ElectronServe `
   -RepoPath "C:\Users\denni\source\test-mono"
 ```
 
@@ -213,6 +199,16 @@ The product-level reasoning for that lives here:
 
 - `docs\applications\IDE\cursor\general.md`
 
+## Host entry boundary
+
+After the boxed `.NET Framework` projection exists, normal Cursor project
+launches and terminals must use the project host wrapper rather than starting
+host Windows PowerShell directly through `Start.exe`.
+
+The shared host-wrapper contract lives here:
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`
+
 ## What stays canonical elsewhere
 
 This file does **not** become the new source of truth for:
@@ -228,4 +224,5 @@ Those stay canonical in the VS Code method area and are re-referenced from here.
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\general.md`
 - `docs\applications\IDE\cursor\methods\boxed-owned-toolchain\architecture\target-state.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\scripts.md`
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\bootstrap\host-entry-wrappers.md`
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`

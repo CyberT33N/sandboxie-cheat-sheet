@@ -31,6 +31,36 @@ OpenFilePath=C:\shared\sandbox-toolchains\python-general\
 
 With this model, host-side Chocolatey paths do not remain part of the active runtime boundary.
 
+## `ugrep` example
+
+For `ugrep`, do not copy the Chocolatey launcher shim:
+
+```text
+C:\ProgramData\chocolatey\bin\ugrep.exe
+```
+
+Use the real package payload instead:
+
+```text
+C:\ProgramData\chocolatey\lib\ugrep\tools\bin\ugrep.exe
+```
+
+Provision that binary into the governed shared Dev tree:
+
+```text
+C:\shared\sandbox-toolchains\dev\ugrep\<version>\ugrep.exe
+```
+
+Project bootstrap then copies the governed binary into the local boxed
+toolchain and, when compatibility requires it, into the boxed equivalent of:
+
+```text
+C:\ProgramData\chocolatey\bin\ugrep.exe
+```
+
+The boxed process must execute the local governed binary, not a live host
+Chocolatey shim.
+
 ## Why the recommended pattern exists
 
 - the runtime stays explicit and reproducible
