@@ -421,6 +421,7 @@ Current responsibilities:
 - mirror governed shared Windows PowerShell locally
 - mirror governed shared `reg.exe` locally
 - mirror governed shared `Clink` locally when provisioned
+- prepend the local mirrored `cmd.exe` root into `PATH`
 - prepend the local mirrored `Clink` root into `PATH`
 - prepend the local mirrored `reg.exe` root into `PATH` when provisioned
 - generate:
@@ -456,6 +457,42 @@ function Initialize-WindowsShellRuntime {
   # mirrors the governed shared Windows shell/helper artifacts and prepares CMD/PowerShell init files
 }
 ```
+
+### Bare `cmd.exe` child-process resolution
+
+`ComSpec` / `COMSPEC` is necessary for shell-aware Windows execution, but some
+Node child-process helpers resolve a package `.cmd` shim and then invoke the
+literal executable name `cmd.exe`. That path is resolved from `PATH`.
+
+The shared shell bootstrap must therefore publish the local mirrored CMD root
+before host/system command directories:
+
+```powershell
+$localCmdRoot = $mirror.CmdRoot
+$localCmdExe = $mirror.CmdExe
+
+Assert-PathExists -Path $localCmdExe -Label 'Local mirrored CMD executable'
+
+$pathEntries = New-Object 'System.Collections.Generic.List[string]'
+
+# A direct spawn('cmd.exe') must resolve the local boxed CMD lane, not the
+# host/system interpreter.
+[void]$pathEntries.Add($localCmdRoot)
+
+if ($clinkAvailable) {
+  [void]$pathEntries.Add($localClinkRoot)
+}
+
+if ($regAvailable) {
+  [void]$pathEntries.Add($localRegRoot)
+}
+
+Prepend-PathEntries -Entries $pathEntries.ToArray() | Out-Null
+```
+
+This is a bootstrap-owned command-surface rule, not a host-access exception.
+It completes the local CMD contract for both `ComSpec` consumers and direct
+bare-command child-process spawns.
 
 ## `Bootstrap.VSCodeFamily.psm1`
 

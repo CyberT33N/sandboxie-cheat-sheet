@@ -29,6 +29,79 @@ That keeps:
 - shared bootstrap scripts in `bootstrap\...`
 - project-adapter examples in `boilerplates\...`
 
+## Shared shell-bootstrap prerequisite
+
+The project adapter relies on the shared shell runtime adapter:
+
+```text
+C:\shared\sandbox-toolchains\dev\bootstrap\stacks\shells\
+  Bootstrap.WindowsShells.psm1
+```
+
+This is not project-specific code, but it is included here as mandatory
+boilerplate because a project terminal must support both:
+
+- shell-aware child-process APIs that use `ComSpec` / `COMSPEC`;
+- runners that directly call `spawn('cmd.exe', ...)`.
+
+After the local CMD runtime has been mirrored and the local shell paths have
+been assigned, `Initialize-WindowsShellRuntime` must contain this complete
+command-surface block:
+
+```powershell
+$localCmdRoot = $mirror.CmdRoot
+$localCmdExe = $mirror.CmdExe
+$localRegRoot = $mirror.RegRoot
+$regAvailable = $mirror.RegAvailable
+$localClinkRoot = $mirror.ClinkRoot
+$clinkAvailable = $mirror.ClinkAvailable
+
+Assert-PathExists -Path $localCmdExe -Label 'Local mirrored CMD executable'
+
+$pathEntries = New-Object 'System.Collections.Generic.List[string]'
+
+# Some Windows runners resolve a package .cmd shim and then directly spawn
+# the literal command "cmd.exe". Keep that resolution on the local boxed
+# interpreter instead of the host/system interpreter.
+[void]$pathEntries.Add($localCmdRoot)
+
+if ($clinkAvailable) {
+  [void]$pathEntries.Add($localClinkRoot)
+}
+
+if ($regAvailable) {
+  [void]$pathEntries.Add($localRegRoot)
+}
+
+Prepend-PathEntries -Entries $pathEntries.ToArray() | Out-Null
+
+$cmdAvailable = Test-Path -LiteralPath $localCmdExe
+
+$env:BOXED_CMD_ROOT = $localCmdRoot
+$env:BOXED_CMD_EXE = $localCmdExe
+$env:BOXED_CMD_AVAILABLE = if ($cmdAvailable) { 'true' } else { 'false' }
+```
+
+The project bootstrap must also continue to publish the explicit interpreter
+contract:
+
+```powershell
+$boxedComSpec = $windowsShellRuntime.CmdExe
+
+if ([string]::IsNullOrWhiteSpace($boxedComSpec) -or
+    -not (Test-Path -LiteralPath $boxedComSpec)) {
+  throw 'Local boxed CMD executable not found for ComSpec override.'
+}
+
+$env:ComSpec = $boxedComSpec
+$env:COMSPEC = $boxedComSpec
+$env:BOXED_COMSPEC = $boxedComSpec
+```
+
+Do not replace this with a broad host-CMD exception, a permanent diagnostic
+CMD proxy, or a project-specific Vitest checker override. The local mirrored
+CMD lane is the preferred reusable contract.
+
 ## `Project.Config.ps1`
 
 Important ownership split:

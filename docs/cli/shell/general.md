@@ -193,8 +193,9 @@ The current prioritized repository solution is:
    - `ComSpec`
    - `COMSPEC`
    to the box-local interpreter required by the validated shell-oriented child-process surface
-7. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
-8. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
+7. prepend the box-local `cmd.exe` directory to `PATH` for runtimes that directly spawn the literal command `cmd.exe`
+8. keep command resolution explicit through bootstrap-generated wrappers for all relevant shell families
+9. treat `Clink` as the CMD-specific runtime adapter for the `CMD + Starship` lane
 
 This is intentionally **not** the same as saying:
 
@@ -226,6 +227,36 @@ $env:ComSpec = $boxedComSpec
 $env:COMSPEC = $boxedComSpec
 $env:BOXED_COMSPEC = $boxedComSpec
 ```
+
+The `ComSpec` assignment is required but does not cover every Windows
+child-process library. Some libraries resolve a `.cmd` package shim and then
+call `spawn('cmd.exe', ...)` directly. That path uses `PATH`, not `ComSpec`.
+
+The shared Windows-shell bootstrap must therefore also publish the local CMD
+directory first on `PATH`:
+
+```powershell
+$pathEntries = New-Object 'System.Collections.Generic.List[string]'
+
+# Keep direct Node/package-runner calls to "cmd.exe" on the local boxed lane.
+[void]$pathEntries.Add($localCmdRoot)
+
+if ($clinkAvailable) {
+  [void]$pathEntries.Add($localClinkRoot)
+}
+
+if ($regAvailable) {
+  [void]$pathEntries.Add($localRegRoot)
+}
+
+Prepend-PathEntries -Entries $pathEntries.ToArray() | Out-Null
+```
+
+This completes the boxed CMD contract:
+
+- `ComSpec` / `COMSPEC` handle shell-aware Windows execution;
+- `PATH` handles bare executable-name resolution;
+- both paths resolve the same local, bootstrap-governed `cmd.exe`.
 
 This keeps the command-interpreter selection:
 
@@ -300,6 +331,7 @@ In addition, the explicit local Windows shell lanes were validated through the b
 ```powershell
 node -e "require('child_process').spawn(process.env.BOXED_CMD_EXE,['/d','/c','echo CMD_CHILD_OK'],{stdio:'inherit'})"
 node -e "require('child_process').spawn(process.env.BOXED_POWERSHELL_EXE,['-NoLogo','-NoProfile','-Command','Write-Host PS_CHILD_OK'],{stdio:'inherit'})"
+node -e "const {spawn}=require('node:child_process'); const p=spawn('cmd.exe',['/d','/s','/c','exit 0']); p.on('error',console.error); p.on('exit',c=>console.log(c))"
 ```
 
 Those commands also succeeded.
@@ -405,3 +437,4 @@ For the optional legacy Nx alias surface, read:
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\bootstrap-integration.md`
+- `docs\applications\programming-languages\node\dependencies\testing\vitest\architectures\boxed-owned\overview.md`

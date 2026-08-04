@@ -1,5 +1,13 @@
 # Vite Test Troubleshooting In Boxed-Owned Toolchains
 
+## Typechecking Child-Process Failure
+
+If Vitest reports `spawn EPERM` from its typechecker, do not disable
+typechecking or treat it as a coverage failure. The canonical architecture
+reference for the Windows `.cmd` / `cmd.exe` child-process boundary is:
+
+- `docs\applications\programming-languages\node\dependencies\testing\vitest\architectures\boxed-owned\overview.md`
+
 ## Coverage Can Cause Sandbox Timeouts
 
 Vite/Vitest test runs can become disproportionately slow inside a boxed-owned-toolchain sandbox when coverage is enabled.
