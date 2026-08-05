@@ -1031,61 +1031,39 @@ if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
 exit $LASTEXITCODE
 ```
 
-### Host command after materializing the clean-reinstall boilerplate above into the shared project bootstrap subtree
+### Boxed host command after materializing the clean-reinstall boilerplate above into the shared project bootstrap subtree
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstallBoxed.ps1" `
+  -Editor VSCode `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 Cursor variant:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstallBoxed.ps1" `
   -Editor Cursor `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
-### Host command after materializing the boilerplate above into the shared project bootstrap subtree
+### Boxed host command after materializing the boilerplate above into the shared project bootstrap subtree
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
+  -Editor VSCode `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 Cursor variant:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
   -Editor Cursor `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
-After you materialize the boilerplate script above into the sanitized shared project subtree, this host command executes it.
+After you materialize the boilerplate script above into the sanitized shared project subtree, the boxed host wrapper executes it through boxed CMD and the local boxed PowerShell runtime.
 
 The example assumes the sanitized project keeps its repo path visible inside the project box and wants to run a project-owned dependency refresh with the currently validated boxed PNPM lifecycle-shell setup.
 

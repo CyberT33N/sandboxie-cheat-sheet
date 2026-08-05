@@ -150,13 +150,8 @@ exit $LASTEXITCODE
 ## Sanitized host command
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
+  -Editor VSCode `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 

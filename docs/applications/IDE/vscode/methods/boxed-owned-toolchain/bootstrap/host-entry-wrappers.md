@@ -72,6 +72,23 @@ They fix only the editor identity and delegate to
 This keeps one host-entry implementation instead of duplicating launch,
 Sandboxie, and local-PowerShell logic per editor.
 
+### Explicit workload entries
+
+When a project-owned in-box script needs a host entrypoint but has no dedicated
+thin wrapper yet, it must still delegate through `Start-<Project>EditorBoxed.ps1`;
+do not start host PowerShell directly through `Start.exe`.
+
+Use its explicit workload parameters:
+
+```text
+-EntryScriptName
+-EntryArguments
+-KeepOpen
+```
+
+For example, an Electron repair can select its in-box script while the shared
+host wrapper still resolves boxed CMD and the already mirrored boxed PowerShell.
+
 ### Host-facing dependency wrappers
 
 Project-owned dependency scripts that can trigger native builds must also enter

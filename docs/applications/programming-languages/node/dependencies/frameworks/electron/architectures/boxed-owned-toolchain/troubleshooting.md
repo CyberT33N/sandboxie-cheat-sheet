@@ -179,14 +179,14 @@ If the dependency install already finished and only the Electron runtime is stil
 Sanitized host-side example:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1" `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditorBoxed.ps1" `
+  -Editor VSCode `
+  -EntryScriptName 'Start-TestMonoElectronPostInstall.ps1' `
+  -EntryArguments @(
+    '-RepoPath'
+    'C:\Users\yourusername\source\test-mono'
+  ) `
+  -KeepOpen
 ```
 
 If a boxed project terminal is already open and its bootstrap environment is already initialized, the narrower rerun surface is:

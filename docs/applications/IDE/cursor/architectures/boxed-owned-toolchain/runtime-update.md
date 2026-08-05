@@ -503,12 +503,7 @@ Launch the project through its Cursor wrapper, not by executing `Cursor.exe`
 directly:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_YOUR_PROJECT `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\your-project\bootstrap\Start-YourProjectCursor.ps1" `
+& "C:\shared\sandbox-toolchains\projects\your-project\bootstrap\Start-YourProjectCursorBoxed.ps1" `
   -Action LaunchCursor `
   -RepoPath "C:\Users\yourusername\source\your-project"
 ```

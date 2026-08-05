@@ -265,8 +265,9 @@ This command:
 1. terminates boxed `node.exe` / `esbuild.exe` processes for the project box
 2. uses the Sandboxie CLI to run a one-shot boxed `cmd.exe /c rmdir /s /q ...`
    delete against the logical backend `dist` path
-3. opens the existing project-box terminal bootstrap
-4. runs the real backend `serve` command in that boxed terminal
+3. starts the already mirrored boxed PowerShell through boxed `cmd.exe`
+4. runs the existing project-box bootstrap and real backend `serve` command in
+   that boxed PowerShell session
 
 ```powershell
 $box = 'VS_CODE_TEST_MONO'
@@ -275,7 +276,6 @@ $distPath = Join-Path $repoPath 'apps\backend\dist'
 
 $startExe = 'C:\Program Files\Sandboxie-Plus\Start.exe'
 $cmdExe = 'C:\Windows\System32\cmd.exe'
-$powerShellExe = 'C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe'
 $bootstrapScript = 'C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1'
 
 $boxPids = @(
@@ -322,13 +322,75 @@ if ($LASTEXITCODE -ne 0) {
 
 $serveCommand = "& '$bootstrapScript' -Action OpenTerminal -RepoPath '$repoPath'; pnpm exec nx run backend:serve --no-tui --verbose"
 
+$configScript = 'C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1'
+if (-not (Test-Path -LiteralPath $configScript)) {
+  throw "Project config not found: $configScript"
+}
+
+$config = & $configScript
+if (-not $config) {
+  throw 'Project config did not return a configuration object.'
+}
+
+$boxFamilyName = $config.VSCode.BoxFamilyName
+if ([string]::IsNullOrWhiteSpace($boxFamilyName)) {
+  $boxFamilyName = 'VSCodeBoxes'
+}
+
+$powerShellVersion = Split-Path -Leaf $config.Shells.PowerShellRoot
+$logicalBoxedPowerShell = Join-Path `
+  (Join-Path `
+    "C:\Program Files\SandboxToolchains\$boxFamilyName\$($config.ProjectName)\execution\toolchain\shells\powershell" `
+    $powerShellVersion) `
+  'powershell.exe'
+
+$physicalSandboxRoot = Join-Path `
+  (Join-Path (Join-Path $env:SystemDrive 'Sandbox') $env:USERNAME) `
+  $box
+$physicalBoxedPowerShell = Join-Path `
+  (Join-Path $physicalSandboxRoot 'drive\C') `
+  $logicalBoxedPowerShell.Substring(3)
+
+if (-not (Test-Path -LiteralPath $physicalBoxedPowerShell)) {
+  throw (
+    "The local boxed PowerShell was not found: '$physicalBoxedPowerShell'. " +
+    'Run the normal project host wrapper once before using this recovery command.'
+  )
+}
+
+$powerShellArguments = @(
+  '-NoLogo'
+  '-NoExit'
+  '-ExecutionPolicy'
+  'Bypass'
+  '-Command'
+  $serveCommand
+)
+
+$quotedPowerShellArguments = @(
+  foreach ($argument in $powerShellArguments) {
+    if ($argument -match '\s') {
+      '"{0}"' -f $argument
+    }
+    else {
+      $argument
+    }
+  }
+)
+
+$boxedCommand = (
+  '"{0}" {1}' -f $logicalBoxedPowerShell, ($quotedPowerShellArguments -join ' ')
+)
+
 & $startExe `
   /box:$box `
-  $powerShellExe `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -Command $serveCommand
+  $cmdExe `
+  /d /c `
+  $boxedCommand
+
+if ($LASTEXITCODE -ne 0) {
+  throw "The boxed PowerShell launch failed. ExitCode: $LASTEXITCODE"
+}
 ```
 
 ## What this command is and is not

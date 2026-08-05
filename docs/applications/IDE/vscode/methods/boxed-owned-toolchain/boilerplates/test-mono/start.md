@@ -56,13 +56,19 @@ C:\shared\sandbox-toolchains\
     test-mono\
       bootstrap\
         Project.Config.ps1
+        Start-TestMonoEditorBoxed.ps1
         Start-TestMonoEditor.ps1
+        Start-TestMonoVSCodeBoxed.ps1
         Start-TestMonoVSCode.ps1
+        Start-TestMonoCursorBoxed.ps1
         Start-TestMonoCursor.ps1
         Start-TestMonoTerminal.ps1
         Start-TestMonoElectronTerminal.ps1
         Start-TestMonoCursorTerminal.ps1
         Start-TestMonoCursorElectronTerminal.ps1
+        Start-TestMonoPnpmInstallBoxed.ps1
+        Start-TestMonoPnpmCleanReinstallBoxed.ps1
+        Start-TestMonoPnpmUninstallBoxed.ps1
 ```
 
 This `projects\` subtree is part of the shared runtime tree, not part of the cheat-sheet documentation tree.
@@ -71,6 +77,9 @@ The documentation tree intentionally keeps boilerplates separately from real pro
 
 Important launch split:
 
+- use `Start-TestMonoEditorBoxed.ps1` as the shared host-to-box boundary
+- use `Start-TestMonoVSCodeBoxed.ps1` and `Start-TestMonoCursorBoxed.ps1`
+  for normal host-side project entry
 - use `Start-TestMonoEditor.ps1` as the shared project core
 - use `Start-TestMonoVSCode.ps1` for the VS Code GUI lane
 - use `Start-TestMonoCursor.ps1` for the Cursor GUI lane
@@ -99,13 +108,14 @@ This prevents a multi-writer shared extension directory.
 
 ## Default debugging posture
 
-All host-side PowerShell commands below intentionally include:
+The exceptional first-bootstrap and Maintenance-Box commands below intentionally include:
 
 ```powershell
 -NoExit
 ```
 
-That keeps the starter terminal visible for debugging.
+Normal project entry uses the boxed project wrappers, which own the local
+PowerShell launch boundary.
 
 ## Step 1 - verify the canonical shared extension store
 
@@ -121,7 +131,8 @@ The project bootstrap requires the target `RepoPath` to already exist.
 
 That means:
 
-- `Start-TestMonoVSCode.ps1 -Action OpenTerminal` is the correct path only **after** the repo exists
+- `Start-TestMonoVSCodeBoxed.ps1 -Action OpenTerminal` is the correct
+  host-side path only **after** the repo exists
 - a fresh machine or a fully cleared project box needs one initial boxed clone first
 
 The full Git auth and device-code login flow is the Git-domain source of truth:
@@ -166,13 +177,7 @@ This keeps the clone inside the project box while still letting the host launch 
 ### VS Code
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1" `
   -Action OpenTerminal `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
@@ -180,21 +185,15 @@ This keeps the clone inside the project box while still letting the host launch 
 ### Cursor
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1" `
   -Action OpenTerminal `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
 
 What happens:
 
-- the named project box is entered
-- the normal Windows PowerShell binary is started inside the box
+- the project host wrapper selects the named project box
+- it starts boxed `cmd.exe` followed by the already mirrored boxed PowerShell
 - the project config is loaded
 - the shared project editor core delegates into the selected editor wrapper and then into the shared editor-family bootstrap
 - local `user-data`, `extensions`, and `bootstrap-bin` paths are prepared
@@ -236,13 +235,7 @@ If the resolved `pnpm` version does not match the design target, treat that as a
 ### VS Code
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1" `
   -Action LaunchVSCode `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```
@@ -250,13 +243,7 @@ If the resolved `pnpm` version does not match the design target, treat that as a
 ### Cursor
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1" `
   -Action LaunchCursor `
   -RepoPath "C:\Users\yourusername\source\test-mono"
 ```

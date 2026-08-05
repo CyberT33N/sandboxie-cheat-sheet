@@ -212,12 +212,7 @@ The current real project name in this repository context is:
 In the current boxed project launcher shape, the host-side entrypoint is:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:CURSOR_test_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursor.ps1" `
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1" `
   -Action LaunchCursor `
   -RepoPath "C:\Users\denni\source\test-mono"
 ```

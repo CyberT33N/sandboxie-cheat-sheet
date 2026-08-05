@@ -159,15 +159,19 @@ exit $scriptExitCode
 Use this when you choose the **manual trigger later** option:
 
 ```powershell
-& "C:\Program Files\Sandboxie-Plus\Start.exe" `
-  /box:VS_CODE_TEST_MONO `
-  "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" `
-  -NoLogo `
-  -NoExit `
-  -ExecutionPolicy Bypass `
-  -File "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronPostInstall.ps1" `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditorBoxed.ps1" `
+  -Editor VSCode `
+  -EntryScriptName 'Start-TestMonoElectronPostInstall.ps1' `
+  -EntryArguments @(
+    '-RepoPath'
+    'C:\Users\yourusername\source\test-mono'
+  ) `
+  -KeepOpen
 ```
+
+`Start-TestMonoEditorBoxed.ps1` owns the host-to-box boundary and starts the
+already mirrored local PowerShell runtime. The Electron script remains the
+in-box workload implementation.
 
 ## Integration rule
 
