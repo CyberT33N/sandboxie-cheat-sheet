@@ -150,44 +150,231 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 This matters because the terminal must be opened in the **ElectronServe** intent so the project bootstrap can publish the Electron-specific shell surface before the canonical command is run.
 
-### Required boxed build-output path
+### Host-side stale-process recovery before a boxed build
 
-For an `electron-vite build` running in a Privacy-Mode boxed project, the
-Electron-Vite output root **must** be restored to the normal sandboxed file
-policy for the native `esbuild.exe` process:
+The validated Electron-Vite build failure class is not resolved reliably by a
+`NormalFilePath` exception for either `node.exe` or `esbuild.exe`. The
+intermittent `EPERM ... mkdir ... out\main\chunks` result instead correlated
+with stale boxed `node.exe` / `esbuild.exe` processes that remained alive from
+an earlier execution and retained the output-tree state.
 
-```ini
-NormalFilePath=esbuild.exe,<monorepo-root>\<electron-vite-package>\out\
+The productive response is a host-side recovery wrapper that:
+
+1. asks Sandboxie for the PIDs belonging to the project box;
+2. terminates only boxed `node.exe` and `esbuild.exe` processes;
+3. verifies that no targeted process remains;
+4. enters the box through boxed CMD and the already mirrored boxed PowerShell;
+5. starts a fresh Nx daemon and runs the requested Electron-Vite build or
+   package target.
+
+The following sanitized Cursor-project wrapper is complete host-side
+PowerShell. It is intentionally not run from an already boxed terminal.
+
+```powershell
+# Start-TestMonoCursorElectronPackageBoxed.ps1
+param(
+  [string]$RepoPath = 'C:\Users\yourusername\source\test-mono',
+
+  [string]$NxTarget = 'desktop-app:package-win-dev'
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$startExe = 'C:\Program Files\Sandboxie-Plus\Start.exe'
+$cmdExe = 'C:\Windows\System32\cmd.exe'
+$configScript = Join-Path $PSScriptRoot 'Project.Config.ps1'
+$bootstrapScript = Join-Path $PSScriptRoot 'Start-TestMonoCursorElectronTerminal.ps1'
+$targetProcessNames = @('node.exe', 'esbuild.exe')
+
+function ConvertTo-PowerShellLiteral {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$Value
+  )
+
+  return "'{0}'" -f $Value.Replace("'", "''")
+}
+
+function Get-BoxPids {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BoxName
+  )
+
+  $numericLines = @(
+    & $startExe /box:$BoxName /listpids |
+      ForEach-Object { "$_".Trim() } |
+      Where-Object { $_ -match '^\d+$' }
+  )
+
+  # /listpids emits the process count first, then one PID per line.
+  if ($numericLines.Count -le 1) {
+    return @()
+  }
+
+  return @(
+    $numericLines |
+      Select-Object -Skip 1 |
+      ForEach-Object { [int]$_ }
+  )
+}
+
+function Get-TargetBoxProcesses {
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BoxName
+  )
+
+  $boxPids = @(Get-BoxPids -BoxName $BoxName)
+  if ($boxPids.Count -eq 0) {
+    return @()
+  }
+
+  return @(
+    Get-CimInstance Win32_Process |
+      Where-Object {
+        $boxPids -contains $_.ProcessId -and
+        $_.Name -in $targetProcessNames
+      }
+  )
+}
+
+if (-not (Test-Path -LiteralPath $configScript)) {
+  throw "Project config not found: $configScript"
+}
+
+if (-not (Test-Path -LiteralPath $bootstrapScript)) {
+  throw "Electron terminal bootstrap not found: $bootstrapScript"
+}
+
+$config = & $configScript
+if (-not $config -or -not $config.Cursor) {
+  throw 'Project config does not provide a Cursor contract.'
+}
+
+$box = $config.Cursor.BoxName
+$boxFamilyName = $config.Cursor.BoxFamilyName
+$powerShellVersion = Split-Path -Leaf $config.Shells.PowerShellRoot
+
+# 1. Stop only stale Node/esbuild processes that belong to this box.
+$staleProcesses = @(Get-TargetBoxProcesses -BoxName $box)
+if ($staleProcesses.Count -gt 0) {
+  Write-Host 'Stopping stale boxed node.exe/esbuild.exe processes...'
+  $staleProcesses |
+    Select-Object ProcessId, Name, CommandLine |
+    Format-Table -AutoSize |
+    Out-Host
+
+  $stalePids = @($staleProcesses.ProcessId)
+  foreach ($staleProcess in $staleProcesses) {
+    Stop-Process -Id $staleProcess.ProcessId -Force -ErrorAction Stop
+  }
+
+  Wait-Process -Id $stalePids -Timeout 15 -ErrorAction SilentlyContinue
+}
+
+# 2. Do not start the build while an old targeted process remains.
+$remainingProcesses = @(Get-TargetBoxProcesses -BoxName $box)
+if ($remainingProcesses.Count -gt 0) {
+  $remainingDetails = $remainingProcesses |
+    ForEach-Object { "$($_.Name) PID=$($_.ProcessId)" } |
+    Join-String -Separator ', '
+
+  throw "Boxed node.exe/esbuild.exe processes could not be terminated: $remainingDetails"
+}
+
+Start-Sleep -Milliseconds 750
+
+# 3. Resolve the existing local boxed PowerShell runtime.
+$boxedPowerShellExe = Join-Path `
+  (Join-Path `
+    "C:\Program Files\SandboxToolchains\$boxFamilyName\$($config.ProjectName)\execution\toolchain\shells\powershell" `
+    $powerShellVersion) `
+  'powershell.exe'
+
+$sandboxRoot = Join-Path `
+  (Join-Path (Join-Path $env:SystemDrive 'Sandbox') $env:USERNAME) `
+  $box
+
+$physicalBoxedPowerShellExe = Join-Path `
+  (Join-Path $sandboxRoot 'drive\C') `
+  $boxedPowerShellExe.Substring(3)
+
+if (-not (Test-Path -LiteralPath $physicalBoxedPowerShellExe)) {
+  throw "Local boxed PowerShell not found: $physicalBoxedPowerShellExe"
+}
+
+# 4. Run a fresh Nx lifecycle in local boxed PowerShell.
+$bootstrapLiteral = ConvertTo-PowerShellLiteral -Value $bootstrapScript
+$repoLiteral = ConvertTo-PowerShellLiteral -Value $RepoPath
+$targetLiteral = ConvertTo-PowerShellLiteral -Value $NxTarget
+
+$buildCommandTemplate = @'
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+& {0} -RepoPath {1}
+if ($LASTEXITCODE -ne 0) {{
+  throw "Electron terminal bootstrap failed. ExitCode: $LASTEXITCODE"
+}}
+
+Set-Location -LiteralPath {1}
+
+pnpm exec nx reset
+if ($LASTEXITCODE -ne 0) {{
+  throw "nx reset failed. ExitCode: $LASTEXITCODE"
+}}
+
+pnpm exec nx daemon --start
+if ($LASTEXITCODE -ne 0) {{
+  throw "nx daemon --start failed. ExitCode: $LASTEXITCODE"
+}}
+
+pnpm exec nx daemon
+if ($LASTEXITCODE -ne 0) {{
+  throw "nx daemon failed. ExitCode: $LASTEXITCODE"
+}}
+
+pnpm exec nx run {2} --no-tui --verbose
+if ($LASTEXITCODE -ne 0) {{
+  throw "Nx target failed. ExitCode: $LASTEXITCODE"
+}}
+'@
+
+$buildCommand = $buildCommandTemplate -f `
+  $bootstrapLiteral, `
+  $repoLiteral, `
+  $targetLiteral
+
+$encodedBuildCommand = [Convert]::ToBase64String(
+  [System.Text.Encoding]::Unicode.GetBytes($buildCommand)
+)
+
+$boxedCommand = (
+  '"{0}" -NoLogo -NoExit -ExecutionPolicy Bypass -EncodedCommand {1}' -f `
+    $boxedPowerShellExe, `
+    $encodedBuildCommand
+)
+
+& $startExe `
+  /box:$box `
+  $cmdExe `
+  /d /c `
+  $boxedCommand
+
+if ($LASTEXITCODE -ne 0) {
+  throw "The boxed PowerShell could not be launched. ExitCode: $LASTEXITCODE"
+}
 ```
 
-The placeholders are intentional. Replace only `<monorepo-root>` and
-`<electron-vite-package>` with the logical repository and package paths used
-by the project box; do not record a user-specific path in this contract.
+The fresh `nx daemon --start` command intentionally creates a new `node.exe`.
+The recovery does not prohibit Node during the build; it removes only stale
+processes from an earlier execution before the new lifecycle begins.
 
-This rule is required because Electron-Vite uses the native `esbuild.exe`
-toolchain while materializing dynamic descendants such as
-`out\main\chunks`. The output root, rather than one generated leaf directory,
-is the narrow stable boundary.
-
-The JavaScript stack can report Node's `fs` APIs at the call site, but that
-does not by itself identify the executable image evaluated by Sandboxie's
-process-scoped path policy. The verified boxed runtime result establishes
-`esbuild.exe` as the required image scope for this output surface.
-
-Architectural constraints:
-
-- keep the rule process-scoped to `esbuild.exe`;
-- use `NormalFilePath`, which preserves the normal boxed write/virtualization
-  behavior under Privacy Mode;
-- do **not** substitute `ReadFilePath`, because it cannot authorize `mkdir`;
-- do **not** use `OpenFilePath` as the boxed-owned default, because that would
-  create a direct host-write exception;
-- do not retain or add a `node.exe` exception, and do not pre-allow
-  `electron.exe`, the package root, or the full monorepo unless trace evidence
-  identifies an additional process and path.
-
-This is a build-output filesystem requirement, not a CMD-shim or
-`electron-vite.CMD` spawn requirement.
+This is neither a `NormalFilePath` requirement nor an Electron-Vite CMD-shim
+requirement. It is a host-control-plane process-lifecycle requirement that
+keeps output-tree ownership and handle state deterministic between runs.
 
 ### 2. Electron-Vite shim refresh
 

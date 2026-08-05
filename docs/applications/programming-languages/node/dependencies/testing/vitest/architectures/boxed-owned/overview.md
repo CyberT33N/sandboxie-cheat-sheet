@@ -84,6 +84,23 @@ writes many report paths. That concern is documented in
 `troubleshooting.md`; it does not explain a failure whose syscall is
 `spawn`.
 
+## Unverified coverage-output lifecycle hypothesis
+
+Coverage output can create a separate boxed filesystem-lifecycle failure class.
+The current working hypothesis is that a first coverage run can create its
+report tree successfully, while a later run fails because stale boxed
+`node.exe` or `esbuild.exe` processes still retain output-tree handles or
+state from the earlier execution.
+
+This is not yet a verified Vitest conclusion and must not be conflated with
+the `tsc.cmd` child-process failure documented above. In particular, no
+process-cleanup code belongs in this Vitest architecture reference until the
+coverage case has been independently reproduced and validated.
+
+The related verified Electron-Vite process-lifecycle recovery is documented
+under the related rules below. It is evidence for an investigation direction,
+not proof that Vitest coverage has the same root cause.
+
 ## Architectural diagnosis
 
 The decisive diagnostic split is:
@@ -330,7 +347,7 @@ This architecture does not authorize:
   evidence;
 - changing application business code to solve a bootstrap boundary.
 
-## Related architecture references
+## Related rules
 
 - `docs\cli\shell\general.md`
 - `docs\troubleshooting\sandboxie\process-spawning\cmd-based-shells.md`
@@ -340,5 +357,5 @@ This architecture does not authorize:
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
 - `docs\applications\version-control\monorepo\nx\architectures\boxed-owned-toolchain\execution-surfaces.md`
 - `docs\applications\programming-languages\node\package-manager\pnpm\architectures\boxed-owned-toolchain\lifecycle-and-command-surface.md`
-- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md`
+- `docs\applications\programming-languages\node\dependencies\frameworks\electron\electron-vite\architectures\boxed-owned-toolchain\overview.md` — verified host-side stale-process recovery for repeated Electron-Vite output creation
 - `docs\applications\programming-languages\node\dependencies\testing\vitest\architectures\boxed-owned\troubleshooting.md`
