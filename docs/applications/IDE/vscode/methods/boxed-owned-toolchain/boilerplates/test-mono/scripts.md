@@ -722,6 +722,51 @@ if (-not (Test-Path -LiteralPath $launcher)) {
   -EnableComSpecTraceProxy:$EnableComSpecTraceProxy
 ```
 
+## `Start-TestMonoPnpmInstallBoxed.ps1`
+
+This is the host-facing dependency entrypoint for the project-owned PNPM
+install script. It must use the shared boxed host boundary instead of invoking
+host Windows PowerShell directly through `Start.exe`.
+
+`-KeepOpen` is optional and preserves the interactive `-NoExit` behavior when
+the install needs to leave the boxed PowerShell window open after completion or
+failure.
+
+```powershell
+param(
+  [string]$RepoPath,
+
+  [ValidateSet('VSCode', 'Cursor')]
+  [string]$Editor = 'VSCode',
+
+  [string]$SandboxRoot,
+
+  [switch]$KeepOpen
+)
+
+$ErrorActionPreference = 'Stop'
+Set-StrictMode -Version Latest
+
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditorBoxed.ps1'
+if (-not (Test-Path -LiteralPath $launcher)) {
+  throw "Boxed editor launcher not found: $launcher"
+}
+
+$entryArguments = @('-Editor', $Editor)
+if (-not [string]::IsNullOrWhiteSpace($RepoPath)) {
+  $entryArguments += @('-RepoPath', $RepoPath)
+}
+
+& $launcher `
+  -Editor $Editor `
+  -EntryScriptName 'Start-TestMonoPnpmInstall.ps1' `
+  -EntryArguments $entryArguments `
+  -KeepOpen:$KeepOpen `
+  -SandboxRoot $SandboxRoot
+
+return $LASTEXITCODE
+```
+
 ## `Start-TestMonoPnpmInstall.ps1`
 
 This is the sanitized project-box install script.
@@ -740,8 +785,11 @@ The complete node-gyp wrapper architecture and full wrapper code example now liv
 
 It encodes the governance-approved boxed-owned-toolchain contract:
 
-- the host launches one explicit project-owned PS1
-- the script enters the project box through the normal project bootstrap
+- the host invokes `Start-TestMonoPnpmInstallBoxed.ps1`
+- the host wrapper starts boxed CMD and then boxed PowerShell through
+  `Start-TestMonoEditorBoxed.ps1`
+- the in-box `Start-TestMonoPnpmInstall.ps1` initializes the normal project
+  bootstrap
 - the script does **not** choose the PNPM version through host arguments
 - the effective PNPM version comes from `Project.Config.ps1`
 
@@ -759,7 +807,7 @@ The current shell-specific requirement is also part of this contract:
 
 ```powershell
 param(
-  [string]$RepoPath = 'C:\Users\yourusername\source\test-mono',
+  [string]$RepoPath,
 
   [ValidateSet('VSCode', 'Cursor')]
   [string]$Editor = 'VSCode'
@@ -768,13 +816,30 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+$configScript = Join-Path $PSScriptRoot 'Project.Config.ps1'
+if (-not (Test-Path -LiteralPath $configScript)) {
+  throw "Project config not found: $configScript"
+}
+
+$config = & $configScript
+if (-not $config) {
+  throw 'Project config did not return a configuration object.'
+}
+
+$resolvedRepoPath = if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+  $config.DefaultRepoPath
+}
+else {
+  $RepoPath
+}
+
 $launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1'
 
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
 
-& $launcher -Editor $Editor -Action OpenTerminal -RepoPath $RepoPath
+& $launcher -Editor $Editor -Action OpenTerminal -RepoPath $resolvedRepoPath
 
 if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
   throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
@@ -802,6 +867,8 @@ $nativeBuildRuntime = Initialize-NodeGypWindowsBuildEnvironment `
   -RegExe $env:BOXED_REG_EXE `
   -PythonExe $env:BOXED_PYTHON_EXE
 
+Set-Location $resolvedRepoPath
+
 Write-Host "ProjectedVsWhereExe: $($nativeBuildRuntime.VsWhereExe)"
 Write-Host "ProjectedVsRoot: $($nativeBuildRuntime.VSRoot)"
 Write-Host "ProjectedWindowsSdkRoot: $($nativeBuildRuntime.WindowsSdkRoot)"
@@ -821,7 +888,7 @@ if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
   throw "Electron post-install script not found: $electronPostInstallScript"
 }
 
-& $electronPostInstallScript -Editor $Editor -RepoPath $RepoPath -SkipBootstrap
+& $electronPostInstallScript -Editor $Editor -RepoPath $resolvedRepoPath -SkipBootstrap
 
 exit $LASTEXITCODE
 ```
@@ -1052,7 +1119,8 @@ Cursor variant:
 ```powershell
 & "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
   -Editor VSCode `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -KeepOpen
 ```
 
 Cursor variant:
@@ -1060,7 +1128,8 @@ Cursor variant:
 ```powershell
 & "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
   -Editor Cursor `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -KeepOpen
 ```
 
 After you materialize the boilerplate script above into the sanitized shared project subtree, the boxed host wrapper executes it through boxed CMD and the local boxed PowerShell runtime.

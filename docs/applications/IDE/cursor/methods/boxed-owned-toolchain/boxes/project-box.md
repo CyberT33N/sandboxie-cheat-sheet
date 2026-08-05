@@ -70,6 +70,9 @@ Project-owned dependency and repair scripts remain shared and editor-selectable 
 
 For the current project, that means:
 
+- `Start-testMonoPnpmInstallBoxed.ps1`
+- `Start-testMonoPnpmCleanReinstallBoxed.ps1`
+- `Start-testMonoPnpmUninstallBoxed.ps1`
 - `Start-testMonoPnpmInstall.ps1`
 - `Start-testMonoPnpmCleanReinstall.ps1`
 - `Start-testMonoPnpmUninstall.ps1`
@@ -81,6 +84,10 @@ use:
 - or `-Editor Cursor`
 
 instead of creating a second divergent dependency-management implementation just for Cursor.
+
+The host invokes the `*Boxed.ps1` dependency wrapper with `-Editor Cursor`.
+That wrapper crosses the boxed CMD-to-PowerShell entry boundary; the matching
+non-`Boxed` script remains the in-box workload implementation.
 
 ## Related
 

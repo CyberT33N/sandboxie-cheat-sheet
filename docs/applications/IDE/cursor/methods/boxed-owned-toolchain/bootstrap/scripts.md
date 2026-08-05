@@ -37,6 +37,8 @@ The Cursor-specific wrapper layer is:
 For the current project, the Cursor-facing wrappers are:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoEditorBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursorBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoEditor.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursor.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoCursorTerminal.ps1`
@@ -44,8 +46,12 @@ For the current project, the Cursor-facing wrappers are:
 
 ### Shared project scripts with editor selection
 
-The current project also keeps shared non-launch scripts that accept `-Editor Cursor`:
+The current project also keeps shared host-facing dependency wrappers and
+in-box non-launch scripts that accept `-Editor Cursor`:
 
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmInstallBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstallBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmUninstallBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmInstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmCleanReinstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-testMonoPnpmUninstall.ps1`

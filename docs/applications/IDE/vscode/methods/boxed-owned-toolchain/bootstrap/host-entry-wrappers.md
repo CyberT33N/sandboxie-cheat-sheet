@@ -101,7 +101,9 @@ Start-<Project>PnpmUninstallBoxed.ps1
 ```
 
 They delegate through the same host entry layer before invoking their existing
-in-box PNPM scripts.
+in-box PNPM scripts. A dependency wrapper may expose `-KeepOpen` and forward
+it to the shared host wrapper when it must preserve the former direct-launch
+`-NoExit` behavior.
 
 ### Existing in-box wrappers remain required
 
@@ -166,7 +168,8 @@ exists.
 ```powershell
 & "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
   -Editor Cursor `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -KeepOpen
 ```
 
 ## `ugrep` runtime contract

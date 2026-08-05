@@ -349,6 +349,26 @@ The governance-approved boxed-owned-toolchain pattern is:
 4. let that script set the validated lifecycle `scriptShell`
 5. run `pnpm install`
 
+### Run the install through the boxed host boundary
+
+For a Cursor project box, run:
+
+```powershell
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
+  -Editor Cursor `
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -KeepOpen
+```
+
+The wrapper selects the project box and starts boxed CMD followed by the local
+boxed PowerShell runtime. It then executes the project-owned in-box PNPM
+script. Do not replace this with a direct
+`Start.exe ... WindowsPowerShell\v1.0\powershell.exe` command after the
+`.NET Framework` projection exists.
+
+`-KeepOpen` is optional and retains the boxed PowerShell console, replacing
+the former direct-launch `-NoExit` behavior.
+
 The sanitized boilerplate install script body still lives in:
 
 - `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`

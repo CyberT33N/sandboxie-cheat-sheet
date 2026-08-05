@@ -312,6 +312,9 @@ It contains only what is specific to one project:
 Using the sanitized boilerplate project name `test-mono`, the files are:
 
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Project.Config.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditorBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCodeBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoEditor.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoVSCode.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursor.ps1`
@@ -319,6 +322,9 @@ Using the sanitized boilerplate project name `test-mono`, the files are:
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoElectronTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorTerminal.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoCursorElectronTerminal.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstallBoxed.ps1`
+- `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstallBoxed.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmCleanReinstall.ps1`
 - `C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmUninstall.ps1`
@@ -408,6 +414,12 @@ The remaining project wrappers are then deliberately thin:
 - `Start-TestMonoElectronTerminal.ps1`
 - `Start-TestMonoCursorTerminal.ps1`
 - `Start-TestMonoCursorElectronTerminal.ps1`
+
+Host-facing dependency commands use the shared boxed entry boundary:
+
+- `Start-TestMonoPnpmInstallBoxed.ps1`
+- `Start-TestMonoPnpmCleanReinstallBoxed.ps1`
+- `Start-TestMonoPnpmUninstallBoxed.ps1`
 
 The non-launch project scripts also stay shared and editor-selectable instead of duplicated:
 

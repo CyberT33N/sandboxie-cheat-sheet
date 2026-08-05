@@ -78,7 +78,23 @@ For the current Git-Bash-based install lane, there are therefore two supported o
 
 The second option is the preferred automation shape when the project repeatedly lands in the known Electron partial-materialization state.
 
-## Sanitized script path
+## Sanitized host wrapper
+
+The host must invoke the dedicated dependency wrapper rather than start host
+Windows PowerShell directly through `Start.exe`:
+
+```text
+C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1
+```
+
+That wrapper selects the requested editor box and delegates through
+`Start-TestMonoEditorBoxed.ps1`, which starts boxed CMD and then the mirrored
+boxed PowerShell before running the in-box install script. The complete
+sanitized wrapper boilerplate lives in:
+
+- `docs\applications\IDE\vscode\methods\boxed-owned-toolchain\boilerplates\test-mono\scripts.md`
+
+## Sanitized in-box script path
 
 ```text
 C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstall.ps1
@@ -88,19 +104,39 @@ C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInst
 
 ```powershell
 param(
-  [string]$RepoPath
+  [string]$RepoPath,
+
+  [ValidateSet('VSCode', 'Cursor')]
+  [string]$Editor = 'VSCode'
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$launcher = Join-Path $PSScriptRoot 'Start-TestMonoVSCode.ps1'
+$configScript = Join-Path $PSScriptRoot 'Project.Config.ps1'
+if (-not (Test-Path -LiteralPath $configScript)) {
+  throw "Project config not found: $configScript"
+}
+
+$config = & $configScript
+if (-not $config) {
+  throw 'Project config did not return a configuration object.'
+}
+
+$resolvedRepoPath = if ([string]::IsNullOrWhiteSpace($RepoPath)) {
+  $config.DefaultRepoPath
+}
+else {
+  $RepoPath
+}
+
+$launcher = Join-Path $PSScriptRoot 'Start-TestMonoEditor.ps1'
 
 if (-not (Test-Path -LiteralPath $launcher)) {
   throw "Project launcher not found: $launcher"
 }
 
-& $launcher -Action OpenTerminal -RepoPath $RepoPath
+& $launcher -Editor $Editor -Action OpenTerminal -RepoPath $resolvedRepoPath
 
 if ([string]::IsNullOrWhiteSpace($env:BOXED_GIT_ROOT)) {
   throw 'BOXED_GIT_ROOT was not initialized by project bootstrap.'
@@ -128,6 +164,8 @@ $null = Initialize-NodeGypWindowsBuildEnvironment `
   -RegExe $env:BOXED_REG_EXE `
   -PythonExe $env:BOXED_PYTHON_EXE
 
+Set-Location $resolvedRepoPath
+
 Write-Host "LifecycleShell: $bashExe"
 pnpm config set --location=project scriptShell "$bashExe"
 pnpm install
@@ -142,7 +180,7 @@ if (-not (Test-Path -LiteralPath $electronPostInstallScript)) {
   throw "Electron post-install script not found: $electronPostInstallScript"
 }
 
-& $electronPostInstallScript -RepoPath $RepoPath -SkipBootstrap
+& $electronPostInstallScript -Editor $Editor -RepoPath $resolvedRepoPath -SkipBootstrap
 
 exit $LASTEXITCODE
 ```
@@ -152,8 +190,21 @@ exit $LASTEXITCODE
 ```powershell
 & "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
   -Editor VSCode `
-  -RepoPath "C:\Users\yourusername\source\test-mono"
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -KeepOpen
 ```
+
+Cursor variant:
+
+```powershell
+& "C:\shared\sandbox-toolchains\projects\test-mono\bootstrap\Start-TestMonoPnpmInstallBoxed.ps1" `
+  -Editor Cursor `
+  -RepoPath "C:\Users\yourusername\source\test-mono" `
+  -KeepOpen
+```
+
+`-KeepOpen` is optional; it retains the boxed PowerShell window and replaces
+the former direct-launch `-NoExit` behavior.
 
 ## Architectural interpretation
 
