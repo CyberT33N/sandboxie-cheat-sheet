@@ -150,6 +150,39 @@ if (-not (Test-Path -LiteralPath $launcher)) {
 
 This matters because the terminal must be opened in the **ElectronServe** intent so the project bootstrap can publish the Electron-specific shell surface before the canonical command is run.
 
+### Required boxed build-output path
+
+For an `electron-vite build` running in a Privacy-Mode boxed project, the
+Electron-Vite output root **must** be restored to the normal sandboxed file
+policy for the Node process:
+
+```ini
+NormalFilePath=node.exe,<monorepo-root>\<electron-vite-package>\out\
+```
+
+The placeholders are intentional. Replace only `<monorepo-root>` and
+`<electron-vite-package>` with the logical repository and package paths used
+by the project box; do not record a user-specific path in this contract.
+
+This rule is required because Electron-Vite/Rollup creates dynamic descendants
+such as `out\main\chunks` through Node's filesystem APIs. The output root,
+rather than one generated leaf directory, is the narrow stable boundary.
+
+Architectural constraints:
+
+- keep the rule process-scoped to `node.exe`;
+- use `NormalFilePath`, which preserves the normal boxed write/virtualization
+  behavior under Privacy Mode;
+- do **not** substitute `ReadFilePath`, because it cannot authorize `mkdir`;
+- do **not** use `OpenFilePath` as the boxed-owned default, because that would
+  create a direct host-write exception;
+- do not pre-allow `electron.exe`, `esbuild.exe`, the package root, or the
+  full monorepo unless trace evidence identifies an additional process and
+  path.
+
+This is a build-output filesystem requirement, not a CMD-shim or
+`electron-vite.CMD` spawn requirement.
+
 ### 2. Electron-Vite shim refresh
 
 The project bootstrap still publishes a local `electron-vite.CMD` shim.
