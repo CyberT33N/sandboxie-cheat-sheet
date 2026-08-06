@@ -102,6 +102,298 @@ Do not replace this with a broad host-CMD exception, a permanent diagnostic
 CMD proxy, or a project-specific Vitest checker override. The local mirrored
 CMD lane is the preferred reusable contract.
 
+## Cursor Agent Shell canonical-path compatibility boilerplate
+
+Some third-party consumers cannot be configured to use `BOXED_POWERSHELL_EXE`.
+Cursor Agent Shell is a validated example: it can hard-code
+`C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe`, which is a host
+child-image spawn failure under strict Sandboxie policy.
+
+The boilerplate must project the local governed PowerShell mirror into that
+same **virtual** path instead of allowing host PowerShell execution.
+
+### `Bootstrap.WindowsShells.psm1`
+
+Add these complete functions to the shared shell module and export
+`Initialize-WindowsPowerShellCompatibilityProjection`:
+
+```powershell
+function Assert-BoxedWindowsPowerShellCompatibilityProjectionContext {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BoxedPowerShellRoot,
+
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectionRoot
+  )
+
+  if ([string]::IsNullOrWhiteSpace($env:BOXED_VSCODE_MODE) -or
+      [string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
+    throw 'Refusing to project boxed PowerShell into C:\Windows outside a boxed IDE bootstrap context.'
+  }
+
+  $normalizedProjectionRoot = [System.IO.Path]::GetFullPath($ProjectionRoot).TrimEnd('\')
+  $expectedProjectionRoot = 'C:\Windows\System32\WindowsPowerShell\v1.0'
+  if (-not $normalizedProjectionRoot.Equals($expectedProjectionRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Unexpected boxed PowerShell compatibility projection root: $ProjectionRoot"
+  }
+
+  $normalizedLocalToolchainRoot = [System.IO.Path]::GetFullPath($env:BOXED_LOCAL_TOOLCHAIN_ROOT).TrimEnd('\')
+  $normalizedBoxedPowerShellRoot = [System.IO.Path]::GetFullPath($BoxedPowerShellRoot).TrimEnd('\')
+  if (-not $normalizedBoxedPowerShellRoot.StartsWith("$normalizedLocalToolchainRoot\", [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Boxed PowerShell source must stay below BOXED_LOCAL_TOOLCHAIN_ROOT: $BoxedPowerShellRoot"
+  }
+
+  Assert-PathExists -Path $normalizedBoxedPowerShellRoot -Label 'Local boxed PowerShell compatibility source'
+  Assert-PathExists -Path (Join-Path $normalizedBoxedPowerShellRoot 'powershell.exe') -Label 'Local boxed PowerShell compatibility executable'
+}
+
+function Initialize-WindowsPowerShellCompatibilityProjection {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BoxedPowerShellRoot,
+
+    [string]$ProjectionRoot = 'C:\Windows\System32\WindowsPowerShell\v1.0'
+  )
+
+  Assert-BoxedWindowsPowerShellCompatibilityProjectionContext `
+    -BoxedPowerShellRoot $BoxedPowerShellRoot `
+    -ProjectionRoot $ProjectionRoot
+
+  $sourceRoot = [System.IO.Path]::GetFullPath($BoxedPowerShellRoot).TrimEnd('\')
+  $sourceExe = Join-Path $sourceRoot 'powershell.exe'
+  $targetRoot = [System.IO.Path]::GetFullPath($ProjectionRoot).TrimEnd('\')
+  $targetExe = Join-Path $targetRoot 'powershell.exe'
+  $markerPath = Join-Path $targetRoot '.boxed_powershell_projection'
+  $sourceVersion = Split-Path -Leaf $sourceRoot
+  $sourceHash = (Get-FileHash -LiteralPath $sourceExe -Algorithm SHA256).Hash
+  $markerContent = "version=$sourceVersion`nhash=$sourceHash"
+  $existingMarkerContent = if (Test-Path -LiteralPath $markerPath) {
+    $markerText = Get-Content -LiteralPath $markerPath -Raw -ErrorAction SilentlyContinue
+    if ($null -eq $markerText) {
+      ''
+    }
+    else {
+      $markerText.Trim()
+    }
+  }
+  else {
+    ''
+  }
+
+  $projectionReady = `
+    (Test-Path -LiteralPath $targetExe) -and `
+    (Test-Path -LiteralPath $markerPath) -and `
+    ($existingMarkerContent -eq $markerContent)
+
+  if (-not $projectionReady) {
+    Write-Host "Projecting boxed PowerShell compatibility runtime to $targetRoot ..."
+    Copy-TreeContents -Source $sourceRoot -Destination $targetRoot
+    Write-AsciiFile -Path $markerPath -Content $markerContent
+  }
+
+  Assert-PathExists -Path $targetExe -Label 'Boxed PowerShell compatibility executable'
+
+  $targetHash = (Get-FileHash -LiteralPath $targetExe -Algorithm SHA256).Hash
+  if ($targetHash -ne $sourceHash) {
+    throw "Boxed PowerShell compatibility projection hash mismatch: $targetExe"
+  }
+
+  $env:BOXED_POWERSHELL_COMPATIBILITY_ROOT = $targetRoot
+  $env:BOXED_POWERSHELL_COMPATIBILITY_EXE = $targetExe
+  $env:BOXED_POWERSHELL_COMPATIBILITY_VERSION = $sourceVersion
+
+  return [pscustomobject]@{
+    PowerShellRoot = $targetRoot
+    PowerShellExe = $targetExe
+    Version = $sourceVersion
+  }
+}
+
+Export-ModuleMember -Function @(
+  'Assert-WindowsShellToolchainLayout',
+  'Initialize-WindowsShellToolchainMirror',
+  'Test-RegToolchainLayout',
+  'Test-ClinkToolchainLayout',
+  'Initialize-WindowsPowerShellCompatibilityProjection',
+  'Initialize-WindowsShellRuntime'
+)
+```
+
+### Shared family project and maintenance scripts
+
+Both `Start-VSCodeFamilyProjectBase.ps1` and
+`Start-VSCodeFamilyMaintenance.ps1` must accept:
+
+```powershell
+[string]$WindowsPowerShellCompatibilityProjectionRoot,
+```
+
+After each script has published `BOXED_VSCODE_MODE` and
+`BOXED_LOCAL_TOOLCHAIN_ROOT`, add the shared projection block:
+
+```powershell
+$powerShellCompatibilityProjection = $null
+if (-not [string]::IsNullOrWhiteSpace($WindowsPowerShellCompatibilityProjectionRoot)) {
+  $powerShellCompatibilityProjection = Initialize-WindowsPowerShellCompatibilityProjection `
+    -BoxedPowerShellRoot $windowsShellRuntime.PowerShellRoot `
+    -ProjectionRoot $WindowsPowerShellCompatibilityProjectionRoot
+}
+```
+
+The project script then publishes the complete editor-specific projection
+contract:
+
+```powershell
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'MODE' -Value 'Project'
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'BOX_FAMILY' -Value $BoxFamilyName
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'RUNTIME_NAMESPACE' -Value $RuntimeNamespace
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'USERDATA' -Value $projectPaths.UserData
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'RUNTIME_ROOT' -Value $localRuntime.RuntimeRoot
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'EXE' -Value $localRuntime.EditorExe
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'CLI' -Value $localRuntime.EditorCli
+if ($null -ne $powerShellCompatibilityProjection) {
+  Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'POWERSHELL_COMPATIBILITY_EXE' -Value $powerShellCompatibilityProjection.PowerShellExe
+}
+```
+
+The maintenance script uses the same shared projection block and then publishes
+its own mode/user-data values:
+
+```powershell
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'MODE' -Value 'Maintenance'
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'BOX_FAMILY' -Value $BoxFamilyName
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'RUNTIME_NAMESPACE' -Value $RuntimeNamespace
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'USERDATA' -Value $maintenancePaths.UserData
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'RUNTIME_ROOT' -Value $localRuntime.RuntimeRoot
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'EXE' -Value $localRuntime.EditorExe
+Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'CLI' -Value $localRuntime.EditorCli
+if ($null -ne $powerShellCompatibilityProjection) {
+  Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'POWERSHELL_COMPATIBILITY_EXE' -Value $powerShellCompatibilityProjection.PowerShellExe
+}
+```
+
+The diagnostic section of each `OpenTerminal` action must include:
+
+```powershell
+if ($null -ne $powerShellCompatibilityProjection) {
+  Write-Host "PowerShellCompatibilityProjection: $($powerShellCompatibilityProjection.PowerShellExe)"
+}
+```
+
+### `Start-CursorProjectBase.ps1` platform contract
+
+The Cursor platform wrapper must pass the canonical projection root into the
+shared family project base:
+
+```powershell
+& $familyScript `
+  -Action $familyAction `
+  -EditorId 'Cursor' `
+  -EditorDisplayName 'Cursor' `
+  -BoxFamilyName 'CursorBoxes' `
+  -RuntimeNamespace 'cursor' `
+  -ProjectName $ProjectName `
+  -RepoPath $RepoPath `
+  -CodeExe $CodeExe `
+  -CodeCli $CodeCli `
+  -CatalogUserRoot $CatalogUserRoot `
+  -SharedExtensionsRoot $SharedExtensionsRoot `
+  -SeedGlobalStorageRoot $SeedGlobalStorageRoot `
+  -SeedRooRoot $SeedRooRoot `
+  -GitRoot $GitRoot `
+  -NodeRoot $NodeRoot `
+  -PnpmCli $PnpmCli `
+  -PythonRoot $PythonRoot `
+  -VsWhereExe $VsWhereExe `
+  -VisualStudioRoot $VisualStudioRoot `
+  -WindowsSdkRoot $WindowsSdkRoot `
+  -DotNetFrameworkRoot $DotNetFrameworkRoot `
+  -DotNetFramework64Root $DotNetFramework64Root `
+  -CmdRoot $CmdRoot `
+  -PowerShellRoot $PowerShellRoot `
+  -WindowsPowerShellCompatibilityProjectionRoot 'C:\Windows\System32\WindowsPowerShell\v1.0' `
+  -RegRoot $RegRoot `
+  -StarshipRoot $StarshipRoot `
+  -StarshipConfigPath $StarshipConfigPath `
+  -ClinkRoot $ClinkRoot `
+  -NxDaemonBootstrapMode $NxDaemonBootstrapMode `
+  -RuntimeCtlShimExe $RuntimeCtlShimExe `
+  -McpFilesystemExtended $McpFilesystemExtended `
+  -Ugrep $Ugrep `
+  -RuntimeExcludeRelativePaths @(
+    'resources\app\bin\code-tunnel.exe',
+    'resources\app\bin\cursor-tunnel.exe',
+    'tools\inno_updater.exe'
+  ) `
+  -AdditionalNodeCommands $AdditionalNodeCommands
+```
+
+The Cursor maintenance wrapper uses the same canonical projection root when it
+delegates to `Start-VSCodeFamilyMaintenance.ps1`:
+
+```powershell
+& $familyScript `
+  -Action $familyAction `
+  -ExtensionId $ExtensionId `
+  -EditorId 'Cursor' `
+  -EditorDisplayName 'Cursor' `
+  -BoxFamilyName 'CursorBoxes' `
+  -RuntimeNamespace 'cursor' `
+  -CodeExe $codeExe `
+  -CodeCli $codeCli `
+  -CatalogUserRoot $catalogUserRoot `
+  -SharedSeedGlobalStorageRoot $sharedSeedGlobalStorageRoot `
+  -SharedSeedRooRoot $sharedSeedRooRoot `
+  -SharedExtensionsRoot $sharedExtensionsRoot `
+  -GitRoot $gitRoot `
+  -NodeRoot $nodeRoot `
+  -PnpmCli $pnpmCli `
+  -PythonRoot $pythonRoot `
+  -VsWhereExe $vswhereExe `
+  -VisualStudioRoot $visualStudioRoot `
+  -WindowsSdkRoot $windowsSdkRoot `
+  -DotNetFrameworkRoot $dotNetFrameworkRoot `
+  -DotNetFramework64Root $dotNetFramework64Root `
+  -CmdRoot $cmdRoot `
+  -PowerShellRoot $powerShellRoot `
+  -WindowsPowerShellCompatibilityProjectionRoot 'C:\Windows\System32\WindowsPowerShell\v1.0' `
+  -RegRoot $regRoot `
+  -StarshipRoot $starshipRoot `
+  -ClinkRoot $clinkRoot `
+  -StarshipConfigPath $starshipConfigPath `
+  -PromotionScript $promotionScript `
+  -RuntimeExcludeRelativePaths @(
+    'resources\app\bin\code-tunnel.exe',
+    'resources\app\bin\cursor-tunnel.exe',
+    'tools\inno_updater.exe'
+  ) `
+  -AdditionalNodeCommands $additionalNodeCommands
+```
+
+`Project.Config.ps1` does not carry the compatibility target. It remains a
+Cursor platform-wrapper responsibility so every project using that platform
+receives the same projection without duplicating a Windows system path in
+project contracts.
+
+### Cursor box settings
+
+The current Cursor project-box boilerplate keeps these settings together with
+the existing strict policy:
+
+```ini
+UseElectronDetection=n
+NoRestartOnPCA=y
+DropConHostIntegrity=y
+UseWin32kHooks=y
+```
+
+Do not replace the virtual compatibility projection with a host PowerShell
+`ReadFilePath`, `OpenFilePath`, `NoSecurityIsolation`, or
+`DropChildProcessToken` exception.
+
 ## `Project.Config.ps1`
 
 Important ownership split:

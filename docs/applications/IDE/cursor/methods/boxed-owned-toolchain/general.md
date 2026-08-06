@@ -93,6 +93,7 @@ Then read the product/runtime-specific follow-ups:
 - `docs\applications\IDE\cursor\general.md`
 - `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\sign-in.md`
 - `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\integrated-terminal-conpty.md`
+- `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\agent-shell-host-powershell-projection.md`
 
 ## Why this area exists
 

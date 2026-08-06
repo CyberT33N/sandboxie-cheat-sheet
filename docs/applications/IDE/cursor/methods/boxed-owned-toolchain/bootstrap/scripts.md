@@ -81,6 +81,25 @@ The validated current runtime exclusions are:
 - `resources\app\bin\cursor-tunnel.exe`
 - `tools\inno_updater.exe`
 
+The Cursor platform wrappers also opt into the boxed PowerShell canonical-path
+compatibility projection. This is required because Cursor Agent Shell can
+hard-code:
+
+```text
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+```
+
+even when the local boxed PowerShell profile has been detected correctly.
+Before Cursor launches, the shared family bootstrap projects the local governed
+PowerShell mirror into that virtual Windows path inside the box. This preserves
+the strict host-image boundary instead of allowing Cursor to spawn host
+PowerShell.
+
+The full failure record, required Sandboxie options, and verification contract
+live here:
+
+- `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\agent-shell-host-powershell-projection.md`
+
 ## `Start-CursorProjectBase.ps1`
 
 This is a thin project-wrapper layer over:
@@ -96,6 +115,52 @@ It fixes the Cursor-specific contract:
 
 and forwards the shared toolchain/project contract into the family kernel.
 
+The complete forwarding call includes the Cursor-only compatibility projection
+root:
+
+```powershell
+& $familyScript `
+  -Action $familyAction `
+  -EditorId 'Cursor' `
+  -EditorDisplayName 'Cursor' `
+  -BoxFamilyName 'CursorBoxes' `
+  -RuntimeNamespace 'cursor' `
+  -ProjectName $ProjectName `
+  -RepoPath $RepoPath `
+  -CodeExe $CodeExe `
+  -CodeCli $CodeCli `
+  -CatalogUserRoot $CatalogUserRoot `
+  -SharedExtensionsRoot $SharedExtensionsRoot `
+  -SeedGlobalStorageRoot $SeedGlobalStorageRoot `
+  -SeedRooRoot $SeedRooRoot `
+  -GitRoot $GitRoot `
+  -NodeRoot $NodeRoot `
+  -PnpmCli $PnpmCli `
+  -PythonRoot $PythonRoot `
+  -VsWhereExe $VsWhereExe `
+  -VisualStudioRoot $VisualStudioRoot `
+  -WindowsSdkRoot $WindowsSdkRoot `
+  -DotNetFrameworkRoot $DotNetFrameworkRoot `
+  -DotNetFramework64Root $DotNetFramework64Root `
+  -CmdRoot $CmdRoot `
+  -PowerShellRoot $PowerShellRoot `
+  -WindowsPowerShellCompatibilityProjectionRoot 'C:\Windows\System32\WindowsPowerShell\v1.0' `
+  -RegRoot $RegRoot `
+  -StarshipRoot $StarshipRoot `
+  -StarshipConfigPath $StarshipConfigPath `
+  -ClinkRoot $ClinkRoot `
+  -NxDaemonBootstrapMode $NxDaemonBootstrapMode `
+  -RuntimeCtlShimExe $RuntimeCtlShimExe `
+  -McpFilesystemExtended $McpFilesystemExtended `
+  -Ugrep $Ugrep `
+  -RuntimeExcludeRelativePaths @(
+    'resources\app\bin\code-tunnel.exe',
+    'resources\app\bin\cursor-tunnel.exe',
+    'tools\inno_updater.exe'
+  ) `
+  -AdditionalNodeCommands $AdditionalNodeCommands
+```
+
 ## `Start-CursorMaintenance.ps1`
 
 This is the maintenance-wrapper equivalent over:
@@ -103,6 +168,47 @@ This is the maintenance-wrapper equivalent over:
 - `Start-VSCodeFamilyMaintenance.ps1`
 
 It fixes the same Cursor-specific identity values and the same runtime exclusions while still targeting the shared catalog, seed, and extension surfaces.
+
+Its complete family invocation uses the same projection root:
+
+```powershell
+& $familyScript `
+  -Action $familyAction `
+  -ExtensionId $ExtensionId `
+  -EditorId 'Cursor' `
+  -EditorDisplayName 'Cursor' `
+  -BoxFamilyName 'CursorBoxes' `
+  -RuntimeNamespace 'cursor' `
+  -CodeExe $codeExe `
+  -CodeCli $codeCli `
+  -CatalogUserRoot $catalogUserRoot `
+  -SharedSeedGlobalStorageRoot $sharedSeedGlobalStorageRoot `
+  -SharedSeedRooRoot $sharedSeedRooRoot `
+  -SharedExtensionsRoot $sharedExtensionsRoot `
+  -GitRoot $gitRoot `
+  -NodeRoot $nodeRoot `
+  -PnpmCli $pnpmCli `
+  -PythonRoot $pythonRoot `
+  -VsWhereExe $vswhereExe `
+  -VisualStudioRoot $visualStudioRoot `
+  -WindowsSdkRoot $windowsSdkRoot `
+  -DotNetFrameworkRoot $dotNetFrameworkRoot `
+  -DotNetFramework64Root $dotNetFramework64Root `
+  -CmdRoot $cmdRoot `
+  -PowerShellRoot $powerShellRoot `
+  -WindowsPowerShellCompatibilityProjectionRoot 'C:\Windows\System32\WindowsPowerShell\v1.0' `
+  -RegRoot $regRoot `
+  -StarshipRoot $starshipRoot `
+  -ClinkRoot $clinkRoot `
+  -StarshipConfigPath $starshipConfigPath `
+  -PromotionScript $promotionScript `
+  -RuntimeExcludeRelativePaths @(
+    'resources\app\bin\code-tunnel.exe',
+    'resources\app\bin\cursor-tunnel.exe',
+    'tools\inno_updater.exe'
+  ) `
+  -AdditionalNodeCommands $additionalNodeCommands
+```
 
 ## `Project.Config.ps1`
 

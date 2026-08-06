@@ -461,6 +461,157 @@ function Initialize-WindowsShellRuntime {
 }
 ```
 
+### Cursor Agent Shell canonical-path compatibility projection
+
+Some non-configurable third-party consumers do not respect the boxed shell
+environment. Cursor Agent Shell can detect the boxed PowerShell profile and
+still later spawn the hard-coded path:
+
+```text
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+```
+
+The shell stack owns the reusable, boxed-only projection primitive below. It
+copies the already mirrored PowerShell tree into the matching **virtual**
+Windows path. It never opens the host PowerShell image and it never deletes
+unrelated Windows files.
+
+```powershell
+function Assert-BoxedWindowsPowerShellCompatibilityProjectionContext {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BoxedPowerShellRoot,
+
+    [Parameter(Mandatory = $true)]
+    [string]$ProjectionRoot
+  )
+
+  if ([string]::IsNullOrWhiteSpace($env:BOXED_VSCODE_MODE) -or
+      [string]::IsNullOrWhiteSpace($env:BOXED_LOCAL_TOOLCHAIN_ROOT)) {
+    throw 'Refusing to project boxed PowerShell into C:\Windows outside a boxed IDE bootstrap context.'
+  }
+
+  $normalizedProjectionRoot = [System.IO.Path]::GetFullPath($ProjectionRoot).TrimEnd('\')
+  $expectedProjectionRoot = 'C:\Windows\System32\WindowsPowerShell\v1.0'
+  if (-not $normalizedProjectionRoot.Equals($expectedProjectionRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Unexpected boxed PowerShell compatibility projection root: $ProjectionRoot"
+  }
+
+  $normalizedLocalToolchainRoot = [System.IO.Path]::GetFullPath($env:BOXED_LOCAL_TOOLCHAIN_ROOT).TrimEnd('\')
+  $normalizedBoxedPowerShellRoot = [System.IO.Path]::GetFullPath($BoxedPowerShellRoot).TrimEnd('\')
+  if (-not $normalizedBoxedPowerShellRoot.StartsWith("$normalizedLocalToolchainRoot\", [System.StringComparison]::OrdinalIgnoreCase)) {
+    throw "Boxed PowerShell source must stay below BOXED_LOCAL_TOOLCHAIN_ROOT: $BoxedPowerShellRoot"
+  }
+
+  Assert-PathExists -Path $normalizedBoxedPowerShellRoot -Label 'Local boxed PowerShell compatibility source'
+  Assert-PathExists -Path (Join-Path $normalizedBoxedPowerShellRoot 'powershell.exe') -Label 'Local boxed PowerShell compatibility executable'
+}
+
+function Initialize-WindowsPowerShellCompatibilityProjection {
+  [CmdletBinding()]
+  param(
+    [Parameter(Mandatory = $true)]
+    [string]$BoxedPowerShellRoot,
+
+    [string]$ProjectionRoot = 'C:\Windows\System32\WindowsPowerShell\v1.0'
+  )
+
+  Assert-BoxedWindowsPowerShellCompatibilityProjectionContext `
+    -BoxedPowerShellRoot $BoxedPowerShellRoot `
+    -ProjectionRoot $ProjectionRoot
+
+  $sourceRoot = [System.IO.Path]::GetFullPath($BoxedPowerShellRoot).TrimEnd('\')
+  $sourceExe = Join-Path $sourceRoot 'powershell.exe'
+  $targetRoot = [System.IO.Path]::GetFullPath($ProjectionRoot).TrimEnd('\')
+  $targetExe = Join-Path $targetRoot 'powershell.exe'
+  $markerPath = Join-Path $targetRoot '.boxed_powershell_projection'
+  $sourceVersion = Split-Path -Leaf $sourceRoot
+  $sourceHash = (Get-FileHash -LiteralPath $sourceExe -Algorithm SHA256).Hash
+  $markerContent = "version=$sourceVersion`nhash=$sourceHash"
+  $existingMarkerContent = if (Test-Path -LiteralPath $markerPath) {
+    $markerText = Get-Content -LiteralPath $markerPath -Raw -ErrorAction SilentlyContinue
+    if ($null -eq $markerText) {
+      ''
+    }
+    else {
+      $markerText.Trim()
+    }
+  }
+  else {
+    ''
+  }
+
+  $projectionReady = `
+    (Test-Path -LiteralPath $targetExe) -and `
+    (Test-Path -LiteralPath $markerPath) -and `
+    ($existingMarkerContent -eq $markerContent)
+
+  if (-not $projectionReady) {
+    Write-Host "Projecting boxed PowerShell compatibility runtime to $targetRoot ..."
+    Copy-TreeContents -Source $sourceRoot -Destination $targetRoot
+    Write-AsciiFile -Path $markerPath -Content $markerContent
+  }
+
+  Assert-PathExists -Path $targetExe -Label 'Boxed PowerShell compatibility executable'
+
+  $targetHash = (Get-FileHash -LiteralPath $targetExe -Algorithm SHA256).Hash
+  if ($targetHash -ne $sourceHash) {
+    throw "Boxed PowerShell compatibility projection hash mismatch: $targetExe"
+  }
+
+  $env:BOXED_POWERSHELL_COMPATIBILITY_ROOT = $targetRoot
+  $env:BOXED_POWERSHELL_COMPATIBILITY_EXE = $targetExe
+  $env:BOXED_POWERSHELL_COMPATIBILITY_VERSION = $sourceVersion
+
+  return [pscustomobject]@{
+    PowerShellRoot = $targetRoot
+    PowerShellExe = $targetExe
+    Version = $sourceVersion
+  }
+}
+
+Export-ModuleMember -Function @(
+  'Assert-WindowsShellToolchainLayout',
+  'Initialize-WindowsShellToolchainMirror',
+  'Test-RegToolchainLayout',
+  'Test-ClinkToolchainLayout',
+  'Initialize-WindowsPowerShellCompatibilityProjection',
+  'Initialize-WindowsShellRuntime'
+)
+```
+
+The Cursor platform is the explicit opt-in owner. The shared family scripts
+accept an optional projection root and invoke the exported function only after
+their boxed environment has been published:
+
+```powershell
+# Parameter in Start-VSCodeFamilyProjectBase.ps1 and
+# Start-VSCodeFamilyMaintenance.ps1
+[string]$WindowsPowerShellCompatibilityProjectionRoot,
+
+# After BOXED_VSCODE_MODE and BOXED_LOCAL_TOOLCHAIN_ROOT are assigned
+$powerShellCompatibilityProjection = $null
+if (-not [string]::IsNullOrWhiteSpace($WindowsPowerShellCompatibilityProjectionRoot)) {
+  $powerShellCompatibilityProjection = Initialize-WindowsPowerShellCompatibilityProjection `
+    -BoxedPowerShellRoot $windowsShellRuntime.PowerShellRoot `
+    -ProjectionRoot $WindowsPowerShellCompatibilityProjectionRoot
+}
+
+# After the editor-specific environment values are published
+if ($null -ne $powerShellCompatibilityProjection) {
+  Set-EditorSpecificEnvValue -EditorId $EditorId -Suffix 'POWERSHELL_COMPATIBILITY_EXE' -Value $powerShellCompatibilityProjection.PowerShellExe
+}
+```
+
+The `OpenTerminal` diagnostic output in both family scripts must also include:
+
+```powershell
+if ($null -ne $powerShellCompatibilityProjection) {
+  Write-Host "PowerShellCompatibilityProjection: $($powerShellCompatibilityProjection.PowerShellExe)"
+}
+```
+
 ### Bare `cmd.exe` child-process resolution
 
 `ComSpec` / `COMSPEC` is necessary for shell-aware Windows execution, but some

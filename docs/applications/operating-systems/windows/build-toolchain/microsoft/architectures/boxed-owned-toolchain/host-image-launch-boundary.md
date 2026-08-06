@@ -134,6 +134,21 @@ Do not validate this boundary by starting host
 `C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe` directly in the
 project box.
 
+## Non-configurable in-box consumers
+
+The normal host-entry solution controls the first PowerShell image explicitly.
+Some in-box third-party consumers cannot be configured and can later
+hard-code the same canonical host PowerShell path as a child-process target.
+
+That is the Cursor Agent Shell failure class. The correct response remains
+box-owned execution: bootstrap projects the local boxed PowerShell tree into
+the corresponding **virtual** Windows path before the consumer launches.
+It must not become a host-PowerShell access exception.
+
+See:
+
+- `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\agent-shell-host-powershell-projection.md`
+
 ## Related
 
 - `docs\applications\operating-systems\windows\build-toolchain\microsoft\architectures\boxed-owned-toolchain\dotnet-framework-projection.md`

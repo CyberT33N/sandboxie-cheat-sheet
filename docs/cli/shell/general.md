@@ -359,6 +359,43 @@ So the current repository view is:
 
 That is why this is now the **prioritized documented solution**.
 
+## Canonical-path compatibility projection for non-configurable consumers
+
+The normal contract assumes that a consumer respects:
+
+- `ComSpec` / `COMSPEC`;
+- `PATH`;
+- an explicit configured shell path;
+- or a bootstrap-published `BOXED_*` environment variable.
+
+Some third-party consumers do not. A validated Cursor Agent Shell failure class
+shows that a consumer can detect the local boxed PowerShell at startup and
+still later spawn the hard-coded canonical host path:
+
+```text
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+```
+
+Under strict Sandboxie policy, that host-image child spawn can fail with
+`spawn EPERM` even though the box-local PowerShell mirror works.
+
+The architectural answer is a **canonical-path compatibility projection**:
+
+1. bootstrap materializes the governed box-local PowerShell tree into the
+   same logical canonical Windows path inside the sandbox;
+2. the non-configurable consumer resolves its expected path;
+3. Sandboxie executes the box-owned image, not a host-image child process.
+
+This is distinct from a broad `ReadFilePath` or `OpenFilePath` exception:
+
+- it does not normalize host-shell execution;
+- it does not weaken the box to make an uncontrolled host image runnable;
+- it uses the same governed runtime selected by the boxed shell stack.
+
+The Cursor-specific implementation and validation record live here:
+
+- `docs\applications\IDE\cursor\architectures\boxed-owned-toolchain\troubleshooting\agent-shell-host-powershell-projection.md`
+
 ## What this solution is not
 
 This is **not**:
